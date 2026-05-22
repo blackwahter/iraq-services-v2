@@ -111,16 +111,14 @@ function extractIraqiRate(text, cityName) {
 
 async function scrapeBourses() {
     try {
-        // إضافة هوية متصفح (User-Agent) لتخطي حماية تليجرام
-        const response = await axios.get('https://t.me/s/dollar_iraq_now', {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept-Language': 'ar,en-US;q=0.9,en;q=0.8'
-            }
-        });
+        // نستخدم وسيط (Proxy) مجاني لتخطي حظر تيليجرام لسيرفرات Render
+        const targetUrl = encodeURIComponent('https://t.me/s/dollar_iraq_now');
+        const proxyUrl = `https://api.allorigins.win/get?url=${targetUrl}`;
         
-        // السطرين اللي انمسحت بالخطأ (مهمة جداً لقراءة النص)
-        const $ = cheerio.load(response.data);
+        const response = await axios.get(proxyUrl);
+        
+        // الوسيط يرجع البيانات بداخل متغير اسمه contents
+        const $ = cheerio.load(response.data.contents);
         const messages = $('.tgme_widget_message_text');
         
         if (messages.length === 0) return;
