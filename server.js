@@ -112,10 +112,13 @@ function extractIraqiRate(text, cityName) {
 async function scrapeBourses() {
     try {
         // قناة مشهورة تنشر أسعار الصرف باستمرار
-        const response = await axios.get('https://t.me/s/dollar_iraq_now');
-        const $ = cheerio.load(response.data);
-        const messages = $('.tgme_widget_message_text');
-        
+        // إضافة هوية متصفح (User-Agent) لتخطي حماية تليجرام
+        const response = await axios.get('https://t.me/s/dollar_iraq_now', {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept-Language': 'ar,en-US;q=0.9,en;q=0.8'
+            }
+        });
         if (messages.length === 0) return;
 
         // نفحص آخر 10 رسائل بالقناة
