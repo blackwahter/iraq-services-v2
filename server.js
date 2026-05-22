@@ -111,14 +111,13 @@ function extractIraqiRate(text, cityName) {
 
 async function scrapeBourses() {
     try {
-        // نستخدم وسيط (Proxy) مجاني لتخطي حظر تيليجرام لسيرفرات Render
-        const targetUrl = encodeURIComponent('https://t.me/s/dollar_iraq_now');
-        const proxyUrl = `https://api.allorigins.win/get?url=${targetUrl}`;
+        // نستخدم وسيط (Proxy) جديد ومستقر أكثر
+        const proxyUrl = 'https://api.codetabs.com/v1/proxy?quest=https://t.me/s/dollar_iraq_now';
         
         const response = await axios.get(proxyUrl);
         
-        // الوسيط يرجع البيانات بداخل متغير اسمه contents
-        const $ = cheerio.load(response.data.contents);
+        // الوسيط الجديد يرجع البيانات بشكل مباشر
+        const $ = cheerio.load(response.data);
         const messages = $('.tgme_widget_message_text');
         
         if (messages.length === 0) return;
@@ -137,7 +136,7 @@ async function scrapeBourses() {
 
                 if (k) localBourses.kifah = k;
                 if (h) localBourses.harthiya = h;
-                else if (k) localBourses.harthiya = k; // الحارثية دائماً نفس الكفاح تقريباً
+                else if (k) localBourses.harthiya = k; 
                 if (e) localBourses.erbil = e;
                 if (b) localBourses.basra = b;
 
