@@ -5,7 +5,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios'); 
 const cheerio = require('cheerio'); 
 require('dotenv').config();
-
+const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -254,9 +254,12 @@ app.get('/api/nuke-all-data', async (req, res) => {
         res.status(500).send(err.message);
     }
 });
-// مسار الصفحة الرئيسية
+// السماح للسيرفر بقراءة ملفات التصميم (مثل style.css)
+app.use(express.static(__dirname));
+
+// مسار الصفحة الرئيسية (يعرض واجهة الموقع HTML)
 app.get('/', (req, res) => {
-    res.send('<h1 style="text-align: center; margin-top: 50px; font-family: tahoma;">🚀 سيرفر خدمات العراق يعمل بنجاح!</h1>');
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 app.listen(PORT, () => {
     console.log(`🌐 Server is running successfully on port ${PORT}`);
