@@ -111,7 +111,6 @@ function extractIraqiRate(text, cityName) {
 
 async function scrapeBourses() {
     try {
-        // قناة مشهورة تنشر أسعار الصرف باستمرار
         // إضافة هوية متصفح (User-Agent) لتخطي حماية تليجرام
         const response = await axios.get('https://t.me/s/dollar_iraq_now', {
             headers: {
@@ -119,6 +118,11 @@ async function scrapeBourses() {
                 'Accept-Language': 'ar,en-US;q=0.9,en;q=0.8'
             }
         });
+        
+        // السطرين اللي انمسحت بالخطأ (مهمة جداً لقراءة النص)
+        const $ = cheerio.load(response.data);
+        const messages = $('.tgme_widget_message_text');
+        
         if (messages.length === 0) return;
 
         // نفحص آخر 10 رسائل بالقناة
