@@ -254,7 +254,10 @@ app.get('/api/nuke-all-data', async (req, res) => {
         res.status(500).send(err.message);
     }
 });
-
+// مسار الصفحة الرئيسية
+app.get('/', (req, res) => {
+    res.send('<h1 style="text-align: center; margin-top: 50px; font-family: tahoma;">🚀 سيرفر خدمات العراق يعمل بنجاح!</h1>');
+});
 app.listen(PORT, () => {
     console.log(`🌐 Server is running successfully on port ${PORT}`);
 });
