@@ -15,19 +15,6 @@ let localBoursesData = {
     lastUpdated: null 
 };
 
-const ministriesSalaries = [
-    { id: 'retirees', name: 'هيئة التقاعد الوطنية', icon: '👴', status: 'released', date: '2026-05-15' },
-    { id: 'social', name: 'الرعاية الاجتماعية', icon: '🤝', status: 'released', date: '2026-05-16' },
-    { id: 'edu', name: 'وزارة التربية', icon: '🎓', status: 'released', date: '2026-05-18' },
-    { id: 'health', name: 'وزارة الصحة', icon: '🏥', status: 'released', date: '2026-05-19' },
-    { id: 'oil', name: 'وزارة النفط', icon: '🛢️', status: 'released', date: '2026-05-20' },
-    { id: 'defense', name: 'وزارة الدفاع', icon: '🛡️', status: 'funded', date: 'تم التمويل - بانتظار الإطلاق' },
-    { id: 'interior', name: 'وزارة الداخلية', icon: '👮', status: 'funded', date: 'تم التمويل - بانتظار الإطلاق' },
-    { id: 'higher_edu', name: 'وزارة التعليم العالي', icon: '🏛️', status: 'funded', date: 'تم التمويل - بانتظار الإطلاق' },
-    { id: 'finance', name: 'وزارة المالية', icon: '🏦', status: 'pending', date: 'بانتظار التدفقات' },
-    { id: 'water', name: 'وزارة الموارد', icon: '💧', status: 'pending', date: 'بانتظار التدفقات' }
-];
-
 const MARKET_MULTIPLIER = 1.1145; 
 const OUNCE_TO_GRAM = 31.1034768; 
 
@@ -659,7 +646,7 @@ if (fromCurrencySelect) fromCurrencySelect.addEventListener('change', calculateC
 if (toCurrencySelect) toCurrencySelect.addEventListener('change', calculateConversion);
 
 // ==========================================
-// 7. الرواتب
+// 7. الرواتب (تم التنظيف)
 // ==========================================
 let selectedSalaryFilter = 'all';
 
@@ -677,38 +664,8 @@ function initSalariesTracker() {
 }
 
 function renderSalariesBoard() {
-    if (!salariesGrid) return; 
-    
-    salariesGrid.querySelectorAll('.static-salary-card').forEach(c => c.remove());
-    
-    let html = ''; 
-    const f = ministriesSalaries.filter(i => selectedSalaryFilter === 'all' || i.status === selectedSalaryFilter);
-    const p = Math.round((ministriesSalaries.filter(i => i.status === 'released').length / ministriesSalaries.length) * 100);
-    
-    if(document.getElementById('salaries-progress')) document.getElementById('salaries-progress').style.width = `${p}%`; 
-    if(document.getElementById('salaries-pct')) document.getElementById('salaries-pct').textContent = `${p}%`;
-    
-    const sMap = { released: '🟢 تم الصرف', funded: '🟡 تم التمويل', pending: '🔴 قيد التدقيق' };
-    
-    f.forEach(i => { 
-        html += `
-            <div class="rate-card salary-card static-salary-card ${i.status}">
-                <div class="card-header">
-                    <div class="currency-info">
-                        <span class="currency-flag">${i.icon}</span>
-                        <div class="currency-names">
-                            <span class="currency-code">${i.name}</span>
-                        </div>
-                    </div>
-                    <span class="status-badge ${i.status}">${sMap[i.status]}</span>
-                </div>
-                <div class="price-row">
-                    <span style="color:#fff">${i.date}</span>
-                </div>
-            </div>`; 
-    });
-    
-    salariesGrid.insertAdjacentHTML('beforeend', html); 
+    // تم إيقاف توليد البطاقات الوهمية (الثابتة) بأمان
+    // الواجهة تعتمد الآن فقط على الأخبار الديناميكية المسحوبة من التليجرام
 }
 
 // ==========================================
