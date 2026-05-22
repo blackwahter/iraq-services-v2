@@ -110,24 +110,48 @@ function extractIraqiRate(text, cityName) {
 }
 
 async function scrapeBourses() {
+    // قائمة بأقوى الوسطاء المجانية. السيرفر راح يجربهم واحد ورا الثاني!
+    const proxies = [
+        'https://corsproxy.io/?https://t.me/s/dollar_iraq_now',
+        'https://api.allorigins.win/raw?url=https://t.me/s/dollar_iraq_now',
+        'https://thingproxy.freeboard.io/fetch/https://t.me/s/dollar_iraq_now'
+    ];
+
+    let htmlData = null;
+
+    // السيرفر يفر على الوسطاء
+    for (let proxy of proxies) {
+        try {
+            // ننتظر 8 ثواني كحد أقصى لكل وسيط
+            const response = await axios.get(proxy, { timeout: 8000 });
+            if (response.data) {
+                htmlData = response.data;
+                console.log(`✅ [نجاح]: تم سحب البورصة عبر الوسيط: ${proxy.split('/')[2]}`);
+                break; // لكينا البيانات، نطلع من اللوب وما نجرب البقية
+            }
+        } catch (e) {
+            // إذا فشل هذا الوسيط، ما نطلع خطأ، بس نطبع تنبيه ونعبر للوسيط اللي بعده
+            console.log(`⚠️ [تخطي]: الوسيط ${proxy.split('/')[2]} لا يستجيب حالياً.`);
+        }
+    }
+
+    // إذا كل الوسطاء فشلوا (حالة نادرة جداً)
+    if (!htmlData) {
+        console.log('❌ [رادار البورصة]: كل سيرفرات الوسطاء مشغولة الآن. سيتم المحاولة لاحقاً.');
+        return;
+    }
+
     try {
-        // نستخدم وسيط (Proxy) جديد ومستقر أكثر
-        const proxyUrl = 'https://api.codetabs.com/v1/proxy?quest=https://t.me/s/dollar_iraq_now';
-        
-        const response = await axios.get(proxyUrl);
-        
-        // الوسيط الجديد يرجع البيانات بشكل مباشر
-        const $ = cheerio.load(response.data);
+        // معالجة البيانات اللي حصلناها
+        const $ = cheerio.load(htmlData);
         const messages = $('.tgme_widget_message_text');
         
         if (messages.length === 0) return;
 
-        // نفحص آخر 10 رسائل بالقناة
         let found = false;
         for (let i = messages.length - 1; i >= 0; i--) {
             const text = $(messages[i]).text();
             
-            // إذا الرسالة بيها أسعار الكفاح أو الدولار
             if (text.includes('الكفاح') || text.includes('صرف')) {
                 const k = extractIraqiRate(text, 'الكفاح');
                 const h = extractIraqiRate(text, 'الحارثية');
@@ -144,12 +168,12 @@ async function scrapeBourses() {
                     localBourses.lastUpdated = new Date().toISOString();
                     console.log('🎯 [رادار البورصة]: تم تحديث أسعار السوق المحلية بنجاح!', localBourses);
                     found = true;
-                    break; // لكينا السعر، نطلع من اللوب
+                    break; 
                 }
             }
         }
     } catch (err) {
-        console.error('❌ [رادار البورصة]: خطأ في الاتصال بقناة الأسعار.', err.message);
+        console.error('❌ [رادار البورصة]: خطأ أثناء قراءة البيانات.', err.message);
     }
 }
 
