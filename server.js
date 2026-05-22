@@ -10,14 +10,13 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ==========================================
-// إعدادات قاعدة البيانات (PostgreSQL)
+// إعدادات قاعدة البيانات (PostgreSQL - Neon Cloud)
 // ==========================================
 const pool = new Pool({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT,
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false
+    }
 });
 
 pool.connect()
@@ -233,6 +232,7 @@ app.get('/api/updates', async (req, res) => {
         res.status(500).json({ error: 'حدث خطأ في السيرفر' });
     }
 });
+
 // هذا الـ API يمسح كل الأخبار بضغطة زر
 app.get('/api/clear-all', async (req, res) => {
     try {
@@ -243,6 +243,7 @@ app.get('/api/clear-all', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 app.get('/api/nuke-all-data', async (req, res) => {
     try {
         // هذا الأمر يمسح الجدول ويعيد ترقيمه من الصفر
@@ -253,6 +254,7 @@ app.get('/api/nuke-all-data', async (req, res) => {
         res.status(500).send(err.message);
     }
 });
+
 app.listen(PORT, () => {
-    console.log(`🌐 Server is running successfully on http://localhost:${PORT}`);
+    console.log(`🌐 Server is running successfully on port ${PORT}`);
 });
