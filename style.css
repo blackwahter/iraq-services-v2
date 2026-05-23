@@ -350,6 +350,14 @@ body.light-theme .system-clock-badge .pulse-dot {
     box-shadow: none !important;
 }
 
+/* إخفاء زر الإغلاق والتبديل افتراضياً على شاشات الديسكتوب */
+.cyber-sidebar .close-btn {
+    display: none;
+}
+#sidebar-toggle {
+    display: none;
+}
+
 /* =========================================
    تنسيقات الشاشات المتجاوبة للموبايل
 ========================================= */
@@ -359,100 +367,165 @@ body.light-theme .system-clock-badge .pulse-dot {
         gap: 1rem;
     }
     
-    /* إضافة تباعد سفلي للصفحة لمنع البار السفلي من حجب المحتوى */
+    /* إلغاء التباعد السفلي المخصص للبار السفلي */
     body {
-        padding-bottom: 75px !important;
+        padding-bottom: 2rem !important;
     }
     
-    /* تحويل السايد بار لشريط سفلي أفقي مرن وسهل للتصفح باللمس */
+    /* تحويل السايد بار لدرج منزلق جانبي فاخر (Slide-out Drawer) */
     .cyber-sidebar {
         position: fixed;
-        bottom: 0;
+        top: 0;
         right: 0;
-        left: 0;
-        top: auto;
-        width: 100vw;
-        height: 65px;
-        max-height: 65px;
-        border-top: 1px solid rgba(0, 240, 255, 0.25) !important;
+        left: auto;
+        width: 300px;
+        height: 100vh;
+        max-height: 100vh;
+        border-top: none !important;
         border-bottom: none !important;
-        border-left: none !important;
+        border-left: var(--hud-border) !important;
         border-right: none !important;
         border-radius: 0 !important;
         clip-path: none !important;
-        padding: 5px 10px !important;
-        flex-direction: row !important;
-        gap: 0 !important;
-        overflow-x: auto !important;
-        overflow-y: hidden !important;
-        z-index: 1000;
-        box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.4);
-        background: rgba(6, 11, 20, 0.95) !important;
-        backdrop-filter: blur(15px);
-        -webkit-backdrop-filter: blur(15px);
-        scrollbar-width: none; /* إخفاء شريط التمرير ليكون المظهر أنيقاً */
+        padding: 1.5rem !important;
+        flex-direction: column !important;
+        gap: 1.5rem !important;
+        transform: translateX(100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1001;
+        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.7);
+        background: rgba(7, 14, 23, 0.96) !important;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        overflow-y: auto !important;
+        display: flex !important;
     }
     
-    .cyber-sidebar::-webkit-scrollbar {
-        display: none;
+    .cyber-sidebar.open {
+        transform: translateX(0);
     }
     
-    /* إخفاء الهوية والفاصل في الموبايل */
-    .cyber-sidebar .sidebar-brand,
+    /* إظهار الهوية والفاصل في السايد بار الموبايل */
+    .cyber-sidebar .sidebar-brand {
+        display: flex !important;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+    }
+    
     .cyber-sidebar .sidebar-divider {
-        display: none !important;
+        display: flex !important;
+        margin-bottom: 0.5rem;
     }
     
-    /* جعل التبويبات تتدفق أفقياً */
+    /* إظهار وتنسيق زر الإغلاق النيون */
+    .cyber-sidebar .close-btn {
+        display: block !important;
+        border-color: rgba(255, 51, 102, 0.4) !important;
+        color: var(--cyber-red) !important;
+        background: rgba(255, 51, 102, 0.05) !important;
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: bold;
+        transition: var(--transition-fast);
+    }
+    
+    .cyber-sidebar .close-btn:hover {
+        background: rgba(255, 51, 102, 0.15) !important;
+        box-shadow: 0 0 10px rgba(255, 51, 102, 0.3) !important;
+    }
+    
+    /* جعل التبويبات تتدفق عمودياً داخل السايد بار */
     .cyber-sidebar .tabs-nav {
-        flex-direction: row !important;
-        gap: 8px !important;
-        width: max-content !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+        width: 100% !important;
         justify-content: flex-start !important;
         padding: 0 !important;
     }
     
-    /* زر التبويب على الموبايل: الأيقونة بالأعلى والنص بالأسفل */
+    /* زر التبويب على الموبايل داخل السايد بار */
     .cyber-sidebar .tabs-nav .tab-btn {
-        flex-direction: column !important;
-        gap: 3px !important;
-        padding: 6px 10px !important;
-        font-size: 0.72rem !important;
-        min-width: 90px !important;
-        text-align: center !important;
-        background: transparent !important;
-        border: none !important;
-        clip-path: none !important;
+        flex-direction: row !important;
+        gap: 12px !important;
+        padding: 0.85rem 1.2rem !important;
+        font-size: 0.95rem !important;
+        min-width: 0 !important;
+        text-align: right !important;
+        background: rgba(6, 12, 22, 0.45) !important;
+        border: 1px solid rgba(0, 240, 255, 0.1) !important;
+        clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px)) !important;
         color: var(--text-secondary) !important;
     }
     
     .cyber-sidebar .tabs-nav .tab-btn .tab-icon {
-        font-size: 1.1rem !important;
+        font-size: 1.2rem !important;
     }
     
     .cyber-sidebar .tabs-nav .tab-btn.active {
         background: rgba(0, 240, 255, 0.08) !important;
         color: var(--cyber-cyan) !important;
-        border-radius: 4px !important;
-        box-shadow: none !important;
+        border-color: var(--cyber-cyan) !important;
+        box-shadow: 0 0 15px var(--cyber-cyan-glow) !important;
         text-shadow: 0 0 5px var(--cyber-cyan-glow) !important;
     }
     
-    /* مظهر الفاتح للشريط السفلي */
+    /* إظهار زر التبديل (الهامبرغر) في الهيدر */
+    #sidebar-toggle {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        border-color: rgba(0, 240, 255, 0.4);
+        color: var(--cyber-cyan);
+    }
+    
+    /* غطاء الخلفية الشفاف عند فتح السايد بار */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(3, 6, 11, 0.7);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .sidebar-overlay.active {
+        display: block !important;
+        opacity: 1 !important;
+    }
+    
+    /* مظهر الفاتح للسايد بار على الموبايل */
     body.light-theme .cyber-sidebar {
-        background: rgba(255, 255, 255, 0.95) !important;
-        border-top: 1px solid #cbd5e1 !important;
-        box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.05) !important;
+        background: rgba(255, 255, 255, 0.98) !important;
+        border-left: 1px solid #cbd5e1 !important;
+        box-shadow: -5px 0 20px rgba(0, 0, 0, 0.08) !important;
     }
     
     body.light-theme .cyber-sidebar .tabs-nav .tab-btn {
+        background: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
         color: #64748b !important;
     }
     
     body.light-theme .cyber-sidebar .tabs-nav .tab-btn.active {
-        background: rgba(14, 165, 233, 0.1) !important;
-        color: #0284c7 !important;
+        background: #0ea5e9 !important;
+        color: #ffffff !important;
+        border-color: #0ea5e9 !important;
         text-shadow: none !important;
+        box-shadow: none !important;
+    }
+    
+    body.light-theme #sidebar-toggle {
+        border-color: #cbd5e1 !important;
+        color: #0f172a !important;
+        background: #f8fafc !important;
     }
 }
 

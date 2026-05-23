@@ -284,21 +284,27 @@ function initTabs() {
 
 function initMobileSidebar() {
     const toggleBtn = document.getElementById('sidebar-toggle');
+    const closeBtn = document.getElementById('sidebar-close');
     const sidebar = document.getElementById('cyber-sidebar');
     const overlay = document.getElementById('sidebar-overlay');
 
     if (toggleBtn && sidebar && overlay) {
         toggleBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('active');
+            sidebar.classList.add('open');
+            overlay.classList.add('active');
             playCyberSelect();
         });
 
-        overlay.addEventListener('click', () => {
+        const closeSidebar = () => {
             sidebar.classList.remove('open');
             overlay.classList.remove('active');
             playCyberSelect();
-        });
+        };
+
+        overlay.addEventListener('click', closeSidebar);
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeSidebar);
+        }
     }
 }
 
