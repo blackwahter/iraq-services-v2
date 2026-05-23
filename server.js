@@ -168,7 +168,8 @@ setInterval(scrapeBourses, 120000);
 // ==========================================
 async function scrapeSalaries() {
     const channels = ['roatabn', 'iraqnow4', 'omeralij', 'marwaan1980']; // قنوات الأخبار والرواتب المعتمدة
-    const salaryKeywords = ['راتب', 'رواتب', 'تمويل', 'مصرف', 'متقاعدين', 'الرعاية', 'صرف', 'موظفي', 'المالية', 'سلفة', 'سلف', 'إطلاق', 'باشر', 'عاجل'];
+    // كلمات مفتاحية دقيقة جداً تخص الرواتب فقط لمنع سحب أخبار عشوائية
+    const salaryKeywords = ['راتب', 'رواتب', 'متقاعدين', 'الرعاية الاجتماعية', 'سلفة', 'سلف', 'تمويل', 'أجور'];
 
     const userAgents = [
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
