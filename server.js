@@ -202,6 +202,11 @@ async function scrapeSalaries() {
                 const isSalaryNews = salaryKeywords.some(keyword => msgText.includes(keyword));
                 if (!isSalaryNews) continue;
 
+                // فلتر مانع الإعلانات والرسائل العشوائية (Blacklist)
+                const spamKeywords = ['اشترك', 'bot', 'استلمت راتب لو لا', 'دز رسالة', 'بوت', 'قناة', 'رابط'];
+                const isSpam = spamKeywords.some(keyword => msgText.toLowerCase().includes(keyword.toLowerCase()));
+                if (isSpam) continue;
+
                 // التأكد أن الخبر غير موجود مسبقاً في قاعدة البيانات
                 const checkQuery = await pool.query("SELECT id FROM telegram_updates WHERE category = 'رواتب' AND content = $1", [msgText]);
                 if (checkQuery.rows.length === 0) {
@@ -213,6 +218,11 @@ async function scrapeSalaries() {
             console.error(`⚠️ تأخير أو حظر مؤقت في استجابة قناة ${channel}`);
         } 
     }
+
+    // تنظيف آلي للإعلانات القديمة التي تسربت سابقاً
+    try {
+        await pool.query("DELETE FROM telegram_updates WHERE category = 'رواتب' AND (content LIKE '%اشترك%' OR content LIKE '%bot%' OR content LIKE '%استلمت راتب لو لا%')");
+    } catch(e) {}
 }
 scrapeSalaries();
 setInterval(scrapeSalaries, 60000); // تم زيادتها إلى 60 ثانية لحماية السيرفر من الحظر
