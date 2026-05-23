@@ -212,14 +212,14 @@ function renderPaginatedNews() {
 
         html += `
             <div class="ios-card salary-card">
-                <div class="salary-header-row">
+                <div class="salary-top">
+                    <div class="salary-title">${item.content}</div>
                     <div class="salary-badge ${badgeClass}">
                         ${badgeIcon}
                         <span>${badgeText}</span>
                     </div>
                 </div>
-                <div class="salary-title">${item.content}</div>
-                <div class="salary-time">${timeStr} MT</div>
+                <div class="salary-time">${timeStr} MT - تحديث مباشر</div>
             </div>
         `;
     });
