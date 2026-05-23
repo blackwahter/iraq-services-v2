@@ -336,13 +336,13 @@ async function fetchData() {
         } catch(e){}
         
         try { 
-            const oilRes = await fetch('http://localhost:3000/api/oil'); 
+            const oilRes = await fetch('/api/oil'); 
             const oilData = await oilRes.json(); 
             if (oilData.success) { brentOilUSD = oilData.brent; wtiOilUSD = oilData.wti; } 
         } catch(e) {}
         
         try { 
-            const boursesRes = await fetch('http://localhost:3000/api/bourses'); 
+            const boursesRes = await fetch('/api/bourses'); 
             const boursesResp = await boursesRes.json(); 
             if (boursesResp.success && boursesResp.data) localBoursesData = boursesResp.data; 
         } catch (e) {}
@@ -746,7 +746,7 @@ function renderSalariesBoard() {
 // ==========================================
 async function fetchUpdates() {
     try {
-        const response = await fetch('http://localhost:3000/api/updates'); 
+        const response = await fetch('/api/updates'); 
         const data = await response.json();
         
         // تفريغ الحاويات بالكامل قبل إدراج الجديد لضمان عدم التراكم
