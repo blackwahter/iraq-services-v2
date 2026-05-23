@@ -365,6 +365,7 @@ body.light-theme .system-clock-badge .pulse-dot {
     .container {
         grid-template-columns: 1fr;
         gap: 1rem;
+        z-index: auto !important;
     }
     
     /* إلغاء التباعد السفلي المخصص للبار السفلي */
