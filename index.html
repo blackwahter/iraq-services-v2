@@ -97,7 +97,6 @@
         /* =========================================
            إصلاح العناصر المولدة من app.js (العملات/النفط)
         ========================================= */
-        /* هذا الكود يجبر أي بطاقة تتولد بالجافاسكربت أن تأخذ لون أبيض نظيف وحدود رصاصية */
         body.light-theme [id$="-grid"] > div, 
         body.light-theme .markets-grid-layout > div {
             background: #ffffff !important;
@@ -156,10 +155,10 @@
                 </div>
                 <div class="hud-item sound-control" style="display: flex; gap: 10px;">
                     <button id="theme-toggle" class="cyber-btn-mini" title="تبديل المظهر">
-                        <span class="icon" id="theme-icon">🌓</span> <span id="theme-text">المظهر: داكن</span>
+                        <span class="icon" id="theme-icon"></span> <span id="theme-text">المظهر: داكن</span>
                     </button>
                     <button id="sound-toggle" class="cyber-btn-mini sound-active" title="تفعيل/كتم المؤثرات الصوتية">
-                        <span class="icon">🔊</span> <span id="sound-status-text">الصوت: نشط</span>
+                        <span class="icon"></span> <span id="sound-status-text">الصوت: نشط</span>
                     </button>
                 </div>
             </div>
@@ -197,7 +196,7 @@
             <button class="tab-btn" data-tab="metals">✨ الذهب والفضه</button>
             <button class="tab-btn" data-tab="oil">🛢️ النفط</button>
             <button class="tab-btn" data-tab="markets"> البورصات المحلية</button>
-            <button class="tab-btn" data-tab="converter-tab">🧮 التحويل الكمي</button>
+            <button class="tab-btn" data-tab="converter-tab">💰💵  حاسبة العملات</button>
         </div>
 
         <div class="tab-content active" id="salaries-tab">
@@ -368,6 +367,9 @@
             document.body.classList.add('light-theme');
             themeIcon.textContent = '🌞';
             themeText.textContent = 'المظهر: فاتح';
+        } else {
+            themeIcon.textContent = '🌓';
+            themeText.textContent = 'المظهر: داكن';
         }
 
         themeToggleBtn.addEventListener('click', () => {
@@ -384,7 +386,7 @@
         });
 
         // ==========================================
-        // 📰 نظام الرواتب الذكي
+        // 📰 نظام الرواتب الذكي مع كاسر الكاش
         // ==========================================
         let allSalariesData = [];
         let currentPage = 1;
@@ -392,7 +394,9 @@
 
         async function fetchCyberUpdates() {
             try {
-                const response = await fetch('/api/updates');
+                // إضافة متغير الوقت للرابط لمنع الكاش (Cache Buster)
+                const timestamp = new Date().getTime();
+                const response = await fetch(`/api/updates?nocache=${timestamp}`);
                 const data = await response.json();
                 
                 const newSalaries = data.filter(item => item.category === 'رواتب');
