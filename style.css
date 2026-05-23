@@ -365,6 +365,7 @@ body.light-theme .system-clock-badge .pulse-dot {
     .container {
         grid-template-columns: 1fr;
         gap: 1rem;
+        position: static !important;
         z-index: auto !important;
     }
     
@@ -473,12 +474,38 @@ body.light-theme .system-clock-badge .pulse-dot {
     
     /* إظهار زر التبديل (الهامبرغر) في الهيدر */
     #sidebar-toggle {
+        position: absolute !important;
+        top: 10px;
+        left: 10px;
+        margin: 0 !important;
+        z-index: 100;
+        width: 36px;
+        height: 36px;
         display: flex !important;
         align-items: center;
         justify-content: center;
-        gap: 6px;
+        padding: 0 !important;
+        border-radius: 4px !important;
         border-color: rgba(0, 240, 255, 0.4);
         color: var(--cyber-cyan);
+    }
+    #sidebar-toggle-text {
+        display: none !important;
+    }
+    #theme-text, #sound-status-text {
+        display: none !important;
+    }
+    #theme-toggle, #sound-toggle {
+        width: 36px;
+        height: 36px;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        padding: 0 !important;
+        border-radius: 4px !important;
+    }
+    .sound-control {
+        margin-left: 45px !important;
     }
     
     /* غطاء الخلفية الشفاف عند فتح السايد بار */
