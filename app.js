@@ -147,56 +147,137 @@ async function fetchData() {
 }
 
 // ==========================================
-// Render Salaries (Live Updates)
+// Render Salaries (Live Updates & Pagination)
 // ==========================================
+let allSalariesNews = [];
+let currentPage = 1;
+const itemsPerPage = 7;
+
 async function fetchUpdates() {
     try {
         const response = await fetch(API_BASE + '/api/updates'); 
         const data = await response.json();
-        const latestData = data.reverse(); 
         
-        latestData.forEach(item => {
-            const date = new Date(item.created_at);
-            const timeStr = date.toLocaleTimeString('ar-IQ', {hour: '2-digit', minute: '2-digit'});
-            const itemId = `news-${item.id}`;
-
-            if (salariesGrid && item.category === 'رواتب' && !document.getElementById(itemId)) {
-                
-                // Badge Logic
-                let badgeClass = 'badge-yellow';
-                let badgeText = 'قيد التدقيق';
-                let badgeIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>';
-                
-                const contentStr = item.content.toLowerCase();
-                if (contentStr.includes('تم') || contentStr.includes('إطلاق') || contentStr.includes('صرف')) {
-                    badgeClass = 'badge-green';
-                    badgeText = 'تم الصرف';
-                    badgeIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
-                }
-
-                const card = document.createElement('div'); 
-                card.id = itemId;
-                card.className = 'ios-card salary-card'; 
-                
-                card.innerHTML = `
-                    <div class="salary-info">
-                        <div class="salary-title">${item.content}</div>
-                        <div class="salary-time">${timeStr} MT - قبل دقيقة</div>
-                    </div>
-                    <div class="salary-badge ${badgeClass}">
-                        ${badgeIcon}
-                        <span>${badgeText}</span>
-                    </div>
-                `;
-                
-                salariesGrid.insertBefore(card, salariesGrid.firstChild);
+        let hasNewItems = false;
+        
+        if (allSalariesNews.length === 0) {
+            allSalariesNews = data;
+            hasNewItems = true;
+        } else {
+            const currentTopId = allSalariesNews[0].id;
+            const newItems = data.filter(item => item.id > currentTopId);
+            if (newItems.length > 0) {
+                allSalariesNews = [...newItems, ...allSalariesNews];
+                hasNewItems = true;
             }
-        });
+        }
+        
+        if (hasNewItems) {
+            renderPaginatedNews();
+        }
         
     } catch (error) {
         console.error("خطأ في جلب التحديثات:", error);
     }
 }
+
+function renderPaginatedNews() {
+    if (!salariesGrid) return;
+    
+    const salaryItems = allSalariesNews.filter(item => item.category === 'رواتب');
+    
+    const totalPages = Math.ceil(salaryItems.length / itemsPerPage) || 1;
+    if (currentPage > totalPages) currentPage = totalPages;
+    
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const pageItems = salaryItems.slice(startIndex, endIndex);
+    
+    let html = '';
+    
+    pageItems.forEach(item => {
+        const date = new Date(item.created_at);
+        const timeStr = date.toLocaleTimeString('ar-IQ', {hour: '2-digit', minute: '2-digit'});
+        
+        let badgeClass = 'badge-yellow';
+        let badgeText = 'قيد التدقيق';
+        let badgeIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>';
+        
+        const contentStr = item.content.toLowerCase();
+        if (contentStr.includes('تم') || contentStr.includes('إطلاق') || contentStr.includes('صرف') || contentStr.includes('رفع')) {
+            badgeClass = 'badge-green';
+            badgeText = 'تم الصرف';
+            badgeIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
+        }
+
+        html += `
+            <div class="ios-card salary-card">
+                <div class="salary-header-row">
+                    <div class="salary-badge ${badgeClass}">
+                        ${badgeIcon}
+                        <span>${badgeText}</span>
+                    </div>
+                </div>
+                <div class="salary-title">${item.content}</div>
+                <div class="salary-time">${timeStr} MT</div>
+            </div>
+        `;
+    });
+    
+    salariesGrid.innerHTML = html;
+    renderPaginationControls(totalPages);
+}
+
+function renderPaginationControls(totalPages) {
+    const controlsContainer = document.getElementById('pagination-controls');
+    if (!controlsContainer) return;
+    
+    if (totalPages <= 1) {
+        controlsContainer.innerHTML = '';
+        return;
+    }
+    
+    let html = '';
+    
+    // Prev
+    html += `<button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    </button>`;
+    
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+    
+    if (endPage - startPage < 4) {
+        startPage = Math.max(1, endPage - 4);
+    }
+
+    if (startPage > 1) {
+        html += `<button class="page-btn" onclick="changePage(1)">1</button>`;
+        if (startPage > 2) html += `<span style="color:var(--ios-text-sub)">...</span>`;
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+        html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+    }
+    
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) html += `<span style="color:var(--ios-text-sub)">...</span>`;
+        html += `<button class="page-btn" onclick="changePage(${totalPages})">${totalPages}</button>`;
+    }
+
+    // Next
+    html += `<button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </button>`;
+    
+    controlsContainer.innerHTML = html;
+}
+
+window.changePage = function(newPage) {
+    currentPage = newPage;
+    renderPaginatedNews();
+    document.getElementById('sec-salaries').scrollIntoView({ behavior: 'smooth' });
+};
 
 // ==========================================
 // Render Bourses & Currencies
