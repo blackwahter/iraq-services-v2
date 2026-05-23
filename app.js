@@ -7,6 +7,8 @@ let silverPriceUSD = 30.50;
 let brentOilUSD = 107.63;     
 let wtiOilUSD = 101.28;       
 
+const API_BASE = window.location.port === '5500' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+
 let localBoursesData = { 
     kifah: 146500, 
     harthiya: 146500, 
@@ -336,13 +338,13 @@ async function fetchData() {
         } catch(e){}
         
         try { 
-            const oilRes = await fetch('/api/oil'); 
+            const oilRes = await fetch(API_BASE + '/api/oil'); 
             const oilData = await oilRes.json(); 
             if (oilData.success) { brentOilUSD = oilData.brent; wtiOilUSD = oilData.wti; } 
         } catch(e) {}
         
         try { 
-            const boursesRes = await fetch('/api/bourses'); 
+            const boursesRes = await fetch(API_BASE + '/api/bourses'); 
             const boursesResp = await boursesRes.json(); 
             if (boursesResp.success && boursesResp.data) localBoursesData = boursesResp.data; 
         } catch (e) {}
@@ -746,7 +748,7 @@ function renderSalariesBoard() {
 // ==========================================
 async function fetchUpdates() {
     try {
-        const response = await fetch('/api/updates'); 
+        const response = await fetch(API_BASE + '/api/updates'); 
         const data = await response.json();
         
         // تفريغ الحاويات بالكامل قبل إدراج الجديد لضمان عدم التراكم
@@ -756,8 +758,9 @@ async function fetchUpdates() {
             salariesGrid.querySelectorAll('.dynamic-news-card').forEach(c => c.remove()); 
         }
         
-        // 🔥 التركيز هنا: السيرفر يرسل آخر 10 أخبار، ونحن نعكس الترتيب ليكون الأحدث في الأعلى
-        const latestData = data.slice(-10).reverse(); 
+        // 🔥 السيرفر يرسل آخر 300 خبر، سنعرضهم جميعاً لكي يحتفظ بالرسائل القديمة (أو يمكننا تحديد رقم كبير مثل 100)
+        // قمنا بعكس الترتيب ليكون الأحدث في الأعلى
+        const latestData = data.reverse(); 
         
         latestData.forEach(item => {
             const date = new Date(item.created_at).toLocaleTimeString('ar-IQ', {hour: '2-digit', minute: '2-digit'});

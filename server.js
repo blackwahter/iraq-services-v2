@@ -120,47 +120,42 @@ function extractIraqiRate(text, cityName) {
 }
 
 async function scrapeBourses() {
-    const cb = Date.now(); // كاسر الكاش
     const channels = ['dollar_iraq_now', 'Iraq_Dollar_Now']; // قنوات الدولار
     let found = false;
 
     for (let channel of channels) {
-        if (found) break;
-        const sources = [
-            { url: `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://t.me/s/${channel}?q=الكفاح`)}&cb=${cb}`, type: 'html' },
-            { url: `https://rsshub.app/telegram/channel/${channel}`, type: 'rss' }
-        ];
-
-        for (let source of sources) {
-            if (found) break;
-            try {
-                const response = await axios.get(source.url, { timeout: 12000 });
-                const $ = cheerio.load(response.data, { xmlMode: source.type === 'rss' });
-                
-                const processText = (text) => {
-                    if (text.includes('الكفاح') || text.includes('صرف')) {
-                        const k = extractIraqiRate(text, 'الكفاح');
-                        if (k) {
-                            localBourses.kifah = k;
-                            localBourses.harthiya = extractIraqiRate(text, 'الحارثية') || k;
-                            localBourses.erbil = extractIraqiRate(text, 'اربيل') || localBourses.erbil;
-                            localBourses.basra = extractIraqiRate(text, 'البصرة') || localBourses.basra;
-                            localBourses.lastUpdated = new Date().toISOString();
-                            console.log(`🎯 [بورصة]: تم تحديث الأسعار بنجاح من (${channel})!`);
-                            found = true;
-                        }
-                    }
-                };
-
-                if (source.type === 'rss') {
-                    $('item').each((i, el) => { if(!found) processText($(el).find('description').text()); });
-                } else {
-                    const messages = $('.tgme_widget_message_text');
-                    for (let i = messages.length - 1; i >= 0; i--) {
-                        if(!found) processText($(messages[i]).text());
+        if (found) break; // بمجرد إيجاد سعر جديد نتوقف
+        
+        try {
+            // سحب مباشر وسريع بدون كاش أو وسطاء
+            const response = await axios.get(`https://t.me/s/${channel}?q=${encodeURIComponent('الكفاح')}`, { 
+                headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+                timeout: 8000 
+            });
+            const $ = cheerio.load(response.data);
+            const messages = $('.tgme_widget_message_text');
+            
+            const processText = (text) => {
+                if (text.includes('الكفاح') || text.includes('صرف')) {
+                    const k = extractIraqiRate(text, 'الكفاح');
+                    if (k) {
+                        localBourses.kifah = k;
+                        localBourses.harthiya = extractIraqiRate(text, 'الحارثية') || k;
+                        localBourses.erbil = extractIraqiRate(text, 'اربيل') || localBourses.erbil;
+                        localBourses.basra = extractIraqiRate(text, 'البصرة') || localBourses.basra;
+                        localBourses.lastUpdated = new Date().toISOString();
+                        console.log(`🎯 [بورصة]: تم تحديث الأسعار بنجاح من (${channel})!`);
+                        found = true;
                     }
                 }
-            } catch (err) { continue; }
+            };
+
+            // فحص الرسائل من الأحدث للأقدم
+            for (let i = messages.length - 1; i >= 0; i--) {
+                if (!found) processText($(messages[i]).text());
+            }
+        } catch (err) {
+            console.error(`⚠️ تأخير في استجابة قناة البورصة ${channel}`);
         }
     }
     if (!found) console.log('⚠️ [بورصة]: جاري فحص تحديثات الأسعار القادمة...');
@@ -172,57 +167,39 @@ setInterval(scrapeBourses, 120000);
 // 📰 نظام سحب أخبار الرواتب (مدرع بـ 3 قنوات وكاسر كاش)
 // ==========================================
 async function scrapeSalaries() {
-    const cb = Date.now(); // كاسر الكاش لضمان جلب الأخبار الحية
-    const channels = ['roatabn', 'iraqnow4', 'omeralij']; // قنوات الأخبار والرواتب المعتمدة
-    
-    let lastMessage = null;
+    const channels = ['roatabn', 'iraqnow4', 'omeralij', 'marwaan1980']; // قنوات الأخبار والرواتب المعتمدة
+    const salaryKeywords = ['راتب', 'رواتب', 'تمويل', 'مصرف', 'متقاعدين', 'الرعاية', 'صرف', 'موظفي', 'المالية', 'سلفة', 'سلف', 'إطلاق', 'باشر', 'عاجل'];
 
     for (let channel of channels) {
-        if (lastMessage) break; 
-        
-        const sources = [
-            { url: `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://t.me/s/${channel}`)}&cb=${cb}`, type: 'html' },
-            { url: `https://rsshub.app/telegram/channel/${channel}`, type: 'rss' }
-        ];
+        try {
+            // سحب مباشر وسريع بدون وسيط (بدون كاش)
+            const response = await axios.get(`https://t.me/s/${channel}`, { 
+                headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+                timeout: 8000 
+            });
+            const $ = cheerio.load(response.data);
+            const messages = $('.tgme_widget_message_text');
+            
+            // فحص آخر 5 رسائل في القناة لتجنب تفويت أي رسالة
+            const numMessagesToCheck = Math.min(messages.length, 5);
+            for (let i = messages.length - numMessagesToCheck; i < messages.length; i++) {
+                let msgText = $(messages[i]).text().trim();
+                if (!msgText) continue;
 
-        for (let source of sources) {
-            if (lastMessage) break;
-            try {
-                const response = await axios.get(source.url, { timeout: 10000 });
-                const $ = cheerio.load(response.data, { xmlMode: source.type === 'rss' });
-                
-                if (source.type === 'rss') {
-                    const firstItem = $('item').first();
-                    if (firstItem.length > 0) {
-                        lastMessage = firstItem.find('description').text().replace(/<[^>]+>/g, ' ').trim();
-                    }
-                } else {
-                    const messages = $('.tgme_widget_message_text');
-                    if (messages.length > 0) {
-                        lastMessage = messages.last().text().trim();
-                    }
+                // هل يحتوي على كلمات مفتاحية للرواتب؟
+                const isSalaryNews = salaryKeywords.some(keyword => msgText.includes(keyword));
+                if (!isSalaryNews) continue;
+
+                // التأكد أن الخبر غير موجود مسبقاً في قاعدة البيانات
+                const checkQuery = await pool.query("SELECT id FROM telegram_updates WHERE category = 'رواتب' AND content = $1", [msgText]);
+                if (checkQuery.rows.length === 0) {
+                    console.log(`🔍 [رواتب]: تم صيد خبر جديد من ${channel} ونشره فوراً!`);
+                    await pool.query("INSERT INTO telegram_updates (category, content) VALUES ($1, $2)", ['رواتب', msgText]);
                 }
-            } catch (e) { continue; } 
-        }
-    }
-
-    if (!lastMessage) return; 
-
-    try {
-        const checkQuery = await pool.query("SELECT content FROM telegram_updates WHERE category = 'رواتب' ORDER BY id DESC LIMIT 1");
-        if (checkQuery.rows.length > 0 && checkQuery.rows[0].content === lastMessage) return; 
-
-        // الكلمات المفتاحية لصيد الرواتب
-        const salaryKeywords = ['راتب', 'رواتب', 'تمويل', 'مصرف', 'متقاعدين', 'الرعاية', 'صرف', 'موظفي', 'المالية', 'سلفة', 'سلف', 'إطلاق', 'باشر', 'عاجل'];
-        const isSalaryNews = salaryKeywords.some(keyword => lastMessage.includes(keyword));
-
-        if (!isSalaryNews) return; 
-
-        console.log(`🔍 [رواتب]: تم صيد خبر جديد بدون كاش ونشره فوراً!`);
-        const insertQuery = `INSERT INTO telegram_updates (category, content) VALUES ($1, $2) RETURNING *`;
-        await pool.query(insertQuery, ['رواتب', lastMessage]);
-    } catch (error) {
-        console.error('❌ خطأ في قاعدة البيانات:', error.message);
+            }
+        } catch (e) {
+            console.error(`⚠️ تأخير في استجابة قناة ${channel}`);
+        } 
     }
 }
 scrapeSalaries();

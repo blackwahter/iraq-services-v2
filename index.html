@@ -415,13 +415,16 @@
         const themeIcon = document.getElementById('theme-icon');
         const themeText = document.getElementById('theme-text');
         
-        if (localStorage.getItem('theme') === 'light') {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.remove('light-theme');
+            themeIcon.textContent = '🌓';
+            themeText.textContent = 'المظهر: داكن';
+        } else {
+            // Default to light theme on first visit or if explicitly set to light
             document.body.classList.add('light-theme');
             themeIcon.textContent = '🌞';
             themeText.textContent = 'المظهر: فاتح';
-        } else {
-            themeIcon.textContent = '🌓';
-            themeText.textContent = 'المظهر: داكن';
         }
 
         themeToggleBtn.addEventListener('click', () => {
