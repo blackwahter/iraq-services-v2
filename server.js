@@ -182,6 +182,83 @@ scrapeBourses();
 setInterval(scrapeBourses, 180000);
 
 // ==========================================
+// 💸 نظام رادار البورصات المحلية (عبر تقنية RSS)
+// ==========================================
+let localBourses = {
+    kifah: 146500,
+    harthiya: 146500,
+    erbil: 146700,
+    basra: 146200,
+    lastUpdated: null
+};
+
+// خوارزمية استخراج الرقم من النص
+function extractIraqiRate(text, cityName) {
+    const index = text.indexOf(cityName);
+    if (index === -1) return null;
+    const slice = text.substring(index, index + 40);
+    const match = slice.match(/1[3-7][0-9][.,]?[0-9]{2,3}/);
+    if (match) {
+        let cleanNum = match[0].replace(/[.,]/g, '');
+        if (cleanNum.length === 5) cleanNum += '0'; 
+        return parseInt(cleanNum);
+    }
+    return null;
+}
+
+async function scrapeBourses() {
+    try {
+        // نستخدم خدمة RSSHub لتحويل قناة تليجرام إلى نصوص بسيطة مسموح بقراءتها
+        const rssUrl = 'https://rsshub.app/telegram/channel/dollar_iraq_now';
+        
+        const response = await axios.get(rssUrl, { timeout: 15000 });
+        
+        // cheerio يقرأ ملفات الـ XML (RSS) بسهولة
+        const $ = cheerio.load(response.data, { xmlMode: true });
+        const items = $('item');
+        
+        if (items.length === 0) return;
+
+        let found = false;
+        
+        // اللوب يمر على الأخبار من الأحدث للأقدم
+        items.each((i, el) => {
+            if (found) return; // إذا لكينا السعر نوقف البحث
+            
+            // نقرأ نص الخبر
+            const text = $(el).find('description').text();
+            
+            if (text.includes('الكفاح') || text.includes('صرف')) {
+                const k = extractIraqiRate(text, 'الكفاح');
+                const h = extractIraqiRate(text, 'الحارثية');
+                const e = extractIraqiRate(text, 'اربيل');
+                const b = extractIraqiRate(text, 'البصرة');
+
+                if (k) localBourses.kifah = k;
+                if (h) localBourses.harthiya = h;
+                else if (k) localBourses.harthiya = k; 
+                if (e) localBourses.erbil = e;
+                if (b) localBourses.basra = b;
+
+                if (k || e || b) {
+                    localBourses.lastUpdated = new Date().toISOString();
+                    console.log('🎯 [رادار البورصة]: تم تحديث الأسعار بنجاح عبر RSS!', localBourses);
+                    found = true;
+                }
+            }
+        });
+    } catch (err) {
+        // إذا صار ضغط على الـ RSS، يطبع تنبيه بسيط وبدون أخطاء حمراء
+        console.log('⚠️ [رادار البورصة]: السيرفر ينتظر تحديث بيانات الـ RSS...');
+    }
+}
+
+// تشغيل الرادار فوراً ثم كل 5 دقائق
+scrapeBourses();
+setInterval(scrapeBourses, 300000);
+
+
+// ==========================================
 // 📰 نظام سحب أخبار الرواتب (الذكي)
 // ==========================================
 async function scrapeTelegramChannel(channelUsername) {
