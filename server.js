@@ -2,25 +2,21 @@ const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
 const TelegramBot = require('node-telegram-bot-api');
-const axios = require('axios'); 
-const cheerio = require('cheerio'); 
+const axios = require('axios'); // بقيناه بس علمود النفط
 require('dotenv').config();
 const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ==========================================
-// 🛡️ صائد الانهيارات (تأمين السيرفر من التوقف)
+// 🛡️ استيراد مكتبات الحساب المبرمج (UserBot)
 // ==========================================
-process.on('uncaughtException', (err) => {
-    console.error('🔥 [طوارئ]: تم منع انهيار السيرفر:', err.message);
-});
-process.on('unhandledRejection', (reason) => {
-    console.error('🔥 [طوارئ]: رفض غير معالج:', reason);
-});
+const { TelegramClient } = require("telegram");
+const { StringSession } = require("telegram/sessions");
+const { NewMessage } = require("telegram/events");
 
 // ==========================================
-// 🗄️ إعدادات قاعدة البيانات (PostgreSQL - Neon Cloud)
+// 🗄️ إعدادات قاعدة البيانات (PostgreSQL - Neon)
 // ==========================================
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
@@ -40,15 +36,12 @@ const initDB = async () => {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
     `;
-    try {
-        await pool.query(createTableQuery);
-        console.log('✅ Database tables are ready!');
-    } catch (err) {}
+    await pool.query(createTableQuery).catch(err => {});
 };
 initDB();
 
 // ==========================================
-// 🤖 إعداد بوت تيليجرام (تلقائي + سيطرة المطور)
+// 🤖 بوت التحكم اليدوي (سيطرة المطور)
 // ==========================================
 const token = process.env.TELEGRAM_TOKEN;
 const bot = new TelegramBot(token, { polling: true });
@@ -59,16 +52,13 @@ bot.on('message', async (msg) => {
     const text = msg.text;
     if (!text) return; 
 
-    // 👑 سيطرة المطور: النشر اليدوي الفوري للرواتب (فقط اكتب: راتب + الخبر)
+    // النشر اليدوي الفوري
     if (text.startsWith('راتب ')) {
         const news = text.replace('راتب ', '').trim();
         try {
-            const insertQuery = `INSERT INTO telegram_updates (category, content) VALUES ($1, $2) RETURNING *`;
-            await pool.query(insertQuery, ['رواتب', news]);
+            await pool.query(`INSERT INTO telegram_updates (category, content) VALUES ($1, $2)`, ['رواتب', news]);
             bot.sendMessage(chatId, `✅ تم إطلاق الخبر بالموقع فوراً!\nالخبر: ${news}`);
-        } catch (err) {
-            bot.sendMessage(chatId, `❌ خطأ بالنشر: ${err.message}`);
-        }
+        } catch (err) { bot.sendMessage(chatId, `❌ خطأ: ${err.message}`); }
         return; 
     }
 
@@ -77,29 +67,13 @@ bot.on('message', async (msg) => {
     else if (text.includes('نفط') || text.includes('برميل')) category = 'نفط';
 
     try {
-        const insertQuery = `INSERT INTO telegram_updates (category, content) VALUES ($1, $2) RETURNING *`;
-        await pool.query(insertQuery, [category, text]);
+        await pool.query(`INSERT INTO telegram_updates (category, content) VALUES ($1, $2)`, [category, text]);
         bot.sendMessage(chatId, `✅ تم استلام وحفظ تحديث (${category}) بنجاح!`);
     } catch (err) {}
 });
 
-bot.on('channel_post', async (msg) => {
-    const text = msg.text;
-    if (!text) return; 
-
-    let category = 'أخبار عامة';
-    if (text.includes('ذهب') || text.includes('غرام') || text.includes('مثقال')) category = 'ذهب';
-    else if (text.includes('نفط') || text.includes('برميل')) category = 'نفط';
-    else if (text.includes('دولار') || text.includes('صرف') || text.includes('الكفاح')) category = 'عملات';
-
-    try {
-        const insertQuery = `INSERT INTO telegram_updates (category, content) VALUES ($1, $2) RETURNING *`;
-        await pool.query(insertQuery, [category, text]);
-    } catch (err) {}
-});
-
 // ==========================================
-// 💸 نظام رادار البورصات المحلية (متعدد المصادر)
+// 🦅 نظام الاستخبارات والصيد الفوري (UserBot)
 // ==========================================
 let localBourses = {
     kifah: 146500, harthiya: 146500, erbil: 146700, basra: 146200,
@@ -119,21 +93,45 @@ function extractIraqiRate(text, cityName) {
     return null;
 }
 
-async function scrapeBourses() {
-    const sources = [
-        { url: 'https://rsshub.app/telegram/channel/dollar_iraq_now', type: 'rss' },
-        { url: `https://api.allorigins.win/raw?url=${encodeURIComponent('https://t.me/s/dollar_iraq_now?q=الكفاح')}`, type: 'html' }
-    ];
+// ⚠️ خلي معلوماتك هنا بين الأقواس (لا تشاركها وية أحد)
+const apiId = 31693594; // الـ API ID مالتك
+const apiHash = "9ba82cfa52cc57470b2b1cc3ea619a0d"; // الـ API Hash مالتك
+const stringSession = new StringSession("1AgAOMTQ5LjE1NC4xNjcuNTABu2AqxGKLKmTF4ip3f9ZwKAQaKH2jc1gRRplZ1lrRw+FPUi0vXmJ5hvLkapkueRCvnhu3HXF/IqtbArFewPIYqmAOnjxmeA+RYpwSc6FFJQLuVXjmb6dVWor5/WbCjurUtcM1UJuNizpiafBw6bYxns7JPFtWugcDgFoOvLTmT8Yr4oRKdYacWZY4X4iW+3ifM9lRDypbzwpKganzSlysVaMzffrGQfnSHQzp+jQ1yGp1MFNSLOsvSjIFBe9Y9Ilj6yYEiUtU17G8KA4CA4UVYUWqydawBEIDyx/GMdrAGH2KW63LhfOVcfEqGZrjnyjjKVPL7gN8FQNhngv27jA2fM0="); // الصق السشن الطويل هنا
 
-    let found = false;
+const client = new TelegramClient(stringSession, apiId, apiHash, {
+    connectionRetries: 5,
+});
 
-    for (let source of sources) {
-        if (found) break;
-        try {
-            const response = await axios.get(source.url, { timeout: 12000 });
-            const $ = cheerio.load(response.data, { xmlMode: source.type === 'rss' });
+async function startUserBot() {
+    try {
+        await client.connect();
+        console.log("✅ [UserBot]: الحساب المبرمج متصل ويعمل كحارس شخصي!");
+
+        // استماع فوري لأي رسالة جديدة بالتليجرام
+        client.addEventHandler(async (event) => {
+            const message = event.message;
+            if (!message || !message.text) return;
             
-            const processText = (text) => {
+            const text = message.text;
+            const chat = await event.getChat();
+            const username = chat.username ? chat.username.toLowerCase() : '';
+
+            // 1. صيد أخبار الرواتب فوراً من قناة الرواتب
+            if (username === 'roatabn' || username === 'iraq_now') {
+                const salaryKeywords = ['راتب', 'رواتب', 'تمويل', 'مصرف', 'متقاعدين', 'الرعاية', 'صرف', 'موظفي', 'المالية', 'سلفة', 'سلف', 'إطلاق', 'باشر', 'عاجل'];
+                const isSalaryNews = salaryKeywords.some(keyword => text.includes(keyword));
+
+                if (isSalaryNews) {
+                    const checkQuery = await pool.query("SELECT content FROM telegram_updates WHERE category = 'رواتب' ORDER BY id DESC LIMIT 1");
+                    if (checkQuery.rows.length === 0 || checkQuery.rows[0].content !== text) {
+                        await pool.query(`INSERT INTO telegram_updates (category, content) VALUES ($1, $2)`, ['رواتب', text]);
+                        console.log(`🎯 [تلقائي - صيد فوري]: تم نشر خبر الرواتب!`);
+                    }
+                }
+            }
+
+            // 2. صيد أسعار البورصة فوراً من قناة الدولار
+            if (username === 'dollar_iraq_now') {
                 if (text.includes('الكفاح') || text.includes('صرف')) {
                     const k = extractIraqiRate(text, 'الكفاح');
                     if (k) {
@@ -142,102 +140,26 @@ async function scrapeBourses() {
                         localBourses.erbil = extractIraqiRate(text, 'اربيل') || localBourses.erbil;
                         localBourses.basra = extractIraqiRate(text, 'البصرة') || localBourses.basra;
                         localBourses.lastUpdated = new Date().toISOString();
-                        console.log(`🎯 [بورصة]: تم تحديث الأسعار بنجاح عبر (${source.type})`);
-                        found = true;
+                        console.log(`🎯 [تلقائي - صيد فوري]: تم تحديث البورصة!`);
                     }
-                }
-            };
-
-            if (source.type === 'rss') {
-                $('item').each((i, el) => { if(!found) processText($(el).find('description').text()); });
-            } else {
-                const messages = $('.tgme_widget_message_text');
-                for (let i = messages.length - 1; i >= 0; i--) {
-                    if(!found) processText($(messages[i]).text());
                 }
             }
-        } catch (err) { continue; }
-    }
-    if (!found) console.log('⚠️ [بورصة]: جاري فحص تحديثات الأسعار القادمة...');
-}
-scrapeBourses();
-setInterval(scrapeBourses, 120000); 
+        }, new NewMessage({})); // استماع لكل الرسائل الجديدة
 
-// ==========================================
-// 📰 نظام سحب أخبار الرواتب (كاسر الكاش + قنوات متعددة)
-// ==========================================
-async function scrapeSalaries() {
-    const cb = Date.now(); // رقم عشوائي لكسر الكاش
-    const channels = ['roatabn', 'iraq_now']; // القنوات المستهدفة
-    let lastMessage = null;
-
-    for (let channel of channels) {
-        if (lastMessage) break; 
-
-        const sources = [
-            { url: `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://t.me/s/${channel}`)}&cb=${cb}`, type: 'html' },
-            { url: `https://api.codetabs.com/v1/proxy?quest=https://t.me/s/${channel}&cb=${cb}`, type: 'html' },
-            { url: `https://rsshub.app/telegram/channel/${channel}`, type: 'rss' }
-        ];
-
-        for (let source of sources) {
-            if (lastMessage) break;
-            try {
-                const response = await axios.get(source.url, { timeout: 10000 });
-                const $ = cheerio.load(response.data, { xmlMode: source.type === 'rss' });
-                
-                if (source.type === 'rss') {
-                    const firstItem = $('item').first();
-                    if (firstItem.length > 0) {
-                        lastMessage = firstItem.find('description').text().replace(/<[^>]+>/g, ' ').trim();
-                    }
-                } else {
-                    const messages = $('.tgme_widget_message_text');
-                    if (messages.length > 0) {
-                        lastMessage = messages.last().text().trim();
-                    }
-                }
-            } catch (e) { continue; }
-        }
-    }
-
-    if (!lastMessage) return;
-
-    try {
-        const checkQuery = await pool.query("SELECT content FROM telegram_updates WHERE category = 'رواتب' ORDER BY id DESC LIMIT 1");
-        if (checkQuery.rows.length > 0 && checkQuery.rows[0].content === lastMessage) return; 
-
-        const salaryKeywords = ['راتب', 'رواتب', 'تمويل', 'مصرف', 'متقاعدين', 'الرعاية', 'صرف', 'موظفي', 'المالية', 'سلفة', 'سلف', 'إطلاق', 'باشر', 'عاجل'];
-        const isSalaryNews = salaryKeywords.some(keyword => lastMessage.includes(keyword));
-
-        if (!isSalaryNews) return; 
-
-        console.log(`🔍 [رواتب]: تم صيد خبر جديد بدون كاش!`);
-        const insertQuery = `INSERT INTO telegram_updates (category, content) VALUES ($1, $2) RETURNING *`;
-        await pool.query(insertQuery, ['رواتب', lastMessage]);
     } catch (error) {
-        console.error('❌ خطأ في قاعدة البيانات:', error.message);
+        console.error("❌ خطأ في اتصال الـ UserBot:", error.message);
     }
 }
-scrapeSalaries();
-setInterval(scrapeSalaries, 30000); // يفحص كل 30 ثانية
+// تشغيل الحساب المبرمج
+startUserBot();
 
 // ==========================================
-// 🧹 نظام الصيانة والتنظيف الذكي
+// 🧹 التنظيف و API السيرفر 
 // ==========================================
-async function cleanOldData() {
-    try {
-        const deleteQuery = `DELETE FROM telegram_updates WHERE created_at < NOW() - INTERVAL '30 days';`;
-        const result = await pool.query(deleteQuery);
-        if (result.rowCount > 0) console.log(`🧹 [صيانة]: تم تنظيف ${result.rowCount} أخبار قديمة.`);
-    } catch (err) {}
-}
-cleanOldData();
-setInterval(cleanOldData, 86400000); 
+setInterval(async () => {
+    try { await pool.query(`DELETE FROM telegram_updates WHERE created_at < NOW() - INTERVAL '30 days';`); } catch (err) {}
+}, 86400000); 
 
-// ==========================================
-// 🚀 إعدادات خادم الـ API (Express)
-// ==========================================
 app.use(cors());
 app.use(express.json());
 
@@ -258,33 +180,25 @@ app.get('/api/updates', async (req, res) => {
     try {
         const result = await pool.query("SELECT * FROM telegram_updates ORDER BY created_at DESC LIMIT 15");
         res.json(result.rows);
-    } catch (err) { res.status(500).json({ error: 'حدث خطأ في السيرفر' }); }
+    } catch (err) { res.status(500).json({ error: 'حدث خطأ' }); }
 });
 
 app.get('/api/clear-all', async (req, res) => {
-    try {
-        await pool.query('TRUNCATE TABLE telegram_updates;');
-        res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: err.message }); }
+    try { await pool.query('TRUNCATE TABLE telegram_updates;'); res.json({ success: true }); } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 app.get('/api/nuke-all-data', async (req, res) => {
-    try {
-        await pool.query('TRUNCATE TABLE telegram_updates RESTART IDENTITY;');
-        res.send("تم المسح بنجاح!");
-    } catch (err) { res.status(500).send(err.message); }
+    try { await pool.query('TRUNCATE TABLE telegram_updates RESTART IDENTITY;'); res.send("تم المسح!"); } catch (err) { res.status(500).send(err.message); }
 });
 
-// ⏰ نظام منع النوم لسيرفرات Render
 setInterval(async () => {
     try { await axios.get(`https://iraq-services-v2.onrender.com/api/health`); } catch (e) {}
 }, 14 * 60 * 1000); 
 
 app.use(express.static(__dirname));
-
 app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); });
 
 app.listen(PORT, () => {
     console.log(`🌐 Server is running successfully on port ${PORT}`);
-    console.log(`🚀 السيرفر بوضعية الطوارئ كاسر للكاش ومستعد ليوم الرواتب 24/7`);
+    console.log(`🚀 النظام المؤسساتي (UserBot) جاهز ومفعل 24/7`);
 });
