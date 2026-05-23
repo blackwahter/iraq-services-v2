@@ -495,7 +495,10 @@ body.light-theme .system-clock-badge .pulse-dot {
     #theme-text, #sound-status-text {
         display: none !important;
     }
-    #theme-toggle, #sound-toggle {
+    #sound-toggle {
+        display: none !important;
+    }
+    #theme-toggle {
         width: 36px;
         height: 36px;
         display: flex !important;

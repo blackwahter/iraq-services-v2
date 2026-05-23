@@ -188,6 +188,7 @@ function getAudioContext() {
 
 function playSynthSound(freq, type = 'sine', dur = 0.1, vol = 0.08) {
     if (!soundEnabled) return;
+    if (window.innerWidth <= 1024) return; // تعطيل الصوت بالكامل على الموبايل
     try { 
         const ctx = getAudioContext(); 
         if (ctx.state === 'suspended') ctx.resume(); 
