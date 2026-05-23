@@ -202,8 +202,8 @@ async function scrapeSalaries() {
                 const isSalaryNews = salaryKeywords.some(keyword => msgText.includes(keyword));
                 if (!isSalaryNews) continue;
 
-                // فلتر مانع الإعلانات والرسائل العشوائية (Blacklist)
-                const spamKeywords = ['اشترك', 'bot', 'استلمت راتب لو لا', 'دز رسالة', 'بوت', 'قناة', 'رابط'];
+                // فلتر مانع الإعلانات والرسائل العشوائية ورسائل التثبيت (Blacklist)
+                const spamKeywords = ['اشترك', 'bot', 'استلمت راتب لو لا', 'دز رسالة', 'بوت', 'قناة', 'رابط', 'pinned'];
                 const isSpam = spamKeywords.some(keyword => msgText.toLowerCase().includes(keyword.toLowerCase()));
                 if (isSpam) continue;
 
@@ -219,9 +219,9 @@ async function scrapeSalaries() {
         } 
     }
 
-    // تنظيف آلي للإعلانات القديمة التي تسربت سابقاً
+    // تنظيف آلي للإعلانات القديمة ورسائل التثبيت التي تسربت سابقاً
     try {
-        await pool.query("DELETE FROM telegram_updates WHERE category = 'رواتب' AND (content LIKE '%اشترك%' OR content LIKE '%bot%' OR content LIKE '%استلمت راتب لو لا%')");
+        await pool.query("DELETE FROM telegram_updates WHERE category = 'رواتب' AND (content LIKE '%اشترك%' OR content LIKE '%bot%' OR content LIKE '%استلمت راتب لو لا%' OR content LIKE '%pinned%')");
     } catch(e) {}
 }
 scrapeSalaries();
