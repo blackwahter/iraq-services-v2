@@ -381,6 +381,67 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="app.js"></script>
+
+    <script>
+        async function fetchCyberUpdates() {
+            try {
+                // الاتصال بقاعدة بياناتك
+                const response = await fetch('/api/updates');
+                const data = await response.json();
+                
+                // 1. تحديث شبكة الرواتب
+                const salariesGrid = document.getElementById('salaries-grid');
+                if (salariesGrid) {
+                    const salariesNews = data.filter(item => item.category === 'رواتب');
+                    
+                    if (salariesNews.length > 0) {
+                        salariesGrid.innerHTML = salariesNews.map(item => {
+                            const time = new Date(item.created_at).toLocaleTimeString('ar-IQ', {hour: '2-digit', minute:'2-digit'});
+                            return `
+                                <div class="cyber-card" style="padding: 15px; border-right: 3px solid #00ffaa; background: rgba(0, 255, 170, 0.05); margin-bottom: 10px; border-radius: 5px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                        <span style="background: rgba(0, 255, 170, 0.2); color: #00ffaa; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; border: 1px solid #00ffaa;">خبر عاجل</span>
+                                        <span style="color: #00f0ff; font-family: monospace; font-size: 0.85rem;">[${time}]</span>
+                                    </div>
+                                    <p style="color: #e2e8f0; font-size: 1rem; line-height: 1.6; margin: 0;">${item.content}</p>
+                                </div>
+                            `;
+                        }).join('');
+                    } else {
+                        salariesGrid.innerHTML = '<p style="color: #00f0ff; text-align: center; grid-column: 1/-1;">جاري انتظار التحديثات الحية للرواتب...</p>';
+                    }
+                }
+
+                // 2. تحديث سجلات الترمنال الحية (Terminal Logs)
+                const terminalLogs = document.getElementById('terminal-logs');
+                const modalLogs = document.getElementById('modal-tele-logs');
+                
+                if (data.length > 0) {
+                    const logHtml = data.map(item => {
+                        const time = new Date(item.created_at).toLocaleTimeString('ar-IQ', {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+                        const color = item.category === 'رواتب' ? '#00ffaa' : '#00f0ff';
+                        return `
+                            <div style="margin-bottom: 8px; font-size: 0.85rem; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 5px;">
+                                <span style="color: #ff003c;">[${time}]</span> 
+                                <span style="color: ${color}; font-weight: bold;">[${item.category}]</span> 
+                                <span style="color: #a0aec0;">${item.content}</span>
+                            </div>
+                        `;
+                    }).join('');
+
+                    if (terminalLogs) terminalLogs.innerHTML = logHtml;
+                    if (modalLogs) modalLogs.innerHTML = logHtml;
+                }
+
+            } catch (err) {
+                console.error("Connection Error:", err);
+            }
+        }
+
+        // سحب البيانات فوراً وتحديثها كل 10 ثواني بدون التأثير على تصميمك
+        fetchCyberUpdates();
+        setInterval(fetchCyberUpdates, 10000);
+    </script>
 </body>
 
 </html>
