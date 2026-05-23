@@ -233,7 +233,7 @@ setInterval(scrapeSalaries, 35000); // يفحص كل 35 ثانية
 // ==========================================
 async function cleanOldData() {
     try {
-        const deleteQuery = `DELETE FROM telegram_updates WHERE created_at < NOW() - INTERVAL '30 days';`;
+        const deleteQuery = `DELETE FROM telegram_updates WHERE created_at < NOW() - INTERVAL '31 days';`;
         const result = await pool.query(deleteQuery);
         if (result.rowCount > 0) console.log(`🧹 [صيانة]: تم تنظيف ${result.rowCount} أخبار قديمة.`);
     } catch (err) {}
@@ -262,7 +262,7 @@ app.get('/api/oil', async (req, res) => {
 
 app.get('/api/updates', async (req, res) => {
     try {
-        const result = await pool.query("SELECT * FROM telegram_updates ORDER BY created_at DESC LIMIT 15");
+        const result = await pool.query("SELECT * FROM telegram_updates ORDER BY created_at DESC LIMIT 300");
         res.json(result.rows);
     } catch (err) { res.status(500).json({ error: 'حدث خطأ في السيرفر' }); }
 });

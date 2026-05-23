@@ -491,9 +491,24 @@
 
             if (totalPages > 1) {
                 let pagHtml = `<button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>السابق</button>`;
-                for (let i = 1; i <= totalPages; i++) {
+                
+                let startPage = Math.max(1, currentPage - 2);
+                let endPage = Math.min(totalPages, currentPage + 2);
+                
+                if (startPage > 1) {
+                    pagHtml += `<button class="page-btn" onclick="changePage(1)">1</button>`;
+                    if (startPage > 2) pagHtml += `<span style="color: var(--cyber-cyan, #00f0ff); padding: 0 4px;">...</span>`;
+                }
+                
+                for (let i = startPage; i <= endPage; i++) {
                     pagHtml += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
                 }
+                
+                if (endPage < totalPages) {
+                    if (endPage < totalPages - 1) pagHtml += `<span style="color: var(--cyber-cyan, #00f0ff); padding: 0 4px;">...</span>`;
+                    pagHtml += `<button class="page-btn" onclick="changePage(${totalPages})">${totalPages}</button>`;
+                }
+                
                 pagHtml += `<button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>التالي</button>`;
                 paginationControls.innerHTML = pagHtml;
             } else {
