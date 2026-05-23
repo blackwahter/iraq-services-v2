@@ -112,6 +112,10 @@ body.cyberpunk-theme::before {
     align-items: start;
 }
 
+.sidebar-overlay {
+    display: none;
+}
+
 /* =========================================
    تنسيقات القائمة الجانبية (Cyber Sidebar)
 ========================================= */
