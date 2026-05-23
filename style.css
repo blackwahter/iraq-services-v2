@@ -312,6 +312,45 @@ body.light-theme .cyber-sidebar .tabs-nav .tab-btn.active {
 }
 
 /* =========================================
+   تنسيق الساعة الرقمية الفاخرة (System Clock Badge)
+========================================= */
+.system-clock-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 240, 255, 0.05);
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-family: var(--font-cyber);
+    color: var(--cyber-cyan);
+    font-weight: 700;
+    text-shadow: 0 0 5px var(--cyber-cyan-glow);
+    clip-path: polygon(0 0, 95% 0, 100% 30%, 100% 100%, 5% 100%, 0 70%);
+}
+
+.system-clock-badge .pulse-dot {
+    width: 6px;
+    height: 6px;
+    background-color: var(--cyber-cyan);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--cyber-cyan);
+    animation: blink 1.2s infinite;
+}
+
+body.light-theme .system-clock-badge {
+    background: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+    text-shadow: none !important;
+}
+
+body.light-theme .system-clock-badge .pulse-dot {
+    background-color: #0284c7 !important;
+    box-shadow: none !important;
+}
+
+/* =========================================
    تنسيقات الشاشات المتجاوبة للموبايل
 ========================================= */
 @media (max-width: 1024px) {
@@ -320,64 +359,100 @@ body.light-theme .cyber-sidebar .tabs-nav .tab-btn.active {
         gap: 1rem;
     }
     
-    /* تحويل السايد بار لدرج منزلق في الشاشات الصغيرة */
+    /* إضافة تباعد سفلي للصفحة لمنع البار السفلي من حجب المحتوى */
+    body {
+        padding-bottom: 75px !important;
+    }
+    
+    /* تحويل السايد بار لشريط سفلي أفقي مرن وسهل للتصفح باللمس */
     .cyber-sidebar {
         position: fixed;
-        top: 0;
+        bottom: 0;
         right: 0;
-        width: 280px;
-        height: 100vh;
-        max-height: 100vh;
-        border-top: none;
-        border-bottom: none;
-        border-left: var(--hud-border);
-        border-right: none;
-        clip-path: none;
-        transform: translateX(100%);
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        z-index: 1001;
-        box-shadow: -5px 0 25px rgba(0, 0, 0, 0.5);
-    }
-    
-    .cyber-sidebar.open {
-        transform: translateX(0);
-    }
-    
-    /* غطاء الخلفية عند فتح القائمة */
-    .sidebar-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
         left: 0;
+        top: auto;
         width: 100vw;
-        height: 100vh;
-        background: rgba(3, 6, 11, 0.7);
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
+        height: 65px;
+        max-height: 65px;
+        border-top: 1px solid rgba(0, 240, 255, 0.25) !important;
+        border-bottom: none !important;
+        border-left: none !important;
+        border-right: none !important;
+        border-radius: 0 !important;
+        clip-path: none !important;
+        padding: 5px 10px !important;
+        flex-direction: row !important;
+        gap: 0 !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
         z-index: 1000;
-        opacity: 0;
-        transition: opacity 0.3s ease;
+        box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.4);
+        background: rgba(6, 11, 20, 0.95) !important;
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        scrollbar-width: none; /* إخفاء شريط التمرير ليكون المظهر أنيقاً */
     }
     
-    .sidebar-overlay.active {
-        display: block;
-        opacity: 1;
+    .cyber-sidebar::-webkit-scrollbar {
+        display: none;
     }
     
-    /* إظهار زر الهامبرغر في الشاشات الصغيرة */
-    #sidebar-toggle {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        border-color: rgba(0, 240, 255, 0.4);
-        color: var(--cyber-cyan);
+    /* إخفاء الهوية والفاصل في الموبايل */
+    .cyber-sidebar .sidebar-brand,
+    .cyber-sidebar .sidebar-divider {
+        display: none !important;
     }
     
-    body.light-theme #sidebar-toggle {
-        border-color: #cbd5e1 !important;
-        color: #0f172a !important;
-        background: #f8fafc !important;
+    /* جعل التبويبات تتدفق أفقياً */
+    .cyber-sidebar .tabs-nav {
+        flex-direction: row !important;
+        gap: 8px !important;
+        width: max-content !important;
+        justify-content: flex-start !important;
+        padding: 0 !important;
+    }
+    
+    /* زر التبويب على الموبايل: الأيقونة بالأعلى والنص بالأسفل */
+    .cyber-sidebar .tabs-nav .tab-btn {
+        flex-direction: column !important;
+        gap: 3px !important;
+        padding: 6px 10px !important;
+        font-size: 0.72rem !important;
+        min-width: 90px !important;
+        text-align: center !important;
+        background: transparent !important;
+        border: none !important;
+        clip-path: none !important;
+        color: var(--text-secondary) !important;
+    }
+    
+    .cyber-sidebar .tabs-nav .tab-btn .tab-icon {
+        font-size: 1.1rem !important;
+    }
+    
+    .cyber-sidebar .tabs-nav .tab-btn.active {
+        background: rgba(0, 240, 255, 0.08) !important;
+        color: var(--cyber-cyan) !important;
+        border-radius: 4px !important;
+        box-shadow: none !important;
+        text-shadow: 0 0 5px var(--cyber-cyan-glow) !important;
+    }
+    
+    /* مظهر الفاتح للشريط السفلي */
+    body.light-theme .cyber-sidebar {
+        background: rgba(255, 255, 255, 0.95) !important;
+        border-top: 1px solid #cbd5e1 !important;
+        box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.05) !important;
+    }
+    
+    body.light-theme .cyber-sidebar .tabs-nav .tab-btn {
+        color: #64748b !important;
+    }
+    
+    body.light-theme .cyber-sidebar .tabs-nav .tab-btn.active {
+        background: rgba(14, 165, 233, 0.1) !important;
+        color: #0284c7 !important;
+        text-shadow: none !important;
     }
 }
 
