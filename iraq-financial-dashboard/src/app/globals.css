@@ -1,0 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+@import "tailwindcss";
+
+@theme inline {
+  --color-obsidian: #050B14;
+  --color-obsidian-light: #0C1525;
+  --color-emerald-glowing: #10B981;
+  --color-gold-glowing: #F59E0B;
+  --font-sans: 'Tajawal', sans-serif;
+}
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card-bg: rgba(255, 255, 255, 0.7);
+  --card-border: rgba(0, 0, 0, 0.08);
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --accent-green: #059669;
+  --accent-gold: #d97706;
+}
+
+/* Default to dark mode as requested by user */
+.dark, :root {
+  --background: #050B14;
+  --foreground: #f8fafc;
+  --card-bg: rgba(255, 255, 255, 0.03);
+  --card-border: rgba(255, 255, 255, 0.08);
+  --card-border-active: rgba(16, 185, 129, 0.4);
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --accent-green: #10B981;
+  --accent-gold: #F59E0B;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  direction: rtl;
+  overflow-x: hidden;
+  /* Add subtle background radial gradient for depth */
+  background-image: radial-gradient(circle at 15% 50%, rgba(16, 185, 129, 0.05), transparent 25%),
+                    radial-gradient(circle at 85% 30%, rgba(245, 158, 11, 0.03), transparent 25%);
+}
+
+.glass-panel {
+  background: var(--card-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--card-border);
+  border-radius: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.glass-panel-interactive:hover {
+  border-color: var(--card-border-active);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+.glow-text-green {
+  text-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+}
+
+.glow-text-gold {
+  text-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}

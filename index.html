@@ -1,168 +1,592 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>بوابة العراق المالية - iOS PWA</title>
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-    
-    <link rel="stylesheet" href="style.css?v=3">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRAQ CYBER-FINANCE | بوابة العراق المالية المستقبلية</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* =========================================
+           إيقاف الحركات (Animations) للوجو والعنوان
+         ========================================= */
+        .cyber-coin { animation: none !important; }
+        .cyber-coin svg circle { animation: none !important; stroke-dasharray: none !important; stroke-dashoffset: 0 !important; }
+        .logo-pulse { display: none !important; }
+        .glitch-text { animation: none !important; text-shadow: none !important; }
+        .glitch-text::before, .glitch-text::after { display: none !important; }
+
+        /* =========================================
+           نظام المظهر الفاتح (Light Theme) الاحترافي والمستقل
+         ========================================= */
+        
+        /* 1. الخلفية الأساسية والنصوص العامة */
+        body.light-theme { background: #f1f5f9 !important; color: #0f172a !important; }
+        
+        /* إجبار إزالة الوهج (النيون) من كل شيء في المود الفاتح */
+        body.light-theme * { text-shadow: none !important; }
+        body.light-theme .card-glow { display: none !important; }
+
+        /* 2. الهيدر واللوجو */
+        body.light-theme .hud-header { background: #ffffff !important; border: 1px solid #cbd5e1 !important; box-shadow: 0 2px 10px rgba(0,0,0,0.02) !important; }
+        body.light-theme .glitch-text, body.light-theme .header-main h1 { background: transparent !important; color: #0f172a !important; font-weight: 900 !important; }
+        body.light-theme .cyber-subtitle { color: #475569 !important; font-weight: 600 !important; }
+        
+        /* 3. العملة وشريط الوقت بالأعلى */
+        body.light-theme .cyber-coin svg circle:first-child { stroke: #0284c7 !important; }
+        body.light-theme .cyber-coin svg circle:nth-child(2) { fill: rgba(2, 132, 199, 0.1) !important; stroke: #0284c7 !important; }
+        body.light-theme .cyber-coin svg text { fill: #0f172a !important; }
+        body.light-theme #hud-clock { color: #1e293b !important; font-weight: bold !important; }
+        body.light-theme .hud-divider .line { background: #cbd5e1 !important; }
+        body.light-theme .hud-divider .dot { background: #0284c7 !important; box-shadow: none !important; }
+
+        /* 4. الأزرار العلوية (المظهر والصوت) */
+        body.light-theme .cyber-btn-mini { background: #f8fafc !important; color: #0f172a !important; border: 1px solid #cbd5e1 !important; box-shadow: none !important; font-weight: bold; }
+        body.light-theme .cyber-btn-mini:hover { background: #e2e8f0 !important; }
+        body.light-theme #sound-status-text, body.light-theme #theme-text { color: #0f172a !important; }
+
+        /* 5. شريط الحالة الداخلي (تحديث المصفوفة) */
+        body.light-theme .cyber-control-bar { background: #ffffff !important; border: 1px solid #cbd5e1 !important; box-shadow: 0 2px 5px rgba(0,0,0,0.02) !important; }
+        body.light-theme .status-msg { color: #334155 !important; font-weight: bold; }
+        body.light-theme .pulse-ring { border-color: #0284c7 !important; }
+        body.light-theme .pulse-center { background: #0284c7 !important; box-shadow: none !important; }
+        body.light-theme .refresh-btn { background: #0ea5e9 !important; color: #ffffff !important; border: none !important; box-shadow: 0 2px 4px rgba(14,165,233,0.3) !important; }
+        body.light-theme .refresh-btn:hover { background: #0284c7 !important; }
+
+        /* 6. التبويبات (Tabs) */
+        body.light-theme .tabs-nav { border-bottom: none !important; }
+        body.light-theme .tab-btn { background: #f8fafc !important; color: #64748b !important; border: 1px solid #cbd5e1 !important; font-weight: bold; }
+        body.light-theme .tab-btn.active { background: #0ea5e9 !important; color: #ffffff !important; border-color: #0ea5e9 !important; }
+
+        /* 7. الكروت الأساسية والحاويات */
+        body.light-theme .cyber-card { background: #ffffff !important; border: 1px solid #e2e8f0 !important; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05) !important; border-radius: 8px !important; }
+        body.light-theme h3, body.light-theme h4 { color: #0f172a !important; border-bottom-color: #e2e8f0 !important; }
+        body.light-theme p { color: #334155 !important; }
+        
+        /* 8. حقول الإدخال والبحث والتحويل */
+        body.light-theme label { color: #0f172a !important; font-weight: bold; }
+        body.light-theme .input-wrapper input, body.light-theme .input-wrapper select, body.light-theme .search-wrapper input {
+            background: #ffffff !important; color: #0f172a !important; border: 1px solid #94a3b8 !important; font-weight: bold; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05) !important;
+        }
+        body.light-theme .input-wrapper input:focus, body.light-theme .input-wrapper select:focus, body.light-theme .search-wrapper input:focus {
+            border-color: #0ea5e9 !important; box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15) !important; outline: none;
+        }
+        body.light-theme .search-wrapper input::placeholder { color: #94a3b8 !important; }
+        body.light-theme .swap-icon { background: #f8fafc !important; border: 1px solid #cbd5e1 !important; color: #0f172a !important; box-shadow: none !important; }
+        body.light-theme .swap-icon:hover { background: #e2e8f0 !important; }
+
+        /* 9. كروت الأخبار (الرواتب) */
+        body.light-theme .news-item-card { background: #ffffff !important; border: 1px solid #e2e8f0 !important; border-right: 4px solid #0ea5e9 !important; box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important; }
+        body.light-theme .news-badge { background: #e0f2fe !important; color: #0284c7 !important; border: 1px solid #bae6fd !important; }
+        body.light-theme .news-item-time { color: #64748b !important; font-weight: bold; }
+        body.light-theme .news-item-text { color: #0f172a !important; font-weight: bold !important; font-size: 1.1rem !important; }
+
+        /* 10. أزرار تقليب الصفحات */
+        body.light-theme .page-btn { background: #ffffff !important; color: #334155 !important; border: 1px solid #cbd5e1 !important; }
+        body.light-theme .page-btn:hover:not(:disabled) { background: #f1f5f9 !important; color: #0f172a !important; }
+        body.light-theme .page-btn.active { background: #0ea5e9 !important; color: #ffffff !important; border-color: #0ea5e9 !important; }
+
+        /* 11. الملاحظات والمعادلات */
+        body.light-theme .formula-box { background: #f8fafc !important; border: 1px solid #cbd5e1 !important; color: #0f172a !important; font-weight: bold; }
+        body.light-theme .formula-box code { color: #dc2626 !important; }
+        body.light-theme .formula-note { color: #64748b !important; font-weight: bold; }
+        body.light-theme .legend-item { color: #334155 !important; font-weight: bold; }
+        
+        /* 12. الفوتر */
+        body.light-theme .footer-copy { color: #64748b !important; font-weight: bold; }
+
+        /* =========================================
+           إصلاح العناصر المولدة من app.js (العملات/النفط)
+         ========================================= */
+        body.light-theme [id$="-grid"] > div, 
+        body.light-theme .markets-grid-layout > div {
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+            color: #0f172a !important;
+        }
+        body.light-theme [id$="-grid"] > div *, 
+        body.light-theme .markets-grid-layout > div * {
+            text-shadow: none !important;
+        }
+        body.light-theme [id$="-grid"] > div h3, 
+        body.light-theme .markets-grid-layout > div h3,
+        body.light-theme [id$="-grid"] > div span {
+            color: #0f172a !important;
+            font-weight: bold !important;
+        }
+
+        /* =========================================
+           ستايلات شريط البحث والصفحات (المشتركة)
+         ========================================= */
+        .search-wrapper { position: relative; margin-bottom: 20px; }
+        .search-wrapper input { width: 100%; padding: 12px 40px 12px 15px; background: rgba(0, 240, 255, 0.05); border: 1px solid var(--cyber-cyan, #00f0ff); border-radius: 6px; color: #fff; font-family: inherit; font-size: 1rem; outline: none; transition: 0.3s; }
+        .search-wrapper input:focus { box-shadow: 0 0 10px rgba(0, 240, 255, 0.3); }
+        .search-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-size: 1.2rem; }
+        
+        .pagination-controls { display: flex; justify-content: center; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
+        .page-btn { background: rgba(0, 240, 255, 0.1); border: 1px solid var(--cyber-cyan, #00f0ff); color: var(--cyber-cyan, #00f0ff); padding: 6px 14px; border-radius: 4px; cursor: pointer; font-family: monospace; transition: 0.3s; font-weight: bold; }
+        .page-btn:hover:not(:disabled) { background: var(--cyber-cyan, #00f0ff); color: #000; }
+        .page-btn.active { background: var(--cyber-cyan, #00f0ff); color: #000; }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; border-color: gray; color: gray; }
+        
+        /* كروت الأخبار (الرواتب للدارك مود) */
+        .news-item-card { padding: 15px; border-right: 4px solid var(--cyber-cyan, #00ffaa); background: rgba(0, 255, 170, 0.05); margin-bottom: 12px; border-radius: 6px; transition: all 0.3s ease; }
+        .news-item-time { color: var(--cyber-cyan, #00f0ff); font-family: monospace; font-size: 0.85rem; }
+        .news-item-text { color: #e2e8f0; font-size: 1.05rem; line-height: 1.6; margin: 0; }
+        .news-badge { background: rgba(0, 255, 170, 0.2); color: var(--cyber-cyan, #00ffaa); padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; border: 1px solid var(--cyber-cyan, #00ffaa); }
+    </style>
 </head>
-<body>
 
-<div class="ios-app-container">
-    <!-- Top Sticky Header -->
-    <header class="ios-header">
-        <div class="header-top">
-            <h1 class="app-title">بوابة العراق المالية</h1>
-            <button class="icon-btn bell-btn">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-            </button>
-        </div>
-        <div class="search-container" id="global-search-bar">
-            <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <input type="text" class="search-input" placeholder="ابحث عن الوزارات، أسعار العملات، أو الذهب...">
-        </div>
-    </header>
+<body class="cyberpunk-theme">
+    <canvas id="cyber-bg"></canvas>
 
-    <!-- Main SPA Content Area -->
-    <main class="ios-main-content">
-
-        <!-- Section 1: Salaries (الرواتب الحكومية) -->
-        <section id="sec-salaries" class="spa-section active">
-            <div class="section-header">
-                <h2 class="section-title">الرواتب الحكومية</h2>
-                <div class="live-indicator">
-                    <span class="pulse-dot"></span>
-                    <span class="live-text">آخر التحديثات (مباشر)</span>
+    <div class="container">
+        <!-- غطاء الخلفية للموبايل -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+        <!-- القائمة الجانبية (Sidebar) -->
+        <aside class="cyber-sidebar" id="cyber-sidebar">
+            <div class="sidebar-brand">
+                <div class="cyber-logo-mini">
+                    <span class="logo-inner">IQD</span>
                 </div>
-            </div>
-            <!-- Backend Data Container -->
-            <div id="salaries-grid" class="cards-list">
-                <!-- Data injected by app.js -->
+                <h2 class="sidebar-title">بوابة العراق</h2>
+                <button id="sidebar-close" class="cyber-btn-mini close-btn" title="إغلاق القائمة" style="margin-right: auto; padding: 2px 8px;">✕</button>
             </div>
             
-            <!-- Pagination Controls -->
-            <div id="pagination-controls" class="ios-pagination"></div>
-        </section>
-
-        <!-- Section 2: Bourses (العملات والبورصة) -->
-        <section id="sec-bourses" class="spa-section">
-            <div class="section-header">
-                <h2 class="section-title">العملات والبورصة</h2>
-            </div>
-            
-            <!-- Local Bourses Container -->
-            <div id="bourses-grid">
-                <!-- Data injected by app.js -->
-            </div>
-        </section>
-
-        <!-- Section 3: Metals & Oil (المعادن والنفط) -->
-        <section id="sec-metals-oil" class="spa-section">
-            <div class="section-header">
-                <h2 class="section-title">المعادن والنفط</h2>
-            </div>
-            
-            <!-- Segmented Control -->
-            <div class="segmented-control">
-                <input type="radio" id="seg-metals" name="metal-oil" checked>
-                <label for="seg-metals">الذهب والفضة</label>
-                
-                <input type="radio" id="seg-oil" name="metal-oil">
-                <label for="seg-oil">النفط</label>
+            <div class="sidebar-divider">
+                <span class="line"></span>
+                <span class="dot"></span>
+                <span class="line"></span>
             </div>
 
-            <!-- Metals View -->
-            <div id="metals-view" class="segmented-content active">
-                <div id="metals-grid" class="grid-2col">
-                    <!-- Data injected by app.js -->
-                </div>
+            <div class="tabs-nav">
+                <button class="tab-btn active" data-tab="salaries-tab">
+                    <span class="tab-icon">📅</span>
+                    <span class="tab-text">أخبار الرواتب</span>
+                </button>
+                <button class="tab-btn" data-tab="currencies">
+                    <span class="tab-icon">💵</span>
+                    <span class="tab-text">شاشات العملات</span>
+                </button>
+                <button class="tab-btn" data-tab="metals">
+                    <span class="tab-icon">✨</span>
+                    <span class="tab-text">الذهب والفضة</span>
+                </button>
+                <button class="tab-btn" data-tab="oil">
+                    <span class="tab-icon">🛢️</span>
+                    <span class="tab-text">أسعار النفط</span>
+                </button>
+                <button class="tab-btn" data-tab="markets">
+                    <span class="tab-icon">🏛️</span>
+                    <span class="tab-text">البورصات المحلية</span>
+                </button>
+                <button class="tab-btn" data-tab="converter-tab">
+                    <span class="tab-icon">💰</span>
+                    <span class="tab-text">حاسبة العملات</span>
+                </button>
             </div>
+        </aside>
 
-            <!-- Oil View -->
-            <div id="oil-view" class="segmented-content">
-                <div id="oil-grid" class="grid-2col">
-                    <!-- Data injected by app.js -->
-                </div>
-            </div>
-        </section>
-
-        <!-- Section 4: Converter (المحول المالي) -->
-        <section id="sec-converter" class="spa-section">
-            <div class="section-header">
-                <h2 class="section-title">المحول المالي</h2>
-            </div>
-            <div class="ios-card converter-card">
-                <div class="converter-row">
-                    <input type="text" inputmode="decimal" id="from-amount" class="ios-input" value="100">
-                    <div id="from-currency-btn" class="ios-select-btn interactive-btn" data-currency="USD">
-                        <span class="currency-flag" id="from-flag">🇺🇸</span>
-                        <span class="currency-code" id="from-code">USD</span>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        <!-- المحتوى الرئيسي (Main Content) -->
+        <main class="main-content">
+            <header class="hud-header">
+                <div class="hud-top-bar">
+                    <div class="hud-item system-clock-badge">
+                        <span class="pulse-dot"></span>
+                        <span id="hud-clock" class="digital-time">00:00:00 AM</span>
+                    </div>
+                    <div class="hud-item sound-control" style="display: flex; gap: 10px;">
+                        <button id="theme-toggle" class="cyber-btn-mini" title="تبديل المظهر">
+                            <span class="icon" id="theme-icon"></span> <span id="theme-text">المظهر: داكن</span>
+                        </button>
+                        <button id="sound-toggle" class="cyber-btn-mini sound-active" title="تفعيل/كتم المؤثرات الصوتية">
+                            <span class="icon"></span> <span id="sound-status-text">الصوت: نشط</span>
+                        </button>
+                        <button id="sidebar-toggle" class="cyber-btn-mini" title="فتح القائمة">
+                            <span class="icon">☰</span> <span id="sidebar-toggle-text">الأقسام</span>
+                        </button>
                     </div>
                 </div>
                 
-                <div class="converter-swap">
-                    <button id="swap-btn" class="icon-btn interactive-btn">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="14" x2="21" y2="3"></line><polyline points="8 21 3 21 3 16"></polyline><line x1="20" y1="10" x2="3" y2="21"></line></svg>
-                    </button>
-                </div>
-                
-                <div class="converter-row">
-                    <input type="text" readonly id="to-amount" class="ios-input result-input" value="131,500">
-                    <div id="to-currency-btn" class="ios-select-btn interactive-btn" data-currency="IQD">
-                        <span class="currency-flag" id="to-flag">🇮🇶</span>
-                        <span class="currency-code" id="to-code">IQD</span>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                <div class="header-main">
+                    <div class="cyber-coin" title="بوابة العراق المالية">
+                        <svg viewBox="0 0 100 100" width="60" height="60">
+                            <circle cx="50" cy="50" r="44" fill="none" stroke="var(--cyber-gold)" stroke-width="8"></circle>
+                            <circle cx="50" cy="50" r="32" fill="rgba(255, 183, 0, 0.15)" stroke="var(--cyber-gold)" stroke-width="3"></circle>
+                            <text x="50" y="60" font-family="var(--font-cyber)" font-size="30" font-weight="900" fill="var(--cyber-gold)" text-anchor="middle">IQD</text>
+                        </svg>
                     </div>
+                    <h1 class="glitch-text">بوابة العراق المالية</h1>
+                    <div class="hud-divider">
+                        <span class="line"></span>
+                        <span class="dot"></span>
+                        <span class="line"></span>
+                    </div>
+                    <p class="cyber-subtitle">نظام المراقبة والتحليل المالي المتطور للدينار العراقي والمعادن والنفط لحظة بلحظة</p>
                 </div>
-                
-                <div class="converter-note">
-                    السعر المعتمد: السوق الموازي
+            </header>
+
+            <!-- أزرار الاختصار السريع للأقسام على الموبايل -->
+            <div class="mobile-quick-nav">
+                <button class="quick-chip active" data-target="salaries-tab">📅 الرواتب</button>
+                <button class="quick-chip" data-target="currencies">💵 العملات</button>
+                <button class="quick-chip" data-target="metals">✨ الذهب</button>
+                <button class="quick-chip" data-target="oil">🛢️ النفط</button>
+                <button class="quick-chip" data-target="markets">🏛️ البورصات</button>
+                <button class="quick-chip" data-target="converter-tab">💰 الحاسبة</button>
+            </div>
+
+            <div class="cyber-control-bar">
+                <div class="system-status">
+                    <div class="status-indicator">
+                        <span class="pulse-ring"></span>
+                        <span class="pulse-center"></span>
+                    </div>
+                    <span id="update-status" class="status-msg">جاري تحميل مصفوفة البيانات...</span>
+                </div>
+                <button id="refresh-btn" class="cyber-btn refresh-btn">
+                    <span>تحديث المصفوفة</span>
+                </button>
+            </div>
+
+            <div class="tab-content active" id="salaries-tab">
+                <div class="cyber-card salaries-section">
+                    <div class="card-glow"></div>
+                    <div class="salaries-header-flex">
+                        <div class="salaries-title-block">
+                            <h3>نظام رصد وإطلاق الرواتب الحكومية</h3>
+                            <p class="section-desc">متابعة لحظية وحية لتمويل وصرف رواتب موظفي الدولة والمتقاعدين في العراق</p>
+                        </div>
+                    </div>
+
+                    <div class="search-wrapper" style="margin-top: 15px;">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="salary-search-input" placeholder="ابحث عن وزارة، هيئة، أو محافظة...">
+                    </div>
+
+                    <div id="salaries-smart-grid" class="rates-grid" style="margin-top: 10px;"></div>
+                    
+                    <div id="smart-pagination-controls" class="pagination-controls"></div>
                 </div>
             </div>
-        </section>
 
-    </main>
+            <div class="tab-content" id="currencies">
+                <div class="cyber-card chart-card">
+                    <div class="card-glow"></div>
+                    <div class="chart-header">
+                        <h3>سجل حركة موازي بغداد (100 دولار مقابل الدينار)</h3>
+                        <p class="chart-sub">رصد بياني متطور لتقلبات السوق الحرة في السبعة أيام الماضية</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="marketChart"></canvas>
+                    </div>
+                    <div class="chart-legend">
+                        <span class="legend-item"><span class="legend-color parallel"></span>سعر السوق الحر الموازي</span>
+                        <span class="legend-item"><span class="legend-color official"></span>السعر المركزي الرسمي (1,310)</span>
+                    </div>
+                </div>
 
-    <!-- Bottom Navigation Bar -->
-    <nav class="ios-bottom-nav">
-        <button class="nav-tab active" data-target="sec-salaries">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-            <span class="nav-label">الرواتب</span>
-        </button>
-        <button class="nav-tab" data-target="sec-bourses">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
-            <span class="nav-label">العملات</span>
-        </button>
-        <button class="nav-tab" data-target="sec-metals-oil">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
-            <span class="nav-label">المعادن</span>
-        </button>
-        <button class="nav-tab" data-target="sec-converter">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3v18"></path><path d="M3 17h18"></path><path d="M7 21L3 17l4-4"></path><path d="M17 7L21 3l4 4"></path></svg>
-            <span class="nav-label">المحول</span>
-        </button>
-    </nav>
-</div>
+                <div id="currencies-grid" class="rates-grid"></div>
+            </div>
 
-<!-- Currency Selector Bottom Sheet -->
-<div id="currency-sheet-overlay" class="sheet-overlay"></div>
-<div id="currency-sheet" class="bottom-sheet">
-    <div class="sheet-header">
-        <div class="sheet-handle"></div>
-        <h3 class="sheet-title">اختر العملة</h3>
+            <div class="tab-content" id="metals">
+                <div id="metals-grid" class="rates-grid"></div>
+                
+                <div class="cyber-card info-bulletin">
+                    <div class="card-glow"></div>
+                    <h4>خوارزمية التسعير المحلي للذهب والفضة</h4>
+                    <p>يتم احتساب غرام الذهب في الأسواق العراقية بناءً على السعر العالمي للأونصة مقسوماً على 31.103 غرام، ثم يتم تحويل القيمة للدينار العراقي بالاستناد إلى سعر صرف الدولار في السوق الموازي لضمان دقة القيمة الفعلية للنقد المتداول.</p>
+                    <div class="formula-box">
+                        <code>سعر الغرام بالدينار = (السعر العالمي للذهب ÷ 31.10348) × دولار السوق الحرة × العيار</code>
+                    </div>
+                    <p class="formula-note">* المثقال العراقي الواحد يساوي 5 غرامات تقريباً.</p>
+                </div>
+            </div>
+
+            <div class="tab-content" id="oil">
+                <div id="oil-grid" class="rates-grid"></div>
+                
+                <div class="cyber-card info-bulletin energy-bulletin">
+                    <div class="card-glow"></div>
+                    <h4>الأثر المالي لصادرات الطاقة</h4>
+                    <p>يعتمد الاقتصاد العراقي بنسبة تفوق 90% على الإيرادات النفطية. يتم تقييم الصادرات البحرية عبر موانئ البصرة بأسعار نسبية لبرنت العالمي. صعود أسعار برميل النفط بالدينار العراقي يعزز متانة الاحتياطي النقدي للبنك المركزي.</p>
+                </div>
+            </div>
+
+            <div class="tab-content" id="markets">
+                <div id="bourses-grid" class="markets-grid-layout"></div>
+            </div>
+
+            <div class="tab-content" id="converter-tab">
+                <div class="cyber-card converter-section">
+                    <div class="card-glow"></div>
+                    <h3>المحول المالي والكمي المطور</h3>
+                    <p class="converter-desc">قم بالتحويل الفوري المتبادل والذكي بين كافة العملات والذهب والفضة مباشرة بالدينار العراقي وسعر السوق الموازي.</p>
+                    
+                    <div class="converter-grid">
+                        <div class="input-group">
+                            <label for="from-amount">المقدار للمصدر</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="from-amount" value="100" placeholder="أدخل المقدار (مثال: 100k أو 1.5m)...">
+                                <select id="from-currency">
+                                    <optgroup label="مصفوفة العملات">
+                                        <option value="USD" selected>USD - دولار أمريكي ($)</option>
+                                        <option value="IQD">IQD - دينار عراقي (د.ع)</option>
+                                        <option value="EUR">EUR - يورو (€)</option>
+                                        <option value="GBP">GBP - جنيه إسترليني (£)</option>
+                                        <option value="TRY">TRY - ليرة تركية (₺)</option>
+                                        <option value="AED">AED - درهم إماراتي (د.إ)</option>
+                                        <option value="SAR">SAR - ريال سعودي (ر.س)</option>
+                                    </optgroup>
+                                    <optgroup label="الذهب بالغرام (عيار الصاغة)">
+                                        <option value="GOLD_24K">غرام ذهب عيار 24</option>
+                                        <option value="GOLD_21K">غرام ذهب عيار 21</option>
+                                        <option value="GOLD_18K">غرام ذهب عيار 18</option>
+                                    </optgroup>
+                                    <optgroup label="الذهب بالمثقال (5 غرامات)">
+                                        <option value="MITHQAL_24K">مثقال ذهب عيار 24</option>
+                                        <option value="MITHQAL_21K">مثقال ذهب عيار 21</option>
+                                        <option value="MITHQAL_18K">مثقال ذهب عيار 18</option>
+                                    </optgroup>
+                                    <optgroup label="الفضة النقية">
+                                        <option value="SILVER">غرام فضة حرة</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="swap-icon-container">
+                            <div class="swap-icon" id="swap-btn" title="عكس مدخلات المصفوفة">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="m16 3 4 4-4 4M20 7H9M8 21l-4-4 4-4M4 17h11" />
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="to-amount">النتيجة المستهدفة</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="to-amount" value="0" readonly>
+                                <select id="to-currency">
+                                    <optgroup label="مصفوفة العملات">
+                                        <option value="IQD" selected>IQD - دينار عراقي (د.ع)</option>
+                                        <option value="USD">USD - دولار أمريكي ($)</option>
+                                        <option value="EUR">EUR - يورو (€)</option>
+                                        <option value="GBP">GBP - جنيه إسترليني (£)</option>
+                                        <option value="TRY">TRY - ليرة تركية (₺)</option>
+                                        <option value="AED">AED - درهم إماراتي (د.إ)</option>
+                                        <option value="SAR">SAR - ريال سعودي (ر.س)</option>
+                                    </optgroup>
+                                    <optgroup label="الذهب بالغرام (عيار الصاغة)">
+                                        <option value="GOLD_24K">غرام ذهب عيار 24</option>
+                                        <option value="GOLD_21K">غرام ذهب عيار 21</option>
+                                        <option value="GOLD_18K">غرام ذهب عيار 18</option>
+                                    </optgroup>
+                                    <optgroup label="الذهب بالمثقال (5 غرامات)">
+                                        <option value="MITHQAL_24K">مثقال ذهب عيار 24</option>
+                                        <option value="MITHQAL_21K">مثقال ذهب عيار 21</option>
+                                        <option value="MITHQAL_18K">مثقال ذهب عيار 18</option>
+                                    </optgroup>
+                                    <optgroup label="الفضة النقية">
+                                        <option value="SILVER">غرام فضة حرة</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="hud-footer">
+                <p class="footer-copy">CYBER-SYSTEM IQD v2.5.0 // SECURE PROTOCOL ACTIVE</p>
+            </footer>
+        </main>
     </div>
-    <div class="sheet-content" id="currency-list">
-        <!-- Populated via JS -->
-    </div>
-</div>
 
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="app.js?v=3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="app.js"></script>
+
+    <script>
+        // ==========================================
+        // 🌓 إعدادات المظهر الفاتح والداكن
+        // ==========================================
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const themeText = document.getElementById('theme-text');
+        
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.remove('light-theme');
+            themeIcon.textContent = '🌓';
+            themeText.textContent = 'المظهر: داكن';
+        } else {
+            // Default to light theme on first visit or if explicitly set to light
+            document.body.classList.add('light-theme');
+            themeIcon.textContent = '🌞';
+            themeText.textContent = 'المظهر: فاتح';
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('light-theme');
+            if (document.body.classList.contains('light-theme')) {
+                localStorage.setItem('theme', 'light');
+                themeIcon.textContent = '🌞';
+                themeText.textContent = 'المظهر: فاتح';
+            } else {
+                localStorage.setItem('theme', 'dark');
+                themeIcon.textContent = '🌓';
+                themeText.textContent = 'المظهر: داكن';
+            }
+        });
+
+        // ==========================================
+        // 📰 نظام الرواتب الذكي مع كاسر الكاش
+        // ==========================================
+        let allSalariesData = [];
+        let currentPage = 1;
+        const itemsPerPage = 5;
+
+        async function fetchCyberUpdates() {
+            try {
+                // إضافة متغير الوقت للرابط لمنع الكاش (Cache Buster)
+                const timestamp = new Date().getTime();
+                const response = await fetch(`/api/updates?nocache=${timestamp}`);
+                const data = await response.json();
+                
+                const newSalaries = data.filter(item => item.category === 'رواتب');
+                
+                if (JSON.stringify(newSalaries) !== JSON.stringify(allSalariesData)) {
+                    allSalariesData = newSalaries;
+                    renderSmartSalaries();
+                }
+            } catch (err) {
+                console.error("Connection Error:", err);
+            }
+        }
+
+        function renderSmartSalaries() {
+            const salariesGrid = document.getElementById('salaries-smart-grid');
+            const paginationControls = document.getElementById('smart-pagination-controls');
+            const searchInput = document.getElementById('salary-search-input').value.trim().toLowerCase();
+            
+            if (!salariesGrid) return;
+
+            const filteredSalaries = allSalariesData.filter(item => 
+                item.content.toLowerCase().includes(searchInput)
+            );
+
+            if (filteredSalaries.length === 0) {
+                salariesGrid.innerHTML = '<p style="color: var(--cyber-cyan, #00f0ff); text-align: center; grid-column: 1/-1;">لا توجد أخبار مطابقة للبحث حالياً...</p>';
+                paginationControls.innerHTML = '';
+                return;
+            }
+
+            const totalPages = Math.ceil(filteredSalaries.length / itemsPerPage);
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const currentItems = filteredSalaries.slice(startIndex, startIndex + itemsPerPage);
+
+            salariesGrid.innerHTML = currentItems.map(item => {
+                const time = new Date(item.created_at).toLocaleTimeString('ar-IQ', {hour: '2-digit', minute:'2-digit'});
+                return `
+                    <div class="news-item-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <span class="news-badge">خبر عاجل</span>
+                            <span class="news-item-time">[${time}]</span>
+                        </div>
+                        <p class="news-item-text">${item.content}</p>
+                    </div>
+                `;
+            }).join('');
+
+            if (totalPages > 1) {
+                let pagHtml = `<button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>السابق</button>`;
+                
+                let startPage = Math.max(1, currentPage - 2);
+                let endPage = Math.min(totalPages, currentPage + 2);
+                
+                if (startPage > 1) {
+                    pagHtml += `<button class="page-btn" onclick="changePage(1)">1</button>`;
+                    if (startPage > 2) pagHtml += `<span style="color: var(--cyber-cyan, #00f0ff); padding: 0 4px;">...</span>`;
+                }
+                
+                for (let i = startPage; i <= endPage; i++) {
+                    pagHtml += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+                }
+                
+                if (endPage < totalPages) {
+                    if (endPage < totalPages - 1) pagHtml += `<span style="color: var(--cyber-cyan, #00f0ff); padding: 0 4px;">...</span>`;
+                    pagHtml += `<button class="page-btn" onclick="changePage(${totalPages})">${totalPages}</button>`;
+                }
+                
+                pagHtml += `<button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>التالي</button>`;
+                paginationControls.innerHTML = pagHtml;
+            } else {
+                paginationControls.innerHTML = ''; 
+            }
+        }
+
+        window.changePage = function(page) {
+            currentPage = page;
+            renderSmartSalaries();
+        };
+
+        document.getElementById('salary-search-input')?.addEventListener('input', () => {
+            currentPage = 1;
+            renderSmartSalaries();
+        });
+
+        // تفعيل أزرار الاختصار السريع على الموبايل
+        const quickChips = document.querySelectorAll('.quick-chip');
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        quickChips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                const targetTabId = chip.getAttribute('data-target');
+                if (typeof playCyberSelect === 'function') playCyberSelect();
+                
+                quickChips.forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                
+                tabButtons.forEach(btn => {
+                    if (btn.getAttribute('data-tab') === targetTabId) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+                
+                tabContents.forEach(content => {
+                    if (content.id === targetTabId) {
+                        content.classList.add('active');
+                    } else {
+                        content.classList.remove('active');
+                    }
+                });
+            });
+        });
+
+        // مزامنة أزرار الاختصار السريع عند التغيير من السايدبار
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tabId = button.getAttribute('data-tab');
+                quickChips.forEach(c => {
+                    if (c.getAttribute('data-target') === tabId) {
+                        c.classList.add('active');
+                    } else {
+                        c.classList.remove('active');
+                    }
+                });
+            });
+        });
+
+        fetchCyberUpdates();
+        setInterval(fetchCyberUpdates, 3000);
+    </script>
 </body>
+
 </html>

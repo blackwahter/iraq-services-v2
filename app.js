@@ -1,7 +1,6 @@
 // ==========================================
-// iOS PWA - بوابة العراق المالية
+// متغيرات الحالة الأساسية (State Variables)
 // ==========================================
-
 let currentRates = {};
 let goldPriceUSD = 2415.50; 
 let silverPriceUSD = 30.50;   
@@ -21,93 +20,305 @@ let localBoursesData = {
 const MARKET_MULTIPLIER = 1.1145; 
 const OUNCE_TO_GRAM = 31.1034768; 
 
+let audioCtx = null;
+let soundEnabled = true;
+let marketChartInstance = null; 
+
 const targetCurrencies = [
-    { code: 'USD', name: 'دولار أمريكي', flag: '🇺🇸' },
-    { code: 'EUR', name: 'يورو أوروبي', flag: '🇪🇺' },
-    { code: 'GBP', name: 'جنيه إسترليني', flag: '🇬🇧' },
-    { code: 'TRY', name: 'ليرة تركية', flag: '🇹🇷' },
-    { code: 'AED', name: 'درهم إماراتي', flag: '🇦🇪' },
-    { code: 'SAR', name: 'ريال سعودي', flag: '🇸🇦' }
+    { code: 'USD', name: 'دولار أمريكي', flag: '🇺🇸', desc: 'العملة الاحتياطية الأولى عالمياً؛ تُستخدم لتسعير السلع الأساسية، العقارات، والواردات الخارجية في الأسواق العراقية.' },
+    { code: 'EUR', name: 'يورو أوروبي', flag: '🇪🇺', desc: 'العملة الرسمية لبلدان منطقة اليورو؛ تُستخدم في المعاملات التجارية وعمليات الاستيراد والشراكات الأوروبية.' },
+    { code: 'GBP', name: 'جنيه إسترليني', flag: '🇬🇧', desc: 'العملة الرسمية للمملكة المتحدة؛ وتعد واحدة من أقوى وأعرق العملات الاحتياطية في النظام المالي العالمي.' },
+    { code: 'TRY', name: 'ليرة تركية', flag: '🇹🇷', desc: 'العملة الرسمية لتركيا؛ تُستخدم بكثافة في الاستيراد المباشر للبضائع، السياحة، والتبادل التجاري العراقي التركي.' },
+    { code: 'AED', name: 'درهم إماراتي', flag: '🇦🇪', desc: 'العملة الرسمية لدولة الإمارات العربية المتحدة؛ وتعد مركزاً رئيساً لتسوية الحوالات الخارجية والتجارة الإقليمية.' },
+    { code: 'SAR', name: 'ريال سعودي', flag: '🇸🇦', desc: 'العملة الرسمية للمملكة العربية السعودية؛ وتنشط في التبادلات الخليجية وتغطية مصاريف ونفقات مواسم الحج والعمرة.' }
 ];
 
-// DOM Elements
-const salariesGrid = document.getElementById('salaries-grid');
-const boursesGrid = document.getElementById('bourses-grid');
+// عناصر HTML الأساسية
 const currenciesGrid = document.getElementById('currencies-grid');
 const metalsGrid = document.getElementById('metals-grid');
 const oilGrid = document.getElementById('oil-grid');
+const boursesGrid = document.getElementById('bourses-grid'); 
+const salariesGrid = document.getElementById('salaries-grid'); 
+const updateStatusText = document.getElementById('update-status');
+const refreshBtn = document.getElementById('refresh-btn');
+
+// عناصر الترمنال
+const terminalLogs = document.getElementById('terminal-logs');
+const pricesList = document.getElementById('prices-list');
+const modalSysLogs = document.getElementById('modal-sys-logs');
+const modalTeleLogs = document.getElementById('modal-tele-logs');
+
+const soundToggle = document.getElementById('sound-toggle');
+const soundStatusText = document.getElementById('sound-status-text');
 
 const fromAmountInput = document.getElementById('from-amount');
 const toAmountInput = document.getElementById('to-amount');
+const fromCurrencySelect = document.getElementById('from-currency');
+const toCurrencySelect = document.getElementById('to-currency');
 const swapBtn = document.getElementById('swap-btn');
 
 window.addEventListener('DOMContentLoaded', () => {
-    initSPA();
-    initSegmentedControls();
-    initConverter();
+    initTabs();
+    initMobileSidebar();
+    initClock();
+    initParticles();
+    initSoundEngine();
+    initTerminalSimulator();
+    initSalariesTracker(); 
+    initModal(); 
     fetchData(); 
     fetchUpdates(); 
 
-    // Live update for salaries every 5 seconds (seamless)
-    setInterval(fetchUpdates, 5000);
+    window.addEventListener('resize', () => { 
+        resizeCanvas(); 
+        if (marketChartInstance) {
+            marketChartInstance.resize(); 
+        }
+    });
 });
 
 // ==========================================
-// SPA Navigation Logic
+// شاشة المراقبة المركزية (العين)
 // ==========================================
-function initSPA() {
-    const tabs = document.querySelectorAll('.nav-tab');
-    const sections = document.querySelectorAll('.spa-section');
-    const searchBar = document.getElementById('global-search-bar');
+function initModal() {
+    const expandBtn = document.getElementById('expand-terminal-btn');
+    const closeBtn = document.getElementById('close-modal-btn');
+    const modal = document.getElementById('terminal-modal');
 
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            // Remove active from all tabs
-            tabs.forEach(t => t.classList.remove('active'));
-            // Add active to clicked tab
-            tab.classList.add('active');
+    if(expandBtn && closeBtn && modal) {
+        expandBtn.addEventListener('click', () => {
+            modal.classList.add('show');
+            playCyberSelect();
+        });
+        closeBtn.addEventListener('click', () => {
+            modal.classList.remove('show');
+            playCyberSelect();
+        });
+    }
+}
 
-            // Hide all sections
-            sections.forEach(sec => sec.classList.remove('active'));
-            // Show target section
-            const targetId = tab.getAttribute('data-target');
-            document.getElementById(targetId).classList.add('active');
-            
-            if(searchBar) {
-                searchBar.style.display = targetId === 'sec-salaries' ? 'block' : 'none';
+// ==========================================
+// 1. نظام الخلفية المتحركة
+// ==========================================
+const canvas = document.getElementById('cyber-bg');
+const ctx = canvas.getContext('2d');
+let particlesArray = [];
+const maxParticles = 65;
+
+function initParticles() {
+    resizeCanvas();
+    particlesArray = [];
+    for (let i = 0; i < maxParticles; i++) {
+        const size = Math.random() * 2 + 1;
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height;
+        const directionX = (Math.random() - 0.5) * 0.6;
+        const directionY = (Math.random() - 0.5) * 0.6;
+        particlesArray.push(new Particle(x, y, directionX, directionY, size));
+    }
+    animateParticles();
+}
+
+function resizeCanvas() { 
+    canvas.width = window.innerWidth; 
+    canvas.height = window.innerHeight; 
+}
+
+class Particle {
+    constructor(x, y, dx, dy, size) { 
+        this.x = x; this.y = y; this.dx = dx; this.dy = dy; this.size = size; 
+    }
+    draw() { 
+        ctx.beginPath(); 
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false); 
+        ctx.fillStyle = 'rgba(0, 240, 255, 0.25)'; 
+        ctx.fill(); 
+    }
+    update() {
+        if (this.x > canvas.width || this.x < 0) this.dx = -this.dx;
+        if (this.y > canvas.height || this.y < 0) this.dy = -this.dy;
+        this.x += this.dx; 
+        this.y += this.dy; 
+        this.draw();
+    }
+}
+
+function animateParticles() {
+    requestAnimationFrame(animateParticles);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < particlesArray.length; i++) {
+        particlesArray[i].update();
+    }
+    for (let a = 0; a < particlesArray.length; a++) {
+        for (let b = a + 1; b < particlesArray.length; b++) {
+            let dx = particlesArray[a].x - particlesArray[b].x;
+            let dy = particlesArray[a].y - particlesArray[b].y;
+            let dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist < 110) { 
+                ctx.strokeStyle = `rgba(0, 240, 255, ${(1 - (dist / 110)) * 0.12})`; 
+                ctx.lineWidth = 1; 
+                ctx.beginPath(); 
+                ctx.moveTo(particlesArray[a].x, particlesArray[a].y); 
+                ctx.lineTo(particlesArray[b].x, particlesArray[b].y); 
+                ctx.stroke(); 
             }
+        }
+    }
+}
+
+// ==========================================
+// 2. الصوتيات
+// ==========================================
+function initSoundEngine() {
+    soundToggle.addEventListener('click', () => {
+        soundEnabled = !soundEnabled;
+        if (soundEnabled) { 
+            soundToggle.classList.add('sound-active'); 
+            soundStatusText.textContent = "الصوت: نشط"; 
+            playSynthSound(523.25, 'sine', 0.1, 0.05); 
+        } else { 
+            soundToggle.classList.remove('sound-active'); 
+            soundStatusText.textContent = "الصوت: مكتوم"; 
+        }
+    });
+}
+
+function getAudioContext() { 
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+    return audioCtx; 
+}
+
+function playSynthSound(freq, type = 'sine', dur = 0.1, vol = 0.08) {
+    if (!soundEnabled) return;
+    if (window.innerWidth <= 1024) return; // تعطيل الصوت بالكامل على الموبايل
+    try { 
+        const ctx = getAudioContext(); 
+        if (ctx.state === 'suspended') ctx.resume(); 
+        const osc = ctx.createOscillator(); 
+        const gainNode = ctx.createGain(); 
+        osc.type = type; 
+        osc.frequency.setValueAtTime(freq, ctx.currentTime); 
+        gainNode.gain.setValueAtTime(vol, ctx.currentTime); 
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur); 
+        osc.connect(gainNode); 
+        gainNode.connect(ctx.destination); 
+        osc.start(); 
+        osc.stop(ctx.currentTime + dur); 
+    } catch (e) {}
+}
+
+function playCyberSelect() { 
+    playSynthSound(900, 'sine', 0.05, 0.05); 
+}
+
+function playSuccessChime() { 
+    if (!soundEnabled) return; 
+    playSynthSound(659.25, 'sine', 0.1, 0.06); 
+    setTimeout(() => playSynthSound(987.77, 'sine', 0.15, 0.06), 80); 
+}
+
+// ==========================================
+// الترمنال المزدوج (النظيف من الرسائل الوهمية)
+// ==========================================
+function initTerminalSimulator() {
+    // تم تفريغ هذه الدالة لإيقاف الرسائل التلقائية الوهمية
+    // سيتم استخدام addTerminalLog فقط للأحداث الحقيقية
+}
+
+function addTerminalLog(message) {
+    const timeStr = new Date().toLocaleTimeString('en-US', { hour12: false });
+    const logHTML = `<div style="padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">[${timeStr}] ${message}</div>`;
+    
+    // اضافة للترمنال الصغير
+    if (terminalLogs) {
+        terminalLogs.insertAdjacentHTML('beforeend', logHTML);
+        terminalLogs.scrollTop = terminalLogs.scrollHeight;
+        while (terminalLogs.childElementCount > 6) {
+            terminalLogs.removeChild(terminalLogs.firstChild);
+        }
+    }
+    
+    // اضافة لشاشة المراقبة الكبيرة
+    if (modalSysLogs) {
+        modalSysLogs.insertAdjacentHTML('afterbegin', logHTML); 
+        while (modalSysLogs.childElementCount > 30) {
+            modalSysLogs.removeChild(modalSysLogs.lastChild);
+        }
+    }
+}
+
+// ==========================================
+// 3. التبويبات والساعة
+// ==========================================
+function initClock() {
+    const clockEl = document.getElementById('hud-clock');
+    if (!clockEl) return;
+    setInterval(() => { 
+        clockEl.textContent = new Date().toLocaleTimeString('en-US'); 
+    }, 1000);
+}
+
+function initTabs() {
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    const sidebar = document.getElementById('cyber-sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const tabId = button.getAttribute('data-tab'); 
+            playCyberSelect();
+            
+            tabButtons.forEach(btn => btn.classList.remove('active')); 
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            button.classList.add('active'); 
+            const targetContent = document.getElementById(tabId);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+
+            // إغلاق السايد بار في وضع الموبايل عند الضغط على أي قسم
+            if (sidebar) sidebar.classList.remove('open');
+            if (overlay) overlay.classList.remove('active');
         });
     });
 }
 
-// ==========================================
-// Segmented Controls (Gold vs Oil)
-// ==========================================
-function initSegmentedControls() {
-    const radioMetals = document.getElementById('seg-metals');
-    const radioOil = document.getElementById('seg-oil');
-    const viewMetals = document.getElementById('metals-view');
-    const viewOil = document.getElementById('oil-view');
+function initMobileSidebar() {
+    const toggleBtn = document.getElementById('sidebar-toggle');
+    const closeBtn = document.getElementById('sidebar-close');
+    const sidebar = document.getElementById('cyber-sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
 
-    radioMetals.addEventListener('change', () => {
-        if(radioMetals.checked) {
-            viewMetals.classList.add('active');
-            viewOil.classList.remove('active');
-        }
-    });
+    if (toggleBtn && sidebar && overlay) {
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.add('open');
+            overlay.classList.add('active');
+            playCyberSelect();
+        });
 
-    radioOil.addEventListener('change', () => {
-        if(radioOil.checked) {
-            viewOil.classList.add('active');
-            viewMetals.classList.remove('active');
+        const closeSidebar = () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+            playCyberSelect();
+        };
+
+        overlay.addEventListener('click', closeSidebar);
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeSidebar);
         }
-    });
+    }
 }
 
 // ==========================================
-// API Fetching & Global Data
+// 4. جلب البيانات العالمية والمحلية
 // ==========================================
 async function fetchData() {
+    showLoaders();
+    refreshBtn.classList.add('spinning');
+    updateStatusText.textContent = 'جاري مزامنة مصفوفة البيانات...';
+
     try {
         const currencyRes = await fetch('https://open.er-api.com/v6/latest/USD'); 
         const currencyData = await currencyRes.json();
@@ -138,455 +349,471 @@ async function fetchData() {
             if (boursesResp.success && boursesResp.data) localBoursesData = boursesResp.data; 
         } catch (e) {}
 
-        renderLocalBoursesBoard(); 
+        updateStatusText.textContent = `مزامنة النظام: مستقر (${new Date().toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'})})`;
+        
+        // إشعار حقيقي للترمنال بنجاح التحديث
+        addTerminalLog("تم جلب البيانات بنجاح من الخوادم.");
+
+        renderPriceBoard(); 
         renderMetalsBoard(); 
         renderOilBoard(); 
+        renderLocalBoursesBoard(); 
         calculateConversion(); 
+        drawChart(); 
+        playSuccessChime();
         
     } catch (error) { 
-        console.error("Fetch Data Error:", error);
+        showErrorState(error.message); 
+        addTerminalLog("خطأ في الاتصال بالخوادم!");
+    } finally { 
+        refreshBtn.classList.remove('spinning'); 
+    }
+}
+
+function showLoaders() {
+    const spinnerHTML = `<div class="loading-state"><div class="spinner"></div><p>جاري التحديث وجلب البيانات الحية...</p></div>`;
+    if (currenciesGrid) currenciesGrid.innerHTML = spinnerHTML; 
+    if (metalsGrid) metalsGrid.innerHTML = spinnerHTML; 
+    if (oilGrid) oilGrid.innerHTML = spinnerHTML; 
+    if (boursesGrid) boursesGrid.innerHTML = spinnerHTML;
+}
+
+function showErrorState(message) { 
+    if (currenciesGrid) {
+        currenciesGrid.innerHTML = `<div class="error-state"><p>فشل جلب البيانات: ${message}</p></div>`; 
     }
 }
 
 // ==========================================
-// Render Salaries (Live Updates & Pagination)
+// 5. 📊 المخطط البياني (Chart.js)
 // ==========================================
-let allSalariesNews = [];
-let currentPage = 1;
-const itemsPerPage = 7;
+function drawChart() {
+    const canvasEl = document.getElementById('marketChart');
+    if (!canvasEl) return; 
 
+    const iqdPerUsd = currentRates['IQD'] || 1310;
+    const liveParallelRate100 = (iqdPerUsd * MARKET_MULTIPLIER) * 100;
+    
+    const historicalDays = ['قبل 6 أيام', 'قبل 5 أيام', 'قبل 4 أيام', 'قبل 3 أيام', 'أول أمس', 'أمس', 'مباشر'];
+    const historicalOfficial = [131000, 131000, 131000, 131000, 131000, 131000, 131000];
+    let historicalParallel = [147200, 146800, 147100, 146900, 146500, 146300, Math.round(liveParallelRate100)];
+
+    if (marketChartInstance) {
+        marketChartInstance.destroy(); 
+    }
+    
+    const ctx = canvasEl.getContext('2d');
+    let gradient = ctx.createLinearGradient(0, 0, 0, 400); 
+    gradient.addColorStop(0, 'rgba(255, 183, 0, 0.4)'); 
+    gradient.addColorStop(1, 'rgba(255, 183, 0, 0.0)');
+
+    marketChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: { 
+            labels: historicalDays, 
+            datasets: [
+                { 
+                    label: 'السوق الحر الموازي', 
+                    data: historicalParallel, 
+                    borderColor: '#ffb700', 
+                    backgroundColor: gradient, 
+                    borderWidth: 3, 
+                    pointBackgroundColor: '#ffb700', 
+                    pointBorderColor: '#111', 
+                    pointRadius: 6, 
+                    pointHoverRadius: 10, 
+                    pointHitRadius: 30, 
+                    fill: true, 
+                    tension: 0.4  
+                },
+                { 
+                    label: 'السعر الرسمي (مركزي)', 
+                    data: historicalOfficial, 
+                    borderColor: '#007bff', 
+                    borderWidth: 2, 
+                    borderDash: [5, 5], 
+                    pointRadius: 0, 
+                    fill: false, 
+                    tension: 0 
+                }
+            ]
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            plugins: { 
+                legend: { display: false }, 
+                tooltip: { 
+                    backgroundColor: 'rgba(0, 20, 40, 0.9)', 
+                    titleColor: '#00ffaa', 
+                    bodyColor: '#fff', 
+                    borderColor: '#00ffaa', 
+                    borderWidth: 1, 
+                    rtl: true, 
+                    titleFont: { family: 'Tajawal', size: 14 }, 
+                    bodyFont: { family: 'Tajawal', size: 14 }, 
+                    padding: 12, 
+                    callbacks: { 
+                        label: function(context) { 
+                            return context.dataset.label + ': ' + context.parsed.y.toLocaleString('ar-IQ') + ' د.ع'; 
+                        } 
+                    } 
+                } 
+            }, 
+            scales: { 
+                y: { 
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' }, 
+                    ticks: { color: '#a0a0a0', font: { family: 'monospace' } }, 
+                    min: 129000 
+                }, 
+                x: { 
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' }, 
+                    ticks: { color: '#a0a0a0', font: { family: 'Tajawal' } } 
+                } 
+            } 
+        }
+    });
+}
+
+// ------------------------------------------
+// 6. البورصات وباقي البطاقات
+// ------------------------------------------
+function renderLocalBoursesBoard() {
+    if (!boursesGrid) return;
+    
+    const lastUpdate = localBoursesData.lastUpdated ? new Date(localBoursesData.lastUpdated).toLocaleTimeString('ar-IQ', {hour:'2-digit', minute:'2-digit'}) : "جاري المزامنة...";
+    
+    const bourses = [
+        { name: 'بورصة الكفاح', icon: '🏛️', price: localBoursesData.kifah, flow: 'مرتفع جداً', effect: 'أساسي 100%', isOnline: true, desc: 'عصب المال العراقي' },
+        { name: 'بورصة الحارثية', icon: '🏢', price: localBoursesData.harthiya, flow: 'نشط', effect: 'مرادف 90%', isOnline: true, desc: 'البورصة الثانية في العاصمة' },
+        { name: 'بورصة أربيل', icon: '⛰️', price: localBoursesData.erbil, flow: 'متوسط', effect: 'سرعة تداول', isOnline: true, desc: 'المحور المالي الشمالي' },
+        { name: 'بورصة البصرة', icon: '⚓', price: localBoursesData.basra, flow: 'تحديث آلي', effect: 'ساعات عمل', isOnline: true, desc: 'المحور التجاري للجنوب' }
+    ];
+    
+    let html = `<div style="width:100%; text-align:right; margin-bottom:15px; color:#00ffaa; font-size:0.85rem; font-weight: bold; grid-column: 1 / -1;">⏱️ آخر تحديث للبورصات: ${lastUpdate}</div>`;
+    
+    bourses.forEach(b => {
+        html += `
+            <div class="cyber-card market-card">
+                <div class="card-glow"></div>
+                <div class="market-header">
+                    <div class="market-title">
+                        <span class="market-icon">${b.icon}</span>
+                        <h4>${b.name}</h4>
+                    </div>
+                    <span class="market-status open">${b.isOnline ? 'ONLINE' : 'OFFLINE'}</span>
+                </div>
+                <p class="market-desc">${b.desc}</p>
+                <div style="text-align: center; margin: 15px 0;">
+                    <span style="font-size: 1.8rem; font-weight: bold; color: #fff;">
+                        ${Math.round(b.price).toLocaleString('ar-IQ')} <span style="font-size: 0.95rem; color: #00ffaa;">د.ع</span>
+                    </span>
+                </div>
+                <div class="market-stats">
+                    <div class="stat-row"><span>السيولة:</span><strong>${b.flow}</strong></div>
+                    <div class="stat-row"><span>التأثير:</span><strong>${b.effect}</strong></div>
+                </div>
+            </div>`;
+    });
+    
+    boursesGrid.innerHTML = html;
+}
+
+function renderPriceBoard() {
+    if (!currenciesGrid) return; 
+    const iqdPerUsd = currentRates['IQD'] || 1310; 
+    let html = '';
+    
+    targetCurrencies.forEach(currency => {
+        const rateToUsd = currentRates[currency.code]; 
+        if (!rateToUsd) return; 
+        
+        const marketRate = (iqdPerUsd / rateToUsd) * MARKET_MULTIPLIER;
+        html += `
+            <div class="rate-card">
+                <div class="card-header">
+                    <div class="currency-info">
+                        <span class="currency-flag">${currency.flag}</span>
+                        <div class="currency-names">
+                            <span class="currency-code">${currency.code}</span>
+                            <span class="currency-title">${currency.name}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="price-display">
+                    <div class="price-row">
+                        <span class="price-label">السوق الموازي:</span>
+                        <span class="price-value">${Math.round(marketRate).toLocaleString('ar-IQ')} <span class="unit">د.ع</span></span>
+                    </div>
+                </div>
+                <p class="currency-desc" style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 12px; line-height: 1.5; border-top: 1px dashed rgba(0, 240, 255, 0.1); padding-top: 10px; text-align: justify; margin-bottom: 0;">
+                    ${currency.desc}
+                </p>
+            </div>`;
+    }); 
+    currenciesGrid.innerHTML = html;
+}
+
+function renderMetalsBoard() {
+    if (!metalsGrid) return; 
+    
+    const iqdPerUsd = currentRates['IQD'] || 1310; 
+    const usdParallelRate = iqdPerUsd * MARKET_MULTIPLIER; 
+    const p24USD = goldPriceUSD / OUNCE_TO_GRAM; 
+    const pAgUSD = silverPriceUSD / OUNCE_TO_GRAM; 
+    const p24IQD = p24USD * usdParallelRate; 
+    const pAgIQD = pAgUSD * usdParallelRate;
+    
+    const metals = [
+        { name: 'ذهب عيار 24', flag: '👑', class: 'gold-card', gramPrice: p24IQD, mithqalPrice: p24IQD * 5, usdPrice: p24USD },
+        { name: 'ذهب عيار 22', flag: '🌟', class: 'gold-card', gramPrice: p24IQD * (22 / 24), mithqalPrice: (p24IQD * (22 / 24)) * 5, usdPrice: p24USD * (22 / 24) },
+        { name: 'ذهب عيار 21', flag: '✨', class: 'gold-card', gramPrice: p24IQD * (21 / 24), mithqalPrice: (p24IQD * (21 / 24)) * 5, usdPrice: p24USD * (21 / 24) },
+        { name: 'ذهب عيار 18', flag: '🎗️', class: 'gold-card', gramPrice: p24IQD * (18 / 24), mithqalPrice: (p24IQD * (18 / 24)) * 5, usdPrice: p24USD * (18 / 24) },
+        { name: 'فضة حرة', flag: '🪙', class: 'silver-card', gramPrice: pAgIQD, mithqalPrice: pAgIQD * 5, usdPrice: pAgUSD }
+    ];
+    
+    let html = ''; 
+    metals.forEach(m => { 
+        html += `
+            <div class="rate-card ${m.class}">
+                <div class="card-header">
+                    <div class="currency-info">
+                        <span class="currency-flag">${m.flag}</span>
+                        <div class="currency-names">
+                            <span class="currency-code" style="font-size: 1.1rem;">${m.name}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="price-display" style="gap: 8px;">
+                    <div class="price-row" style="border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px;">
+                        <span class="price-label">المثقال (5 غرام):</span>
+                        <span class="price-value" style="color: #00ffaa;">${Math.round(m.mithqalPrice).toLocaleString('ar-IQ')} <span class="unit">د.ع</span></span>
+                    </div>
+                    <div class="price-row">
+                        <span>الغرام:</span>
+                        <span>${Math.round(m.gramPrice).toLocaleString('ar-IQ')} د.ع</span>
+                    </div>
+                </div>
+            </div>`; 
+    }); 
+    metalsGrid.innerHTML = html;
+}
+
+function renderOilBoard() {
+    if (!oilGrid) return; 
+    
+    const usdParallelRate = (currentRates['IQD'] || 1310) * MARKET_MULTIPLIER;
+    const oilList = [
+        { name: 'برنت', symbol: 'BRENT', flag: '🛢️', usdPrice: brentOilUSD, iqdPrice: brentOilUSD * usdParallelRate }, 
+        { name: 'تكساس', symbol: 'WTI', flag: '🔥', usdPrice: wtiOilUSD, iqdPrice: wtiOilUSD * usdParallelRate }
+    ];
+    
+    let html = ''; 
+    oilList.forEach(o => { 
+        html += `
+            <div class="rate-card oil-card">
+                <div class="card-header">
+                    <div class="currency-info">
+                        <span class="currency-flag">${o.flag}</span>
+                        <span class="currency-code">${o.symbol}</span>
+                    </div>
+                </div>
+                <div class="price-display">
+                    <div class="price-row">
+                        <span class="price-label">بالدولار:</span>
+                        <span class="price-value" style="color: var(--cyber-cyan);">$${o.usdPrice.toFixed(2)}</span>
+                    </div>
+                    <div class="price-row">
+                        <span class="price-label">بالدينار:</span>
+                        <span class="price-value">${Math.round(o.iqdPrice).toLocaleString('ar-IQ')} د.ع</span>
+                    </div>
+                </div>
+            </div>`; 
+    }); 
+    oilGrid.innerHTML = html;
+}
+
+// ------------------------------------------
+// المحول المالي
+// ------------------------------------------
+function parseSmartNumber(val) {
+    if (typeof val !== 'string') return NaN;
+    
+    // 1. تحويل الأرقام العربية والشرقية إلى إنجليزية
+    let cleanVal = val.replace(/[٠١٢٣٤٥٦٧٨٩]/g, function(d) {
+        return d.charCodeAt(0) - 1632;
+    }).replace(/[۰۱۲۳۴۵۶۷۸۹]/g, function(d) {
+        return d.charCodeAt(0) - 1776;
+    });
+    
+    // 2. إزالة الفواصل والمسافات وعلامات العملات
+    cleanVal = cleanVal.replace(/[, \s$_]/g, '').trim().toLowerCase();
+    
+    // 3. دعم الاختصارات مثل k, m, b, ك, م, ب
+    let multiplier = 1;
+    if (cleanVal.endsWith('k') || cleanVal.endsWith('ك')) {
+        multiplier = 1000;
+        cleanVal = cleanVal.slice(0, -1);
+    } else if (cleanVal.endsWith('m') || cleanVal.endsWith('م')) {
+        multiplier = 1000000;
+        cleanVal = cleanVal.slice(0, -1);
+    } else if (cleanVal.endsWith('b') || cleanVal.endsWith('ب')) {
+        multiplier = 1000000000;
+        cleanVal = cleanVal.slice(0, -1);
+    }
+    
+    const parsed = parseFloat(cleanVal);
+    return isNaN(parsed) ? NaN : parsed * multiplier;
+}
+
+function calculateConversion() {
+    if (!currentRates || !fromAmountInput || !toAmountInput) return;
+    
+    const fV = parseSmartNumber(fromAmountInput.value); 
+    if (isNaN(fV) || fV < 0) { 
+        toAmountInput.value = '0'; 
+        return; 
+    }
+    
+    const fC = fromCurrencySelect.value;
+    const tC = toCurrencySelect.value;
+    const usdPr = (currentRates['IQD'] || 1310) * MARKET_MULTIPLIER;
+    const gUsd = goldPriceUSD / OUNCE_TO_GRAM;
+    const sUsd = silverPriceUSD / OUNCE_TO_GRAM;
+    
+    let aU = 0;
+    
+    if (fC === 'USD') aU = fV; 
+    else if (fC === 'IQD') aU = fV / usdPr; 
+    else if (fC.startsWith('GOLD_')) aU = fV * gUsd * (fC.includes('24')?1:fC.includes('21')?21/24:18/24); 
+    else if (fC.startsWith('MITHQAL_')) aU = fV * gUsd * 5 * (fC.includes('24')?1:fC.includes('21')?21/24:18/24); 
+    else if (fC === 'SILVER') aU = fV * sUsd; 
+    else aU = currentRates[fC] ? fV / currentRates[fC] : fV;
+    
+    let cV = 0;
+    
+    if (tC === 'USD') cV = aU; 
+    else if (tC === 'IQD') cV = aU * usdPr; 
+    else if (tC.startsWith('GOLD_')) cV = aU / (gUsd * (tC.includes('24')?1:tC.includes('21')?21/24:18/24)); 
+    else if (tC.startsWith('MITHQAL_')) cV = aU / (gUsd * 5 * (tC.includes('24')?1:tC.includes('21')?21/24:18/24)); 
+    else if (tC === 'SILVER') cV = aU / sUsd; 
+    else cV = currentRates[tC] ? aU * currentRates[tC] : aU;
+    
+    toAmountInput.value = tC === 'IQD' ? Math.round(cV).toString() : cV.toFixed(2);
+}
+
+function swapCurrencies() { 
+    if (!fromCurrencySelect) return; 
+    const t = fromCurrencySelect.value; 
+    fromCurrencySelect.value = toCurrencySelect.value; 
+    toCurrencySelect.value = t; 
+    calculateConversion(); 
+}
+
+if (refreshBtn) refreshBtn.addEventListener('click', fetchData); 
+if (fromAmountInput) fromAmountInput.addEventListener('input', calculateConversion); 
+if (swapBtn) swapBtn.addEventListener('click', swapCurrencies); 
+if (fromCurrencySelect) fromCurrencySelect.addEventListener('change', calculateConversion); 
+if (toCurrencySelect) toCurrencySelect.addEventListener('change', calculateConversion);
+
+// ==========================================
+// 7. الرواتب (تم التنظيف)
+// ==========================================
+let selectedSalaryFilter = 'all';
+
+function initSalariesTracker() {
+    const fBtns = document.querySelectorAll('.salaries-filters .filter-btn');
+    fBtns.forEach(b => {
+        b.addEventListener('click', () => { 
+            fBtns.forEach(x => x.classList.remove('active')); 
+            b.classList.add('active'); 
+            selectedSalaryFilter = b.getAttribute('data-status'); 
+            renderSalariesBoard(); 
+        });
+    });
+    renderSalariesBoard();
+}
+
+function renderSalariesBoard() {
+    // تم إيقاف توليد البطاقات الوهمية (الثابتة) بأمان
+    // الواجهة تعتمد الآن فقط على الأخبار الديناميكية المسحوبة من التليجرام
+}
+
+// ==========================================
+// 8. ✈️ الرادار المزدوج لتيليجرام (ديناميكي ومستمر)
+// ==========================================
 async function fetchUpdates() {
     try {
         const response = await fetch(API_BASE + '/api/updates'); 
         const data = await response.json();
         
-        let hasNewItems = false;
+        // 🔥 السيرفر يرسل آخر الأخبار، قمنا بعكس الترتيب ليكون الأحدث في الأعلى
+        const latestData = data.reverse(); 
         
-        if (allSalariesNews.length === 0) {
-            allSalariesNews = data;
-            hasNewItems = true;
-        } else {
-            const currentTopId = allSalariesNews[0].id;
-            const newItems = data.filter(item => item.id > currentTopId);
-            if (newItems.length > 0) {
-                allSalariesNews = [...newItems, ...allSalariesNews];
-                hasNewItems = true;
+        latestData.forEach(item => {
+            const date = new Date(item.created_at).toLocaleTimeString('ar-IQ', {hour: '2-digit', minute: '2-digit'});
+            let catColor = item.category === 'رواتب' ? '#00ffaa' : '#00ffcc'; 
+            const itemId = `news-${item.id}`;
+
+            // 1. طباعة بالترمنال الصغير (إذا لم يكن موجوداً)
+            if (pricesList && !document.getElementById(`term-${itemId}`)) {
+                const logElement = document.createElement('div'); 
+                logElement.id = `term-${itemId}`;
+                logElement.style.padding = '6px 0'; 
+                logElement.style.color = '#fff'; 
+                logElement.style.fontFamily = 'monospace'; 
+                logElement.style.borderBottom = '1px solid rgba(0, 240, 255, 0.08)'; 
+                logElement.innerHTML = `
+                    <span style="color: ${catColor}; font-weight: bold;">[${item.category}]</span> 
+                    <span>${item.content}</span> 
+                    <span style="color: #666; font-size: 11px; margin-right: 8px;">(${date})</span>`; 
+                // إضافة للأعلى
+                pricesList.insertBefore(logElement, pricesList.firstChild);
+                // تحديد عدد العناصر بـ 50 لمنع ثقل المتصفح
+                while (pricesList.childElementCount > 50) pricesList.removeChild(pricesList.lastChild);
             }
-        }
-        
-        if (hasNewItems) {
-            renderPaginatedNews();
-        }
-        
+
+            // 2. طباعة بالترمنال الكبير (شاشة المراقبة)
+            if (modalTeleLogs && !document.getElementById(`modal-${itemId}`)) {
+                const modalLogElement = document.createElement('div'); 
+                modalLogElement.id = `modal-${itemId}`;
+                modalLogElement.style.padding = '8px 0'; 
+                modalLogElement.style.color = '#fff'; 
+                modalLogElement.style.fontFamily = 'monospace'; 
+                modalLogElement.style.borderBottom = '1px dashed rgba(0, 255, 170, 0.2)'; 
+                modalLogElement.innerHTML = `
+                    <span style="color: ${catColor}; font-weight: bold;">[${item.category}]</span> 
+                    <span>${item.content}</span> 
+                    <span style="color: #666; font-size: 11px; margin-right: 8px;">(${date})</span>`; 
+                modalTeleLogs.appendChild(modalLogElement);
+            }
+            
+            // 3. إضافة الإشعارات العاجلة لقسم الرواتب
+            if (salariesGrid && item.category === 'رواتب') {
+                const card = document.createElement('div'); 
+                card.className = 'cyber-card dynamic-news-card'; 
+                card.style.padding = '15px'; 
+                card.style.borderRight = '4px solid #00ffaa'; 
+                card.style.background = 'rgba(0, 30, 60, 0.4)'; 
+                card.style.marginBottom = '15px'; 
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid rgba(0, 255, 170, 0.2); padding-bottom: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 18px;">📢</span>
+                            <span style="color: #00ffaa; font-weight: bold; font-size: 14px;">إشعار رواتب (عاجل)</span>
+                        </div>
+                        <span style="color: #888; font-size: 11px;">⌚ ${date}</span>
+                    </div>
+                    <p style="color: #e0e0e0; font-size: 14px; margin: 0;">${item.content}</p>`; 
+                salariesGrid.prepend(card); 
+            }
+        });
     } catch (error) {
-        console.error("خطأ في جلب التحديثات:", error);
+        console.error("Error fetching updates:", error);
     }
 }
-
-function renderPaginatedNews() {
-    if (!salariesGrid) return;
-    
-    const salaryItems = allSalariesNews.filter(item => item.category === 'رواتب');
-    
-    const totalPages = Math.ceil(salaryItems.length / itemsPerPage) || 1;
-    if (currentPage > totalPages) currentPage = totalPages;
-    
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const pageItems = salaryItems.slice(startIndex, endIndex);
-    
-    let html = '';
-    
-    pageItems.forEach(item => {
-        const date = new Date(item.created_at);
-        const timeStr = date.toLocaleTimeString('ar-IQ', {hour: '2-digit', minute: '2-digit'});
-        
-        let badgeClass = 'badge-yellow';
-        let badgeText = 'قيد التدقيق';
-        let badgeIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>';
-        
-        const contentStr = item.content.toLowerCase();
-        if (contentStr.includes('تم') || contentStr.includes('إطلاق') || contentStr.includes('صرف') || contentStr.includes('رفع')) {
-            badgeClass = 'badge-green';
-            badgeText = 'تم الصرف';
-            badgeIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
-        }
-
-        html += `
-            <div class="ios-card salary-card">
-                <div class="salary-top">
-                    <div class="salary-title">${item.content}</div>
-                    <div class="salary-badge ${badgeClass}">
-                        ${badgeIcon}
-                        <span>${badgeText}</span>
-                    </div>
-                </div>
-                <div class="salary-time">${timeStr} MT - تحديث مباشر</div>
-            </div>
-        `;
-    });
-    
-    salariesGrid.innerHTML = html;
-    renderPaginationControls(totalPages);
-}
-
-function renderPaginationControls(totalPages) {
-    const controlsContainer = document.getElementById('pagination-controls');
-    if (!controlsContainer) return;
-    
-    if (totalPages <= 1) {
-        controlsContainer.innerHTML = '';
-        return;
-    }
-    
-    let html = '';
-    
-    // Prev
-    html += `<button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-    </button>`;
-    
-    let startPage = Math.max(1, currentPage - 2);
-    let endPage = Math.min(totalPages, startPage + 4);
-    
-    if (endPage - startPage < 4) {
-        startPage = Math.max(1, endPage - 4);
-    }
-
-    if (startPage > 1) {
-        html += `<button class="page-btn" onclick="changePage(1)">1</button>`;
-        if (startPage > 2) html += `<span style="color:var(--ios-text-sub)">...</span>`;
-    }
-    
-    for (let i = startPage; i <= endPage; i++) {
-        html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
-    }
-    
-    if (endPage < totalPages) {
-        if (endPage < totalPages - 1) html += `<span style="color:var(--ios-text-sub)">...</span>`;
-        html += `<button class="page-btn" onclick="changePage(${totalPages})">${totalPages}</button>`;
-    }
-
-    // Next
-    html += `<button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
-    </button>`;
-    
-    controlsContainer.innerHTML = html;
-}
-
-window.changePage = function(newPage) {
-    currentPage = newPage;
-    renderPaginatedNews();
-    document.getElementById('sec-salaries').scrollIntoView({ behavior: 'smooth' });
-};
-
-// ==========================================
-// Render Bourses
-// ==========================================
-let bourseChartInstance = null;
-
-function renderLocalBoursesBoard() {
-    if (!localBoursesData || !boursesGrid) return;
-    const b = localBoursesData;
-    
-    const currentPrice = b.kifah;
-    // Simulating realistic past week data ending at current price
-    const fakeHistorical = [
-        currentPrice - 350, currentPrice - 100, currentPrice - 400, 
-        currentPrice + 150, currentPrice - 50, currentPrice + 200, currentPrice
-    ];
-    
-    // Check trend based on fake historical (last 2 points) or general target
-    const isUp = currentPrice >= fakeHistorical[5];
-    const trendColor = isUp ? '#34C759' : '#FF3B30';
-    const trendBg = isUp ? 'rgba(52, 199, 89, 0.2)' : 'rgba(255, 59, 48, 0.2)';
-    const arrow = isUp ? '↑' : '↓';
-
-    boursesGrid.innerHTML = `
-        <div class="ios-card bourse-main-card" style="padding: 24px 16px;">
-            <!-- Header -->
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 20px;">
-                <div style="text-align:right;">
-                    <div style="font-size: 0.95rem; font-weight:700; margin-bottom:4px; color:var(--ios-text-main);">سعر الدولار الموازي (بغداد)</div>
-                    <div style="font-size: 2.4rem; font-weight:800; color:${trendColor}; letter-spacing:-1px;">
-                        ${currentPrice.toLocaleString()} <span style="font-size:1.2rem; color:var(--ios-text-main);">دينار</span>
-                    </div>
-                </div>
-                <div style="display:flex; flex-direction:column; align-items:center;">
-                    <div style="font-weight:700; font-size:0.9rem; margin-bottom:4px; color:var(--ios-text-main);">100 دولار</div>
-                    <div style="background:${trendBg}; color:${trendColor}; border-radius:50%; width:24px; height:24px; display:flex; justify-content:center; align-items:center; font-weight:bold;">
-                        ${arrow}
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Chart -->
-            <div style="height: 120px; width:100%; margin-bottom: 24px;">
-                <canvas id="boursesChart"></canvas>
-            </div>
-            
-            <!-- Sub List -->
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px; border-bottom:1px solid var(--ios-border); padding-bottom:8px;">
-                <div style="font-weight:700; font-size:1rem; color:var(--ios-text-main);">بقية البورصات</div>
-                <div style="font-size:0.85rem; color:var(--ios-text-sub); font-weight:600;">24 ساعة</div>
-            </div>
-            
-            <div style="display:flex; flex-direction:column; gap:16px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:0.85rem; color:var(--ios-text-sub); width:60px;">قبل دقيقة</span>
-                    <span style="font-weight:700; font-size:1.05rem; color:${trendColor};">${b.kifah.toLocaleString()}</span>
-                    <span style="font-weight:700; font-size:1rem; flex:1; text-align:right; color:var(--ios-text-main);">بورصة الكفاح</span>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:0.85rem; color:var(--ios-text-sub); width:60px;">قبل دقيقة</span>
-                    <span style="font-weight:700; font-size:1.05rem; color:var(--ios-text-main);">${b.harthiya.toLocaleString()}</span>
-                    <span style="font-weight:700; font-size:1rem; flex:1; text-align:right; color:var(--ios-text-main);">بورصة الحارثية</span>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:0.85rem; color:var(--ios-text-sub); width:60px;">قبل دقيقة</span>
-                    <span style="font-weight:700; font-size:1.05rem; color:var(--ios-text-main);">${b.erbil.toLocaleString()}</span>
-                    <span style="font-weight:700; font-size:1rem; flex:1; text-align:right; color:var(--ios-text-main);">بورصة أربيل</span>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:0.85rem; color:var(--ios-text-sub); width:60px;">قبل دقيقة</span>
-                    <span style="font-weight:700; font-size:1.05rem; color:var(--ios-text-main);">${b.basra.toLocaleString()}</span>
-                    <span style="font-weight:700; font-size:1rem; flex:1; text-align:right; color:var(--ios-text-main);">بورصة البصرة</span>
-                </div>
-            </div>
-        </div>
-    `;
-
-    const ctx = document.getElementById('boursesChart');
-    if (ctx && window.Chart) {
-        if (bourseChartInstance) bourseChartInstance.destroy();
-        
-        const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 120);
-        gradient.addColorStop(0, trendBg);
-        gradient.addColorStop(1, 'rgba(255,255,255,0)');
-
-        bourseChartInstance = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'],
-                datasets: [{
-                    data: fakeHistorical,
-                    borderColor: trendColor,
-                    borderWidth: 3,
-                    backgroundColor: gradient,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 0,
-                    pointHoverRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false }, tooltip: { enabled: true } },
-                scales: {
-                    x: { display: false },
-                    y: { display: false, min: Math.min(...fakeHistorical) - 200, max: Math.max(...fakeHistorical) + 200 }
-                },
-                interaction: { intersect: false, mode: 'index' }
-            }
-        });
-    }
-}
-
-// ==========================================
-// Render Metals & Oil
-// ==========================================
-function renderMetalsBoard() {
-    if (!metalsGrid) return;
-    
-    const localOunceIQD = goldPriceUSD * (localBoursesData.kifah / 100);
-    const globalGramIQD = localOunceIQD / OUNCE_TO_GRAM;
-    const localGramIQD = globalGramIQD * MARKET_MULTIPLIER;
-    
-    const k24 = localGramIQD;
-    const k21 = localGramIQD * (21 / 24);
-    const k18 = localGramIQD * (18 / 24);
-
-    const silverGramIQD = (silverPriceUSD * (localBoursesData.kifah / 100)) / OUNCE_TO_GRAM;
-
-    metalsGrid.innerHTML = `
-        <div class="ios-card metal-card">
-            <div class="metal-title">عيار 24 (الصافي)</div>
-            <div class="metal-price">${Math.round(k24).toLocaleString()}</div>
-            <div class="metal-trend trend-up">▲ مستقر</div>
-        </div>
-        <div class="ios-card metal-card">
-            <div class="metal-title">عيار 21 (الأكثر تداولاً)</div>
-            <div class="metal-price">${Math.round(k21).toLocaleString()}</div>
-            <div class="metal-trend trend-up">▲ مستقر</div>
-        </div>
-        <div class="ios-card metal-card">
-            <div class="metal-title">عيار 18</div>
-            <div class="metal-price">${Math.round(k18).toLocaleString()}</div>
-            <div class="metal-trend trend-up">▲ مستقر</div>
-        </div>
-        <div class="ios-card metal-card">
-            <div class="metal-title">الفضة (غرام)</div>
-            <div class="metal-price">${Math.round(silverGramIQD).toLocaleString()}</div>
-            <div class="metal-trend trend-up">▲ مستقر</div>
-        </div>
-    `;
-}
-
-function renderOilBoard() {
-    if (!oilGrid) return;
-    oilGrid.innerHTML = `
-        <div class="ios-card metal-card">
-            <div class="metal-title">خام برنت</div>
-            <div class="metal-price">$${brentOilUSD.toFixed(2)}</div>
-            <div class="metal-trend trend-up">▲ مباشر</div>
-        </div>
-        <div class="ios-card metal-card">
-            <div class="metal-title">الخام الأمريكي</div>
-            <div class="metal-price">$${wtiOilUSD.toFixed(2)}</div>
-            <div class="metal-trend trend-up">▲ مباشر</div>
-        </div>
-    `;
-}
-
-// ==========================================
-// Converter Logic (Interactive & Advanced)
-// ==========================================
-const ALL_CURRENCIES = [
-    { code: 'USD', name: 'دولار أمريكي', flag: '🇺🇸' },
-    { code: 'IQD', name: 'دينار عراقي', flag: '🇮🇶' },
-    { code: 'EUR', name: 'يورو أوروبي', flag: '🇪🇺' },
-    { code: 'GBP', name: 'جنيه إسترليني', flag: '🇬🇧' },
-    { code: 'TRY', name: 'ليرة تركية', flag: '🇹🇷' },
-    { code: 'AED', name: 'درهم إماراتي', flag: '🇦🇪' },
-    { code: 'SAR', name: 'ريال سعودي', flag: '🇸🇦' },
-    { code: 'KWD', name: 'دينار كويتي', flag: '🇰🇼' },
-    { code: 'JOD', name: 'دينار أردني', flag: '🇯🇴' },
-    { code: 'SYP', name: 'ليرة سورية', flag: '🇸🇾' },
-    { code: 'LBP', name: 'ليرة لبنانية', flag: '🇱🇧' },
-    { code: 'IRR', name: 'تومان إيراني', flag: '🇮🇷' }
-];
-
-let fromCurrencyCode = 'USD';
-let toCurrencyCode = 'IQD';
-let activeTargetBtn = null;
-
-function initConverter() {
-    if (!fromAmountInput) return;
-
-    fromAmountInput.addEventListener('input', calculateConversion);
-    
-    const fromBtn = document.getElementById('from-currency-btn');
-    const toBtn = document.getElementById('to-currency-btn');
-    const sheet = document.getElementById('currency-sheet');
-    const overlay = document.getElementById('currency-sheet-overlay');
-    const currencyList = document.getElementById('currency-list');
-    
-    if (!sheet || !overlay || !currencyList) return;
-
-    // Populate Sheet
-    let html = '';
-    ALL_CURRENCIES.forEach(c => {
-        html += `
-            <div class="currency-list-item interactive-card" data-code="${c.code}" data-flag="${c.flag}">
-                <div class="left-side">
-                    <span class="flag">${c.flag}</span>
-                    <span style="display:flex; flex-direction:column; gap:2px;">
-                        <span>${c.code}</span>
-                        <span style="font-size:0.75rem; color:var(--ios-text-sub); font-weight:500;">${c.name}</span>
-                    </span>
-                </div>
-            </div>
-        `;
-    });
-    currencyList.innerHTML = html;
-
-    const openSheet = (btn) => {
-        activeTargetBtn = btn;
-        sheet.classList.add('active');
-        overlay.classList.add('active');
-    };
-    
-    const closeSheet = () => {
-        sheet.classList.remove('active');
-        overlay.classList.remove('active');
-    };
-
-    fromBtn.addEventListener('click', () => openSheet(fromBtn));
-    toBtn.addEventListener('click', () => openSheet(toBtn));
-    overlay.addEventListener('click', closeSheet);
-    
-    document.querySelectorAll('.currency-list-item').forEach(item => {
-        item.addEventListener('click', () => {
-            if (!activeTargetBtn) return;
-            const code = item.getAttribute('data-code');
-            const flag = item.getAttribute('data-flag');
-            
-            if (activeTargetBtn.id === 'from-currency-btn') {
-                fromCurrencyCode = code;
-                document.getElementById('from-flag').innerText = flag;
-                document.getElementById('from-code').innerText = code;
-            } else {
-                toCurrencyCode = code;
-                document.getElementById('to-flag').innerText = flag;
-                document.getElementById('to-code').innerText = code;
-            }
-            
-            closeSheet();
-            calculateConversion();
-        });
-    });
-    
-    swapBtn.addEventListener('click', () => {
-        const tempCode = fromCurrencyCode;
-        const tempFlag = document.getElementById('from-flag').innerText;
-        
-        fromCurrencyCode = toCurrencyCode;
-        document.getElementById('from-flag').innerText = document.getElementById('to-flag').innerText;
-        document.getElementById('from-code').innerText = toCurrencyCode;
-        
-        toCurrencyCode = tempCode;
-        document.getElementById('to-flag').innerText = tempFlag;
-        document.getElementById('to-code').innerText = tempCode;
-        
-        swapBtn.style.transform = 'rotate(180deg) scale(0.8)';
-        setTimeout(() => swapBtn.style.transform = 'none', 200);
-
-        calculateConversion();
-    });
-}
-
-function parseSmartInput(val) {
-    if (!val) return 0;
-    let str = val.replace(/,/g, '').toLowerCase();
-    if (str.endsWith('k')) return parseFloat(str) * 1000;
-    if (str.endsWith('m')) return parseFloat(str) * 1000000;
-    const parsed = parseFloat(str);
-    return isNaN(parsed) ? 0 : parsed;
-}
-
-function calculateConversion() {
-    if (Object.keys(currentRates).length === 0 || !fromAmountInput || !localBoursesData) return;
-    
-    const amount = parseSmartInput(fromAmountInput.value);
-    
-    const usdToIqd = localBoursesData.kifah / 100;
-    let amountInUsd = 0;
-    
-    if (fromCurrencyCode === 'IQD') amountInUsd = amount / usdToIqd;
-    else if (fromCurrencyCode === 'USD') amountInUsd = amount;
-    else amountInUsd = amount / (currentRates[fromCurrencyCode] || 1);
-    
-    let result = 0;
-    if (toCurrencyCode === 'IQD') result = amountInUsd * usdToIqd;
-    else if (toCurrencyCode === 'USD') result = amountInUsd;
-    else result = amountInUsd * (currentRates[toCurrencyCode] || 1);
-    
-    if (toCurrencyCode === 'IRR') {
-        // Iranian Toman is very large, format with no decimals
-        toAmountInput.value = Math.round(result).toLocaleString('en-US');
-    } else {
-        toAmountInput.value = result.toLocaleString('en-US', {maximumFractionDigits: 2});
-    }
-}
+setInterval(fetchUpdates, 5000);
