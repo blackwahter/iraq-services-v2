@@ -7,99 +7,94 @@
     <title>IRAQ CYBER-FINANCE | بوابة العراق المالية المستقبلية</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* ستايلات النافذة المكبرة للترمنال */
-        .terminal-card {
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.1) !important;
-            border-color: rgba(0, 240, 255, 0.3) !important;
+        /* =========================================
+           نظام المظهر الفاتح (Light Theme)
+        ========================================= */
+        body.light-theme {
+            background: #f0f4f8 !important;
+            color: #1a202c !important;
         }
-        .expand-btn {
-            background: rgba(0, 240, 255, 0.1);
-            border: 1px solid var(--cyber-cyan);
-            color: var(--cyber-cyan);
-            border-radius: 4px;
-            padding: 4px 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 0.85rem;
-            font-family: 'Tajawal', sans-serif;
+        body.light-theme .cyber-card {
+            background: #ffffff !important;
+            border-color: #cbd5e1 !important;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05) !important;
         }
-        .expand-btn:hover {
-            background: var(--cyber-cyan);
-            color: #000;
-            box-shadow: 0 0 10px var(--cyber-cyan);
+        body.light-theme .hud-header {
+            background: #ffffff !important;
+            border-bottom: 2px solid #cbd5e1 !important;
         }
-        .cyber-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 5, 15, 0.95);
-            backdrop-filter: blur(8px);
-            z-index: 9999;
-            padding: 30px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
+        body.light-theme .glitch-text, body.light-theme h3, body.light-theme h4, body.light-theme .cyber-subtitle {
+            color: #0f172a !important;
+            text-shadow: none !important;
         }
-        .cyber-modal.show {
-            display: block;
-            opacity: 1;
-            animation: zoomIn 0.3s ease forwards;
+        body.light-theme .tab-btn {
+            background: #e2e8f0 !important;
+            color: #475569 !important;
+            border-color: #cbd5e1 !important;
         }
-        @keyframes zoomIn {
-            from { transform: scale(0.95); }
-            to { transform: scale(1); }
+        body.light-theme .tab-btn.active {
+            background: var(--cyber-cyan, #0ea5e9) !important;
+            color: #ffffff !important;
+            border-color: var(--cyber-cyan, #0ea5e9) !important;
         }
-        .modal-content {
-            background: var(--cyber-panel);
-            border: 2px solid var(--cyber-cyan);
-            border-radius: 8px;
-            width: 100%; height: 100%;
-            padding: 25px;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+        body.light-theme .cyber-control-bar {
+            background: #ffffff !important;
+            border-color: #cbd5e1 !important;
         }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(0, 240, 255, 0.3);
-            padding-bottom: 15px;
-            margin-bottom: 20px;
+        body.light-theme .status-msg {
+            color: #334155 !important;
         }
-        .modal-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            height: 100%;
-            overflow: hidden;
+        body.light-theme .input-wrapper input, body.light-theme .input-wrapper select {
+            background: #f8fafc !important;
+            color: #1e293b !important;
+            border-color: #cbd5e1 !important;
         }
-        @media (max-width: 768px) {
-            .modal-grid { grid-template-columns: 1fr; }
-        }
-        .modal-box {
-            background: #010811;
-            border: 1px solid rgba(255,255,255,0.1);
+        
+        /* تنسيق كارتات الأخبار لتدعم الوضعين */
+        .news-item-card {
+            padding: 15px; 
+            border-right: 4px solid var(--cyber-cyan, #00ffaa); 
+            background: rgba(0, 255, 170, 0.05); 
+            margin-bottom: 12px; 
             border-radius: 6px;
-            padding: 15px;
-            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+        body.light-theme .news-item-card {
+            background: #f8fafc;
+            border-right: 4px solid #0ea5e9;
+            border: 1px solid #e2e8f0;
+            border-right-width: 4px;
+        }
+        .news-item-time {
+            color: var(--cyber-cyan, #00f0ff);
             font-family: monospace;
+            font-size: 0.85rem;
         }
-        .close-modal-btn {
-            background: rgba(255, 0, 60, 0.1);
-            border: 1px solid var(--cyber-red);
-            color: #fff;
-            padding: 8px 20px;
-            cursor: pointer;
-            border-radius: 4px;
-            font-weight: bold;
-            transition: 0.3s;
+        body.light-theme .news-item-time {
+            color: #64748b;
         }
-        .close-modal-btn:hover {
-            background: var(--cyber-red);
-            box-shadow: 0 0 15px var(--cyber-red);
+        .news-item-text {
+            color: #e2e8f0;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+        body.light-theme .news-item-text {
+            color: #1e293b;
+        }
+        .news-badge {
+            background: rgba(0, 255, 170, 0.2); 
+            color: var(--cyber-cyan, #00ffaa); 
+            padding: 4px 10px; 
+            border-radius: 4px; 
+            font-size: 0.8rem; 
+            font-weight: bold; 
+            border: 1px solid var(--cyber-cyan, #00ffaa);
+        }
+        body.light-theme .news-badge {
+            background: #e0f2fe;
+            color: #0369a1;
+            border-color: #bae6fd;
         }
     </style>
 </head>
@@ -120,7 +115,10 @@
                     </div>
                     <span id="hud-clock">00:00:00 AM</span>
                 </div>
-                <div class="hud-item sound-control">
+                <div class="hud-item sound-control" style="display: flex; gap: 10px;">
+                    <button id="theme-toggle" class="cyber-btn-mini" title="تبديل المظهر (داكن/فاتح)">
+                        <span class="icon" id="theme-icon">🌓</span> <span id="theme-text">المظهر: داكن</span>
+                    </button>
                     <button id="sound-toggle" class="cyber-btn-mini sound-active" title="تفعيل/كتم المؤثرات الصوتية">
                         <span class="icon">🔊</span> <span id="sound-status-text">الصوت: نشط</span>
                     </button>
@@ -160,15 +158,29 @@
         </div>
 
         <div class="tabs-nav">
-            <button class="tab-btn active" data-tab="currencies">💵 شاشات العملات </button>
+            <button class="tab-btn active" data-tab="salaries-tab">📅 أخبار الرواتب </button>
+            <button class="tab-btn" data-tab="currencies">💵 شاشات العملات </button>
             <button class="tab-btn" data-tab="metals">✨ الذهب والفضه</button>
             <button class="tab-btn" data-tab="oil">🛢️ النفط</button>
             <button class="tab-btn" data-tab="markets">🏛️ البورصات المحلية</button>
             <button class="tab-btn" data-tab="converter-tab">🧮 تحويل الكمي  </button>
-            <button class="tab-btn" data-tab="salaries-tab">📅 أخبار الرواتب </button>
         </div>
 
-        <div class="tab-content active" id="currencies">
+        <div class="tab-content active" id="salaries-tab">
+            <div class="cyber-card salaries-section">
+                <div class="card-glow"></div>
+                <div class="salaries-header-flex">
+                    <div class="salaries-title-block">
+                        <h3>📅 نظام رصد وإطلاق الرواتب الحكومية</h3>
+                        <p class="section-desc">متابعة لحظية وحية لتمويل وصرف رواتب موظفي الدولة والمتقاعدين في العراق</p>
+                    </div>
+                    </div>
+
+                <div id="salaries-grid" class="rates-grid" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="currencies">
             <div id="currencies-grid" class="rates-grid"></div>
             
             <div class="cyber-card chart-card">
@@ -299,97 +311,46 @@
             </div>
         </div>
 
-        <div class="tab-content" id="salaries-tab">
-            <div class="cyber-card salaries-section">
-                <div class="card-glow"></div>
-                <div class="salaries-header-flex">
-                    <div class="salaries-title-block">
-                        <h3>📅 نظام رصد وإطلاق الرواتب الحكومية</h3>
-                        <p class="section-desc">متابعة لحظية لتمويل وصرف رواتب موظفي الدولة والمتقاعدين في العراق لشهر أيار 2026</p>
-                    </div>
-                    <div class="salaries-summary-card">
-                        <span class="summary-label">إجمالي رواتب تم صرفها:</span>
-                        <div class="summary-progress-wrapper">
-                            <div class="summary-progress-container">
-                                <div class="summary-progress-bar" id="salaries-progress" style="width: 0%;"></div>
-                            </div>
-                            <span class="summary-percentage" id="salaries-pct">0%</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="salaries-filters">
-                    <button class="filter-btn active" data-status="all">الكل</button>
-                    <button class="filter-btn" data-status="released">🟢 تم الصرف</button>
-                    <button class="filter-btn" data-status="funded">🟡 تم التمويل</button>
-                    <button class="filter-btn" data-status="pending">🔴 قيد التدقيق</button>
-                </div>
-
-                <div id="salaries-grid" class="rates-grid"></div>
-            </div>
-        </div>
-
-
-        <div class="cyber-card terminal-card" style="padding-bottom: 25px; margin-top: 30px;">
-            <div class="card-glow"></div>
-            <div class="terminal-header" style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <span class="terminal-dot red"></span>
-                    <span class="terminal-dot yellow"></span>
-                    <span class="terminal-dot green"></span>
-                    <span class="terminal-title" style="font-size: 1rem;">سجل العمليات الحية للنظام (LIVE SYS_LOG)</span>
-                </div>
-                <button id="expand-terminal-btn" class="expand-btn">
-                    👁️ تكبير المراقبة
-                </button>
-            </div>
-            
-            <div class="terminal-body" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
-                <div id="terminal-logs" class="terminal-logs" style="height: 180px; background: #010811; padding: 10px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.05); overflow-y: auto;"></div>
-                <div id="prices-list" class="prices-container" style="height: 180px; background: #010811; padding: 10px; border-radius: 5px; border: 1px solid rgba(0, 240, 255, 0.1); overflow-y: auto;"></div>
-            </div>
-        </div>
-
         <footer class="hud-footer">
             <p class="footer-copy">CYBER-SYSTEM IQD v2.5.0 // SECURE PROTOCOL ACTIVE</p>
         </footer>
-    </div>
-
-    <div id="terminal-modal" class="cyber-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div>
-                    <span class="terminal-dot red"></span>
-                    <span class="terminal-dot yellow"></span>
-                    <span class="terminal-dot green"></span>
-                    <span style="color: var(--cyber-cyan); font-size: 1.2rem; font-weight: bold; margin-right: 10px; text-shadow: 0 0 10px var(--cyber-cyan);">شاشة المراقبة المركزية - سجلات النظام الحية</span>
-                </div>
-                <button id="close-modal-btn" class="close-modal-btn">إغلاق المراقبة ❌</button>
-            </div>
-            <div class="modal-grid">
-                <div class="modal-box" style="border-color: rgba(255,255,255,0.1);">
-                    <h4 style="color: #fff; border-bottom: 1px dashed rgba(255,255,255,0.2); padding-bottom: 10px; margin-bottom: 10px;">>_ SYSTEM_LOGS</h4>
-                    <div id="modal-sys-logs" style="color: #00f0ff;"></div>
-                </div>
-                <div class="modal-box" style="border-color: rgba(0,255,170,0.3); box-shadow: inset 0 0 20px rgba(0,255,170,0.05);">
-                    <h4 style="color: #00ffaa; border-bottom: 1px dashed rgba(0,255,170,0.3); padding-bottom: 10px; margin-bottom: 10px;">>_ TELEGRAM_RADAR</h4>
-                    <div id="modal-tele-logs"></div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="app.js"></script>
 
     <script>
+        // إعدادات تغيير المظهر (Dark/Light Mode)
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const themeText = document.getElementById('theme-text');
+        
+        // التحقق من الوضع المحفوظ مسبقاً
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-theme');
+            themeIcon.textContent = '🌞';
+            themeText.textContent = 'المظهر: فاتح';
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('light-theme');
+            if (document.body.classList.contains('light-theme')) {
+                localStorage.setItem('theme', 'light');
+                themeIcon.textContent = '🌞';
+                themeText.textContent = 'المظهر: فاتح';
+            } else {
+                localStorage.setItem('theme', 'dark');
+                themeIcon.textContent = '🌓';
+                themeText.textContent = 'المظهر: داكن';
+            }
+        });
+
+        // سحب البيانات من السيرفر وعرضها
         async function fetchCyberUpdates() {
             try {
-                // الاتصال بقاعدة بياناتك
                 const response = await fetch('/api/updates');
                 const data = await response.json();
                 
-                // 1. تحديث شبكة الرواتب
                 const salariesGrid = document.getElementById('salaries-grid');
                 if (salariesGrid) {
                     const salariesNews = data.filter(item => item.category === 'رواتب');
@@ -398,47 +359,25 @@
                         salariesGrid.innerHTML = salariesNews.map(item => {
                             const time = new Date(item.created_at).toLocaleTimeString('ar-IQ', {hour: '2-digit', minute:'2-digit'});
                             return `
-                                <div class="cyber-card" style="padding: 15px; border-right: 3px solid #00ffaa; background: rgba(0, 255, 170, 0.05); margin-bottom: 10px; border-radius: 5px;">
+                                <div class="news-item-card">
                                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                        <span style="background: rgba(0, 255, 170, 0.2); color: #00ffaa; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; border: 1px solid #00ffaa;">خبر عاجل</span>
-                                        <span style="color: #00f0ff; font-family: monospace; font-size: 0.85rem;">[${time}]</span>
+                                        <span class="news-badge">خبر عاجل</span>
+                                        <span class="news-item-time">[${time}]</span>
                                     </div>
-                                    <p style="color: #e2e8f0; font-size: 1rem; line-height: 1.6; margin: 0;">${item.content}</p>
+                                    <p class="news-item-text">${item.content}</p>
                                 </div>
                             `;
                         }).join('');
                     } else {
-                        salariesGrid.innerHTML = '<p style="color: #00f0ff; text-align: center; grid-column: 1/-1;">جاري انتظار التحديثات الحية للرواتب...</p>';
+                        salariesGrid.innerHTML = '<p style="color: var(--cyber-cyan, #00f0ff); text-align: center; grid-column: 1/-1;">جاري انتظار التحديثات الحية للرواتب...</p>';
                     }
                 }
-
-                // 2. تحديث سجلات الترمنال الحية (Terminal Logs)
-                const terminalLogs = document.getElementById('terminal-logs');
-                const modalLogs = document.getElementById('modal-tele-logs');
-                
-                if (data.length > 0) {
-                    const logHtml = data.map(item => {
-                        const time = new Date(item.created_at).toLocaleTimeString('ar-IQ', {hour: '2-digit', minute:'2-digit', second:'2-digit'});
-                        const color = item.category === 'رواتب' ? '#00ffaa' : '#00f0ff';
-                        return `
-                            <div style="margin-bottom: 8px; font-size: 0.85rem; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 5px;">
-                                <span style="color: #ff003c;">[${time}]</span> 
-                                <span style="color: ${color}; font-weight: bold;">[${item.category}]</span> 
-                                <span style="color: #a0aec0;">${item.content}</span>
-                            </div>
-                        `;
-                    }).join('');
-
-                    if (terminalLogs) terminalLogs.innerHTML = logHtml;
-                    if (modalLogs) modalLogs.innerHTML = logHtml;
-                }
-
             } catch (err) {
                 console.error("Connection Error:", err);
             }
         }
 
-        // سحب البيانات فوراً وتحديثها كل 10 ثواني بدون التأثير على تصميمك
+        // تشغيل نظام التحديث التلقائي
         fetchCyberUpdates();
         setInterval(fetchCyberUpdates, 10000);
     </script>
