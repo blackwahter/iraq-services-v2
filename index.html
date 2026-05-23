@@ -98,26 +98,26 @@
             <div class="ios-card converter-card">
                 <div class="converter-row">
                     <input type="text" inputmode="decimal" id="from-amount" class="ios-input" value="100">
-                    <select id="from-currency" class="ios-select">
-                        <option value="USD" selected>USD 🇺🇸</option>
-                        <option value="IQD">IQD 🇮🇶</option>
-                        <option value="EUR">EUR 🇪🇺</option>
-                    </select>
+                    <div id="from-currency-btn" class="ios-select-btn interactive-btn" data-currency="USD">
+                        <span class="currency-flag" id="from-flag">🇺🇸</span>
+                        <span class="currency-code" id="from-code">USD</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
                 </div>
                 
                 <div class="converter-swap">
-                    <button id="swap-btn" class="icon-btn">
+                    <button id="swap-btn" class="icon-btn interactive-btn">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="14" x2="21" y2="3"></line><polyline points="8 21 3 21 3 16"></polyline><line x1="20" y1="10" x2="3" y2="21"></line></svg>
                     </button>
                 </div>
                 
                 <div class="converter-row">
-                    <input type="text" readonly id="to-amount" class="ios-input result-input" value="131,000">
-                    <select id="to-currency" class="ios-select">
-                        <option value="IQD" selected>IQD 🇮🇶</option>
-                        <option value="USD">USD 🇺🇸</option>
-                        <option value="EUR">EUR 🇪🇺</option>
-                    </select>
+                    <input type="text" readonly id="to-amount" class="ios-input result-input" value="131,500">
+                    <div id="to-currency-btn" class="ios-select-btn interactive-btn" data-currency="IQD">
+                        <span class="currency-flag" id="to-flag">🇮🇶</span>
+                        <span class="currency-code" id="to-code">IQD</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
                 </div>
                 
                 <div class="converter-note">
@@ -149,7 +149,19 @@
     </nav>
 </div>
 
-<!-- Chart.js for the dynamic chart (although we might just draw an SVG directly for performance/look, but keeping chartjs if needed) -->
+<!-- Currency Selector Bottom Sheet -->
+<div id="currency-sheet-overlay" class="sheet-overlay"></div>
+<div id="currency-sheet" class="bottom-sheet">
+    <div class="sheet-header">
+        <div class="sheet-handle"></div>
+        <h3 class="sheet-title">اختر العملة</h3>
+    </div>
+    <div class="sheet-content" id="currency-list">
+        <!-- Populated via JS -->
+    </div>
+</div>
+
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="app.js"></script>
 </body>

@@ -453,19 +453,108 @@ function renderOilBoard() {
 }
 
 // ==========================================
-// Converter Logic
+// Converter Logic (Interactive & Advanced)
 // ==========================================
+const ALL_CURRENCIES = [
+    { code: 'USD', name: 'دولار أمريكي', flag: '🇺🇸' },
+    { code: 'IQD', name: 'دينار عراقي', flag: '🇮🇶' },
+    { code: 'EUR', name: 'يورو أوروبي', flag: '🇪🇺' },
+    { code: 'GBP', name: 'جنيه إسترليني', flag: '🇬🇧' },
+    { code: 'TRY', name: 'ليرة تركية', flag: '🇹🇷' },
+    { code: 'AED', name: 'درهم إماراتي', flag: '🇦🇪' },
+    { code: 'SAR', name: 'ريال سعودي', flag: '🇸🇦' },
+    { code: 'KWD', name: 'دينار كويتي', flag: '🇰🇼' },
+    { code: 'JOD', name: 'دينار أردني', flag: '🇯🇴' },
+    { code: 'SYP', name: 'ليرة سورية', flag: '🇸🇾' },
+    { code: 'LBP', name: 'ليرة لبنانية', flag: '🇱🇧' },
+    { code: 'IRR', name: 'تومان إيراني', flag: '🇮🇷' }
+];
+
+let fromCurrencyCode = 'USD';
+let toCurrencyCode = 'IQD';
+let activeTargetBtn = null;
+
 function initConverter() {
     if (!fromAmountInput) return;
 
     fromAmountInput.addEventListener('input', calculateConversion);
-    fromCurrencySelect.addEventListener('change', calculateConversion);
-    toCurrencySelect.addEventListener('change', calculateConversion);
+    
+    const fromBtn = document.getElementById('from-currency-btn');
+    const toBtn = document.getElementById('to-currency-btn');
+    const sheet = document.getElementById('currency-sheet');
+    const overlay = document.getElementById('currency-sheet-overlay');
+    const currencyList = document.getElementById('currency-list');
+    
+    if (!sheet || !overlay || !currencyList) return;
+
+    // Populate Sheet
+    let html = '';
+    ALL_CURRENCIES.forEach(c => {
+        html += `
+            <div class="currency-list-item interactive-card" data-code="${c.code}" data-flag="${c.flag}">
+                <div class="left-side">
+                    <span class="flag">${c.flag}</span>
+                    <span style="display:flex; flex-direction:column; gap:2px;">
+                        <span>${c.code}</span>
+                        <span style="font-size:0.75rem; color:var(--ios-text-sub); font-weight:500;">${c.name}</span>
+                    </span>
+                </div>
+            </div>
+        `;
+    });
+    currencyList.innerHTML = html;
+
+    const openSheet = (btn) => {
+        activeTargetBtn = btn;
+        sheet.classList.add('active');
+        overlay.classList.add('active');
+    };
+    
+    const closeSheet = () => {
+        sheet.classList.remove('active');
+        overlay.classList.remove('active');
+    };
+
+    fromBtn.addEventListener('click', () => openSheet(fromBtn));
+    toBtn.addEventListener('click', () => openSheet(toBtn));
+    overlay.addEventListener('click', closeSheet);
+    
+    document.querySelectorAll('.currency-list-item').forEach(item => {
+        item.addEventListener('click', () => {
+            if (!activeTargetBtn) return;
+            const code = item.getAttribute('data-code');
+            const flag = item.getAttribute('data-flag');
+            
+            if (activeTargetBtn.id === 'from-currency-btn') {
+                fromCurrencyCode = code;
+                document.getElementById('from-flag').innerText = flag;
+                document.getElementById('from-code').innerText = code;
+            } else {
+                toCurrencyCode = code;
+                document.getElementById('to-flag').innerText = flag;
+                document.getElementById('to-code').innerText = code;
+            }
+            
+            closeSheet();
+            calculateConversion();
+        });
+    });
     
     swapBtn.addEventListener('click', () => {
-        const tempCurr = fromCurrencySelect.value;
-        fromCurrencySelect.value = toCurrencySelect.value;
-        toCurrencySelect.value = tempCurr;
+        const tempCode = fromCurrencyCode;
+        const tempFlag = document.getElementById('from-flag').innerText;
+        
+        fromCurrencyCode = toCurrencyCode;
+        document.getElementById('from-flag').innerText = document.getElementById('to-flag').innerText;
+        document.getElementById('from-code').innerText = toCurrencyCode;
+        
+        toCurrencyCode = tempCode;
+        document.getElementById('to-flag').innerText = tempFlag;
+        document.getElementById('to-code').innerText = tempCode;
+        
+        swapBtn.style.transform = 'rotate(180deg) scale(0.8)';
+        setTimeout(() => swapBtn.style.transform = 'none', 200);
+
         calculateConversion();
     });
 }
@@ -480,23 +569,26 @@ function parseSmartInput(val) {
 }
 
 function calculateConversion() {
-    if (Object.keys(currentRates).length === 0 || !fromAmountInput) return;
+    if (Object.keys(currentRates).length === 0 || !fromAmountInput || !localBoursesData) return;
     
     const amount = parseSmartInput(fromAmountInput.value);
-    const fromCode = fromCurrencySelect.value;
-    const toCode = toCurrencySelect.value;
     
     const usdToIqd = localBoursesData.kifah / 100;
     let amountInUsd = 0;
     
-    if (fromCode === 'IQD') amountInUsd = amount / usdToIqd;
-    else if (fromCode === 'USD') amountInUsd = amount;
-    else amountInUsd = amount / currentRates[fromCode];
+    if (fromCurrencyCode === 'IQD') amountInUsd = amount / usdToIqd;
+    else if (fromCurrencyCode === 'USD') amountInUsd = amount;
+    else amountInUsd = amount / (currentRates[fromCurrencyCode] || 1);
     
     let result = 0;
-    if (toCode === 'IQD') result = amountInUsd * usdToIqd;
-    else if (toCode === 'USD') result = amountInUsd;
-    else result = amountInUsd * currentRates[toCode];
+    if (toCurrencyCode === 'IQD') result = amountInUsd * usdToIqd;
+    else if (toCurrencyCode === 'USD') result = amountInUsd;
+    else result = amountInUsd * (currentRates[toCurrencyCode] || 1);
     
-    toAmountInput.value = result.toLocaleString('en-US', {maximumFractionDigits: 2});
+    if (toCurrencyCode === 'IRR') {
+        // Iranian Toman is very large, format with no decimals
+        toAmountInput.value = Math.round(result).toLocaleString('en-US');
+    } else {
+        toAmountInput.value = result.toLocaleString('en-US', {maximumFractionDigits: 2});
+    }
 }
