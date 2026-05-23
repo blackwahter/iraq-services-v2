@@ -1396,6 +1396,41 @@ body[dir="rtl"] .input-wrapper select {
     .swap-icon:hover {
         transform: scale(1.08) rotate(270deg);
     }
+
+    .input-wrapper {
+        flex-direction: column !important;
+        background: transparent !important;
+        border: none !important;
+        gap: 6px;
+    }
+    .input-wrapper input {
+        width: 100% !important;
+        background: rgba(0, 0, 0, 0.35) !important;
+        border: 1px solid rgba(0, 240, 255, 0.15) !important;
+        border-radius: 4px !important;
+        padding: 0.8rem 1rem !important;
+        font-size: 1.2rem !important;
+    }
+    .input-wrapper select {
+        width: 100% !important;
+        background: var(--cyber-dark) !important;
+        border: 1px solid rgba(0, 240, 255, 0.15) !important;
+        border-radius: 4px !important;
+        padding: 0.8rem 1rem !important;
+        font-size: 0.9rem !important;
+        border-left: 1px solid rgba(0, 240, 255, 0.15) !important;
+        margin-top: 2px;
+    }
+    body.light-theme .input-wrapper input {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #0f172a !important;
+    }
+    body.light-theme .input-wrapper select {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #0f172a !important;
+    }
 }
 
 /* Cyber Terminal / Live Syslog Monitor */

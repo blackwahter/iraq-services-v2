@@ -630,10 +630,40 @@ function renderOilBoard() {
 // ------------------------------------------
 // المحول المالي
 // ------------------------------------------
+function parseSmartNumber(val) {
+    if (typeof val !== 'string') return NaN;
+    
+    // 1. تحويل الأرقام العربية والشرقية إلى إنجليزية
+    let cleanVal = val.replace(/[٠١٢٣٤٥٦٧٨٩]/g, function(d) {
+        return d.charCodeAt(0) - 1632;
+    }).replace(/[۰۱۲۳۴۵۶۷۸۹]/g, function(d) {
+        return d.charCodeAt(0) - 1776;
+    });
+    
+    // 2. إزالة الفواصل والمسافات وعلامات العملات
+    cleanVal = cleanVal.replace(/[, \s$_]/g, '').trim().toLowerCase();
+    
+    // 3. دعم الاختصارات مثل k, m, b, ك, م, ب
+    let multiplier = 1;
+    if (cleanVal.endsWith('k') || cleanVal.endsWith('ك')) {
+        multiplier = 1000;
+        cleanVal = cleanVal.slice(0, -1);
+    } else if (cleanVal.endsWith('m') || cleanVal.endsWith('م')) {
+        multiplier = 1000000;
+        cleanVal = cleanVal.slice(0, -1);
+    } else if (cleanVal.endsWith('b') || cleanVal.endsWith('ب')) {
+        multiplier = 1000000000;
+        cleanVal = cleanVal.slice(0, -1);
+    }
+    
+    const parsed = parseFloat(cleanVal);
+    return isNaN(parsed) ? NaN : parsed * multiplier;
+}
+
 function calculateConversion() {
     if (!currentRates || !fromAmountInput || !toAmountInput) return;
     
-    const fV = parseFloat(fromAmountInput.value); 
+    const fV = parseSmartNumber(fromAmountInput.value); 
     if (isNaN(fV) || fV < 0) { 
         toAmountInput.value = '0'; 
         return; 
