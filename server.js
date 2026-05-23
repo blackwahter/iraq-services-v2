@@ -10,13 +10,13 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ==========================================
-// 🛡️ صائد الانهيارات (منع توقف السيرفر عند الأخطاء المفاجئة)
+// 🛡️ صائد الانهيارات (تأمين السيرفر من التوقف في أيام الزخم)
 // ==========================================
 process.on('uncaughtException', (err) => {
-    console.error('🔥 [طوارئ]: خطأ غير متوقع، تم منعه من إيقاف السيرفر!', err.message);
+    console.error('🔥 [طوارئ]: تم منع انهيار السيرفر:', err.message);
 });
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('🔥 [طوارئ]: رفض غير معالج في وعد (Promise)!', reason);
+process.on('unhandledRejection', (reason) => {
+    console.error('🔥 [طوارئ]: رفض غير معالج:', reason);
 });
 
 // ==========================================
@@ -43,14 +43,12 @@ const initDB = async () => {
     try {
         await pool.query(createTableQuery);
         console.log('✅ Database tables are ready!');
-    } catch (err) {
-        console.error('❌ Error creating tables:', err);
-    }
+    } catch (err) {}
 };
 initDB();
 
 // ==========================================
-// 🤖 إعداد بوت تيليجرام الأساسي (للخاص والقناة)
+// 🤖 إعداد بوت تيليجرام (تلقائي + سيطرة المطور اليدوية)
 // ==========================================
 const token = process.env.TELEGRAM_TOKEN;
 const bot = new TelegramBot(token, { polling: true });
@@ -61,6 +59,19 @@ bot.on('message', async (msg) => {
     const text = msg.text;
     if (!text) return; 
 
+    // 👑 سيطرة المطور: النشر اليدوي الفوري للرواتب (فقط اكتب: راتب + الخبر)
+    if (text.startsWith('راتب ')) {
+        const news = text.replace('راتب ', '').trim();
+        try {
+            const insertQuery = `INSERT INTO telegram_updates (category, content) VALUES ($1, $2) RETURNING *`;
+            await pool.query(insertQuery, ['رواتب', news]);
+            bot.sendMessage(chatId, `✅ تم إطلاق الخبر بالموقع فوراً!\nالخبر: ${news}`);
+        } catch (err) {
+            bot.sendMessage(chatId, `❌ خطأ بالنشر: ${err.message}`);
+        }
+        return; 
+    }
+
     let category = 'أخبار عامة';
     if (text.includes('ذهب') || text.includes('غرام')) category = 'ذهب';
     else if (text.includes('نفط') || text.includes('برميل')) category = 'نفط';
@@ -69,9 +80,7 @@ bot.on('message', async (msg) => {
         const insertQuery = `INSERT INTO telegram_updates (category, content) VALUES ($1, $2) RETURNING *`;
         await pool.query(insertQuery, [category, text]);
         bot.sendMessage(chatId, `✅ تم استلام وحفظ تحديث (${category}) بنجاح!`);
-    } catch (err) {
-        console.error('❌ خطأ أثناء الخزن:', err.message);
-    }
+    } catch (err) {}
 });
 
 bot.on('channel_post', async (msg) => {
@@ -81,7 +90,7 @@ bot.on('channel_post', async (msg) => {
     let category = 'أخبار عامة';
     if (text.includes('ذهب') || text.includes('غرام') || text.includes('مثقال')) category = 'ذهب';
     else if (text.includes('نفط') || text.includes('برميل')) category = 'نفط';
-    else if (text.includes('دولار') || text.includes('صرف')) category = 'عملات';
+    else if (text.includes('دولار') || text.includes('صرف') || text.includes('الكفاح')) category = 'عملات';
 
     try {
         const insertQuery = `INSERT INTO telegram_updates (category, content) VALUES ($1, $2) RETURNING *`;
@@ -90,14 +99,10 @@ bot.on('channel_post', async (msg) => {
 });
 
 // ==========================================
-// 💸 نظام رادار البورصات المحلية (المزدوج والمدرع)
+// 💸 نظام رادار البورصات المحلية (متعدد المصادر)
 // ==========================================
-// إعطاء قيمة ابتدائية لمنع خطأ "جاري المزامنة" في الواجهة
 let localBourses = {
-    kifah: 146500,
-    harthiya: 146500,
-    erbil: 146700,
-    basra: 146200,
+    kifah: 146500, harthiya: 146500, erbil: 146700, basra: 146200,
     lastUpdated: new Date().toISOString() 
 };
 
@@ -115,53 +120,21 @@ function extractIraqiRate(text, cityName) {
 }
 
 async function scrapeBourses() {
-    try {
-        // الخطة A: استخدام بروكسي للبحث المباشر وتخطي الإعلانات
-        const targetUrl = encodeURIComponent('https://t.me/s/dollar_iraq_now?q=الكفاح');
-        const proxyUrl = `https://api.allorigins.win/raw?url=${targetUrl}`;
-        
-        const response = await axios.get(proxyUrl, { timeout: 15000 });
-        const $ = cheerio.load(response.data);
-        const messages = $('.tgme_widget_message_text');
-        
-        if (messages.length === 0) throw new Error("No messages found via proxy");
+    // 3 خطط طوارئ للبورصة
+    const sources = [
+        { url: 'https://rsshub.app/telegram/channel/dollar_iraq_now', type: 'rss' },
+        { url: `https://api.allorigins.win/raw?url=${encodeURIComponent('https://t.me/s/dollar_iraq_now?q=الكفاح')}`, type: 'html' }
+    ];
 
-        let found = false;
-        for (let i = messages.length - 1; i >= 0; i--) {
-            const text = $(messages[i]).text();
-            
-            if (text.includes('الكفاح') || text.includes('صرف')) {
-                const k = extractIraqiRate(text, 'الكفاح');
-                const h = extractIraqiRate(text, 'الحارثية');
-                const e = extractIraqiRate(text, 'اربيل');
-                const b = extractIraqiRate(text, 'البصرة');
+    let found = false;
 
-                if (k) localBourses.kifah = k;
-                if (h) localBourses.harthiya = h;
-                else if (k) localBourses.harthiya = k; 
-                if (e) localBourses.erbil = e;
-                if (b) localBourses.basra = b;
-
-                if (k || e || b) {
-                    localBourses.lastUpdated = new Date().toISOString();
-                    console.log('🎯 [رادار البورصة]: تم التحديث بنجاح (الخطة A)!', localBourses);
-                    found = true;
-                    break;
-                }
-            }
-        }
-    } catch (err) {
-        // الخطة B: إذا فشل البروكسي، ننتقل فوراً لـ RSSHub
+    for (let source of sources) {
+        if (found) break;
         try {
-            const rssUrl = 'https://rsshub.app/telegram/channel/dollar_iraq_now';
-            const res = await axios.get(rssUrl, { timeout: 15000 });
-            const $ = cheerio.load(res.data, { xmlMode: true });
-            const items = $('item');
+            const response = await axios.get(source.url, { timeout: 12000 });
+            const $ = cheerio.load(response.data, { xmlMode: source.type === 'rss' });
             
-            let found = false;
-            items.each((i, el) => {
-                if (found) return;
-                const text = $(el).find('description').text();
+            const processText = (text) => {
                 if (text.includes('الكفاح') || text.includes('صرف')) {
                     const k = extractIraqiRate(text, 'الكفاح');
                     if (k) {
@@ -170,67 +143,97 @@ async function scrapeBourses() {
                         localBourses.erbil = extractIraqiRate(text, 'اربيل') || localBourses.erbil;
                         localBourses.basra = extractIraqiRate(text, 'البصرة') || localBourses.basra;
                         localBourses.lastUpdated = new Date().toISOString();
-                        console.log('🎯 [رادار البورصة]: تم التحديث بنجاح (الخطة B - RSS)!');
+                        console.log(`🎯 [بورصة]: تم تحديث الأسعار بنجاح عبر (${source.type})`);
                         found = true;
                     }
                 }
-            });
-        } catch (e) {
-            console.log('⚠️ [رادار البورصة]: جميع المصادر مشغولة، سيتم الإبقاء على الأسعار القديمة للمحاولة القادمة.');
-        }
+            };
+
+            if (source.type === 'rss') {
+                $('item').each((i, el) => { if(!found) processText($(el).find('description').text()); });
+            } else {
+                const messages = $('.tgme_widget_message_text');
+                for (let i = messages.length - 1; i >= 0; i--) {
+                    if(!found) processText($(messages[i]).text());
+                }
+            }
+        } catch (err) { continue; }
     }
+    if (!found) console.log('⚠️ [بورصة]: جاري فحص تحديثات الأسعار القادمة...');
 }
 scrapeBourses();
-setInterval(scrapeBourses, 180000); // تحديث كل 3 دقائق
+setInterval(scrapeBourses, 120000); // يفحص كل دقيقتين
 
 // ==========================================
-// 📰 نظام سحب أخبار الرواتب (المحمي بـ RSS)
+// 📰 نظام سحب أخبار الرواتب (مدرع ضد اللود في أيام الراتب)
 // ==========================================
 async function scrapeSalaries() {
+    // 3 سيرفرات مختلفة لسحب الأخبار، إذا واحد وكف البقية تشيل الحمل!
+    const sources = [
+        { url: 'https://rsshub.app/telegram/channel/roatabn', type: 'rss' },
+        { url: `https://api.allorigins.win/raw?url=${encodeURIComponent('https://t.me/s/roatabn')}`, type: 'html' },
+        { url: `https://api.codetabs.com/v1/proxy?quest=https://t.me/s/roatabn`, type: 'html' }
+    ];
+
+    let lastMessage = null;
+
+    for (let source of sources) {
+        if (lastMessage) break;
+        try {
+            const response = await axios.get(source.url, { timeout: 10000 });
+            const $ = cheerio.load(response.data, { xmlMode: source.type === 'rss' });
+            
+            if (source.type === 'rss') {
+                const firstItem = $('item').first();
+                if (firstItem.length > 0) {
+                    lastMessage = firstItem.find('description').text().replace(/<[^>]+>/g, ' ').trim();
+                }
+            } else {
+                const messages = $('.tgme_widget_message_text');
+                if (messages.length > 0) {
+                    lastMessage = messages.last().text().trim();
+                }
+            }
+        } catch (e) { continue; } // إذا فشل يعبر للثاني بسرعة
+    }
+
+    if (!lastMessage) {
+        console.log(`⚠️ [رواتب]: ضغط عالي على المصادر، جاري المحاولة بالدورة القادمة...`);
+        return;
+    }
+
     try {
-        const rssUrl = 'https://rsshub.app/telegram/channel/roatabn';
-        const response = await axios.get(rssUrl, { timeout: 15000 });
-        const $ = cheerio.load(response.data, { xmlMode: true });
-        
-        const firstItem = $('item').first();
-        if (!firstItem) return;
-
-        let lastMessage = firstItem.find('description').text();
-        lastMessage = lastMessage.replace(/<[^>]+>/g, ' ').trim(); // تنظيف من أكواد HTML
-
-        const checkQuery = await pool.query('SELECT content FROM telegram_updates ORDER BY id DESC LIMIT 1');
+        const checkQuery = await pool.query("SELECT content FROM telegram_updates WHERE category = 'رواتب' ORDER BY id DESC LIMIT 1");
         if (checkQuery.rows.length > 0 && checkQuery.rows[0].content === lastMessage) return; 
 
-        const salaryKeywords = ['راتب', 'رواتب', 'تمويل', 'مصرف', 'متقاعدين', 'الرعاية', 'صرف', 'موظفي', 'المالية', 'سلفة', 'سلف'];
+        // أضفنا كلمات مفتاحية جديدة خاصة بيوم الرواتب
+        const salaryKeywords = ['راتب', 'رواتب', 'تمويل', 'مصرف', 'متقاعدين', 'الرعاية', 'صرف', 'موظفي', 'المالية', 'سلفة', 'سلف', 'إطلاق', 'باشر', 'عاجل'];
         const isSalaryNews = salaryKeywords.some(keyword => lastMessage.includes(keyword));
 
         if (!isSalaryNews) return; 
 
-        console.log(`🔍 [نجاح]: خبر رواتب جديد: ${lastMessage.substring(0, 50)}...`);
+        console.log(`🔍 [رواتب]: تم صيد خبر جديد ونشره فوراً!`);
         const insertQuery = `INSERT INTO telegram_updates (category, content) VALUES ($1, $2) RETURNING *`;
         await pool.query(insertQuery, ['رواتب', lastMessage]);
     } catch (error) {
-        console.log(`⚠️ [رواتب]: جاري انتظار الأخبار...`);
+        console.error('❌ خطأ في قاعدة البيانات:', error.message);
     }
 }
 scrapeSalaries();
-setInterval(scrapeSalaries, 60000); // تحديث كل دقيقة
+setInterval(scrapeSalaries, 40000); // يفحص كل 40 ثانية للسرعة القصوى اليوم!
 
 // ==========================================
-// 🧹 نظام التنظيف التلقائي الذكي (لحماية مساحة الداتابيس)
+// 🧹 نظام الصيانة والتنظيف الذكي
 // ==========================================
 async function cleanOldData() {
     try {
-        // يمسح الأخبار اللي مضى عليها أكثر من 30 يوم
         const deleteQuery = `DELETE FROM telegram_updates WHERE created_at < NOW() - INTERVAL '30 days';`;
         const result = await pool.query(deleteQuery);
-        if (result.rowCount > 0) console.log(`🧹 [صيانة]: تم مسح ${result.rowCount} أخبار قديمة (أكثر من 30 يوم)!`);
-    } catch (err) {
-        console.error('❌ خطأ في عملية التنظيف:', err.message);
-    }
+        if (result.rowCount > 0) console.log(`🧹 [صيانة]: تم تنظيف ${result.rowCount} أخبار قديمة.`);
+    } catch (err) {}
 }
 cleanOldData();
-setInterval(cleanOldData, 86400000); // فحص يومي
+setInterval(cleanOldData, 86400000); 
 
 // ==========================================
 // 🚀 إعدادات خادم الـ API (Express)
@@ -238,17 +241,9 @@ setInterval(cleanOldData, 86400000); // فحص يومي
 app.use(cors());
 app.use(express.json());
 
-// 🩺 فحص نبض السيرفر (Health Check)
-app.get('/api/health', (req, res) => {
-    res.json({ status: 'OK', uptime: process.uptime(), timestamp: new Date() });
-});
+app.get('/api/health', (req, res) => { res.json({ status: 'OK', uptime: process.uptime() }); });
+app.get('/api/bourses', (req, res) => { res.json({ success: true, data: localBourses }); });
 
-// API البورصات المحلية
-app.get('/api/bourses', (req, res) => {
-    res.json({ success: true, data: localBourses });
-});
-
-// API النفط العالمي
 app.get('/api/oil', async (req, res) => {
     try {
         const brentReq = await axios.get('https://query1.finance.yahoo.com/v8/finance/chart/BZ=F');
@@ -256,63 +251,40 @@ app.get('/api/oil', async (req, res) => {
         const wtiReq = await axios.get('https://query1.finance.yahoo.com/v8/finance/chart/CL=F');
         const wtiPrice = wtiReq.data.chart.result[0].meta.regularMarketPrice;
         res.json({ success: true, brent: brentPrice, wti: wtiPrice });
-    } catch (err) {
-        res.status(500).json({ success: false });
-    }
+    } catch (err) { res.status(500).json({ success: false }); }
 });
 
-// API التحديثات (الرواتب والأخبار)
 app.get('/api/updates', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM telegram_updates ORDER BY created_at DESC LIMIT 15');
+        const result = await pool.query("SELECT * FROM telegram_updates ORDER BY created_at DESC LIMIT 15");
         res.json(result.rows);
-    } catch (err) {
-        res.status(500).json({ error: 'حدث خطأ في السيرفر' });
-    }
+    } catch (err) { res.status(500).json({ error: 'حدث خطأ في السيرفر' }); }
 });
 
-// مسح كل الداتا يدوياً
 app.get('/api/clear-all', async (req, res) => {
     try {
         await pool.query('TRUNCATE TABLE telegram_updates;');
-        res.json({ success: true, message: "تم مسح البيانات" });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// تصفير الجدول وإعادة الترقيم
 app.get('/api/nuke-all-data', async (req, res) => {
     try {
         await pool.query('TRUNCATE TABLE telegram_updates RESTART IDENTITY;');
-        res.send("تم المسح بنجاح! طفي السيرفر وشغله.");
-    } catch (err) {
-        res.status(500).send(err.message);
-    }
+        res.send("تم المسح بنجاح!");
+    } catch (err) { res.status(500).send(err.message); }
 });
 
-// ==========================================
-// ⏰ نظام منع النوم لسيرفرات Render المجانية
-// ==========================================
+// ⏰ نظام منع النوم لسيرفرات Render
 setInterval(async () => {
-    try {
-        // السيرفر يزور نفسه كل 14 دقيقة حتى ما ينام
-        await axios.get(`https://iraq-services-v2.onrender.com/api/health`);
-    } catch (e) {
-        // تجاهل الأخطاء الصامتة هنا
-    }
+    try { await axios.get(`https://iraq-services-v2.onrender.com/api/health`); } catch (e) {}
 }, 14 * 60 * 1000); 
 
-// السماح للسيرفر بقراءة ملفات التصميم
 app.use(express.static(__dirname));
 
-// مسار الصفحة الرئيسية
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
+app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); });
 
-// تشغيل السيرفر
 app.listen(PORT, () => {
     console.log(`🌐 Server is running successfully on port ${PORT}`);
-    console.log(`🚀 السيرفر محمي ومستعد للعمل 24/7`);
+    console.log(`🚀 السيرفر بوضعية الطوارئ ومستعد ليوم الرواتب 24/7`);
 });
