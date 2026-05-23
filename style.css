@@ -102,13 +102,279 @@ body.cyberpunk-theme::before {
 
 .container {
     width: 100%;
-    max-width: 960px;
+    max-width: 1300px;
     margin: 0 auto;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 280px 1fr;
     gap: 1.5rem;
     position: relative;
     z-index: 1;
+    align-items: start;
+}
+
+/* =========================================
+   تنسيقات القائمة الجانبية (Cyber Sidebar)
+========================================= */
+.cyber-sidebar {
+    background: var(--cyber-card);
+    border: var(--hud-border);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    position: sticky;
+    top: 2rem;
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+    z-index: 99;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+}
+
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0.2rem;
+}
+
+.cyber-logo-mini {
+    width: 38px;
+    height: 38px;
+    border: 2px solid var(--cyber-cyan);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 0 10px var(--cyber-cyan-glow);
+}
+
+.cyber-logo-mini .logo-inner {
+    font-family: var(--font-cyber);
+    font-weight: 900;
+    font-size: 0.65rem;
+    color: var(--cyber-cyan);
+    letter-spacing: 0.5px;
+}
+
+.sidebar-title {
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -0.5px;
+}
+
+.sidebar-divider {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.sidebar-divider .line {
+    height: 1px;
+    background-color: var(--cyber-cyan);
+    flex: 1;
+    opacity: 0.3;
+}
+
+.sidebar-divider .dot {
+    width: 4px;
+    height: 4px;
+    background-color: var(--cyber-cyan);
+    border-radius: 50%;
+    box-shadow: 0 0 6px var(--cyber-cyan);
+    margin: 0 8px;
+}
+
+/* تعديل قائمة التبويبات لتناسب العرض الرأسي للسايد بار */
+.cyber-sidebar .tabs-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    padding-bottom: 0;
+}
+
+.cyber-sidebar .tabs-nav .tab-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(6, 12, 22, 0.45);
+    border: 1px solid rgba(0, 240, 255, 0.1);
+    color: var(--text-secondary);
+    padding: 0.85rem 1.2rem;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 700;
+    transition: var(--transition-fast);
+    text-align: right;
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+}
+
+.cyber-sidebar .tabs-nav .tab-btn:hover {
+    background: rgba(0, 240, 255, 0.05);
+    color: var(--text-primary);
+    border-color: rgba(0, 240, 255, 0.25);
+    padding-right: 1.5rem;
+}
+
+.cyber-sidebar .tabs-nav .tab-btn.active {
+    background: rgba(0, 240, 255, 0.08);
+    color: var(--cyber-cyan);
+    border-color: var(--cyber-cyan);
+    box-shadow: 0 0 15px var(--cyber-cyan-glow);
+    text-shadow: 0 0 5px var(--cyber-cyan-glow);
+    padding-right: 1.5rem;
+}
+
+.tab-icon {
+    font-size: 1.2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tab-text {
+    flex: 1;
+}
+
+/* زر التبديل والتحكم بالمحتوى الرئيسي */
+.main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    width: 100%;
+    min-width: 0; /* منع تجاوز الحدود */
+}
+
+/* إخفاء زر الهامبرغر افتراضياً على شاشات الديسكتوب */
+#sidebar-toggle {
+    display: none;
+}
+
+/* =========================================
+   تنسيقات المظهر الفاتح المخصصة للسايد بار
+========================================= */
+body.light-theme .cyber-sidebar {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+body.light-theme .sidebar-title {
+    color: #0f172a !important;
+}
+
+body.light-theme .cyber-logo-mini {
+    border-color: #0284c7 !important;
+    box-shadow: none !important;
+}
+
+body.light-theme .cyber-logo-mini .logo-inner {
+    color: #0284c7 !important;
+}
+
+body.light-theme .sidebar-divider .line {
+    background-color: #cbd5e1 !important;
+}
+
+body.light-theme .sidebar-divider .dot {
+    background-color: #0284c7 !important;
+    box-shadow: none !important;
+}
+
+body.light-theme .cyber-sidebar .tabs-nav .tab-btn {
+    background: #f8fafc !important;
+    color: #64748b !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+body.light-theme .cyber-sidebar .tabs-nav .tab-btn:hover {
+    background: #e2e8f0 !important;
+    color: #0f172a !important;
+}
+
+body.light-theme .cyber-sidebar .tabs-nav .tab-btn.active {
+    background: #0ea5e9 !important;
+    color: #ffffff !important;
+    border-color: #0ea5e9 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+}
+
+/* =========================================
+   تنسيقات الشاشات المتجاوبة للموبايل
+========================================= */
+@media (max-width: 1024px) {
+    .container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    /* تحويل السايد بار لدرج منزلق في الشاشات الصغيرة */
+    .cyber-sidebar {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 280px;
+        height: 100vh;
+        max-height: 100vh;
+        border-top: none;
+        border-bottom: none;
+        border-left: var(--hud-border);
+        border-right: none;
+        clip-path: none;
+        transform: translateX(100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1001;
+        box-shadow: -5px 0 25px rgba(0, 0, 0, 0.5);
+    }
+    
+    .cyber-sidebar.open {
+        transform: translateX(0);
+    }
+    
+    /* غطاء الخلفية عند فتح القائمة */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(3, 6, 11, 0.7);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .sidebar-overlay.active {
+        display: block;
+        opacity: 1;
+    }
+    
+    /* إظهار زر الهامبرغر في الشاشات الصغيرة */
+    #sidebar-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        border-color: rgba(0, 240, 255, 0.4);
+        color: var(--cyber-cyan);
+    }
+    
+    body.light-theme #sidebar-toggle {
+        border-color: #cbd5e1 !important;
+        color: #0f172a !important;
+        background: #f8fafc !important;
+    }
 }
 
 /* HUD Header Styling */

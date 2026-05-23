@@ -57,6 +57,7 @@ const swapBtn = document.getElementById('swap-btn');
 
 window.addEventListener('DOMContentLoaded', () => {
     initTabs();
+    initMobileSidebar();
     initClock();
     initParticles();
     initSoundEngine();
@@ -257,6 +258,9 @@ function initClock() {
 function initTabs() {
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
+    const sidebar = document.getElementById('cyber-sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
     tabButtons.forEach(button => {
         button.addEventListener('click', () => {
             const tabId = button.getAttribute('data-tab'); 
@@ -270,8 +274,32 @@ function initTabs() {
             if (targetContent) {
                 targetContent.classList.add('active');
             }
+
+            // إغلاق السايد بار في وضع الموبايل عند الضغط على أي قسم
+            if (sidebar) sidebar.classList.remove('open');
+            if (overlay) overlay.classList.remove('active');
         });
     });
+}
+
+function initMobileSidebar() {
+    const toggleBtn = document.getElementById('sidebar-toggle');
+    const sidebar = document.getElementById('cyber-sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    if (toggleBtn && sidebar && overlay) {
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+            playCyberSelect();
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+            playCyberSelect();
+        });
+    }
 }
 
 // ==========================================
