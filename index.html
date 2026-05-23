@@ -227,6 +227,16 @@
                 </div>
             </header>
 
+            <!-- أزرار الاختصار السريع للأقسام على الموبايل -->
+            <div class="mobile-quick-nav">
+                <button class="quick-chip active" data-target="salaries-tab">📅 الرواتب</button>
+                <button class="quick-chip" data-target="currencies">💵 العملات</button>
+                <button class="quick-chip" data-target="metals">✨ الذهب</button>
+                <button class="quick-chip" data-target="oil">🛢️ النفط</button>
+                <button class="quick-chip" data-target="markets">🏛️ البورصات</button>
+                <button class="quick-chip" data-target="converter-tab">💰 الحاسبة</button>
+            </div>
+
             <div class="cyber-control-bar">
                 <div class="system-status">
                     <div class="status-indicator">
@@ -524,6 +534,51 @@
         document.getElementById('salary-search-input')?.addEventListener('input', () => {
             currentPage = 1;
             renderSmartSalaries();
+        });
+
+        // تفعيل أزرار الاختصار السريع على الموبايل
+        const quickChips = document.querySelectorAll('.quick-chip');
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        quickChips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                const targetTabId = chip.getAttribute('data-target');
+                if (typeof playCyberSelect === 'function') playCyberSelect();
+                
+                quickChips.forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                
+                tabButtons.forEach(btn => {
+                    if (btn.getAttribute('data-tab') === targetTabId) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+                
+                tabContents.forEach(content => {
+                    if (content.id === targetTabId) {
+                        content.classList.add('active');
+                    } else {
+                        content.classList.remove('active');
+                    }
+                });
+            });
+        });
+
+        // مزامنة أزرار الاختصار السريع عند التغيير من السايدبار
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tabId = button.getAttribute('data-tab');
+                quickChips.forEach(c => {
+                    if (c.getAttribute('data-target') === tabId) {
+                        c.classList.add('active');
+                    } else {
+                        c.classList.remove('active');
+                    }
+                });
+            });
         });
 
         fetchCyberUpdates();

@@ -1935,3 +1935,121 @@ body[dir="rtl"] .input-wrapper select {
 @media (min-width: 769px) and (max-width: 1024px) {
     .rates-grid { grid-template-columns: 1fr 1fr; }
 }
+
+/* =========================================
+   تنسيقات شريط التنقل السريع الفاخر للموبايل
+========================================= */
+.mobile-quick-nav {
+    display: none;
+}
+
+@media (max-width: 1024px) {
+    /* شريط فئات الأقسام المنزلق أفقياً */
+    .mobile-quick-nav {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 5px 15px 15px 15px;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        margin-top: -0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .mobile-quick-nav::-webkit-scrollbar {
+        display: none;
+    }
+    .quick-chip {
+        flex: 0 0 auto;
+        background: rgba(6, 12, 22, 0.65);
+        border: 1px solid rgba(0, 240, 255, 0.15);
+        border-radius: 20px;
+        color: var(--text-secondary);
+        padding: 8px 16px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        font-family: var(--font-arabic), inherit;
+    }
+    .quick-chip:hover {
+        border-color: rgba(0, 240, 255, 0.4);
+        color: var(--text-primary);
+    }
+    .quick-chip.active {
+        background: rgba(0, 240, 255, 0.12);
+        border-color: var(--cyber-cyan);
+        color: var(--cyber-cyan);
+        box-shadow: 0 0 10px var(--cyber-cyan-glow);
+        text-shadow: 0 0 5px var(--cyber-cyan-glow);
+    }
+
+    /* تبسيط وتكثيف الهيدر على الموبايل لزيادة المساحة المتاحة للمحتوى */
+    .hud-header {
+        padding: 10px 15px !important;
+        margin-bottom: 0.5rem !important;
+    }
+    .hud-top-bar {
+        border-bottom: none !important;
+        padding-bottom: 0 !important;
+        margin-bottom: 8px !important;
+    }
+    .header-main {
+        flex-direction: row !important;
+        justify-content: flex-start !important;
+        align-items: center !important;
+        gap: 12px !important;
+        text-align: right !important;
+        padding: 4px 0 !important;
+    }
+    .header-main .cyber-coin {
+        width: 36px !important;
+        height: 36px !important;
+        margin-bottom: 0 !important;
+    }
+    .header-main .cyber-coin svg {
+        width: 36px !important;
+        height: 36px !important;
+    }
+    .header-main h1 {
+        font-size: 1.15rem !important;
+        margin: 0 !important;
+    }
+    .cyber-subtitle, .hud-divider {
+        display: none !important;
+    }
+}
+
+/* مظهر الفاتح للشريط السريع */
+body.light-theme .quick-chip {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #475569 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+}
+body.light-theme .quick-chip.active {
+    background: #0ea5e9 !important;
+    border-color: #0ea5e9 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 5px rgba(14, 165, 233, 0.2) !important;
+}
+
+/* تأثير حركي ناعم وفخم عند التبديل بين التبويبات */
+.tab-content {
+    display: none;
+}
+.tab-content.active {
+    display: block;
+    animation: fadeInUpTab 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInUpTab {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
