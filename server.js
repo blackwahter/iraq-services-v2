@@ -83,105 +83,6 @@ bot.on('channel_post', async (msg) => {
 });
 
 // ==========================================
-// 💸 نظام رادار البورصات المحلية (الجديد)
-// ==========================================
-let localBourses = {
-    kifah: 146500,
-    harthiya: 146500,
-    erbil: 146700,
-    basra: 146200,
-    lastUpdated: null
-};
-
-// خوارزمية استخراج الرقم من النص (تصطاد الرقم بصف اسم المحافظة)
-function extractIraqiRate(text, cityName) {
-    const index = text.indexOf(cityName);
-    if (index === -1) return null;
-    // ناخذ النص اللي بعد اسم المحافظة بـ 40 حرف وندور بي على رقم الدولار
-    const slice = text.substring(index, index + 40);
-    // يبحث عن أرقام مثل 146500 أو 146,500 أو 146.50
-    const match = slice.match(/1[3-7][0-9][.,]?[0-9]{2,3}/);
-    if (match) {
-        let cleanNum = match[0].replace(/[.,]/g, '');
-        if (cleanNum.length === 5) cleanNum += '0'; // معالجة إذا كان مكتوب 14650
-        return parseInt(cleanNum);
-    }
-    return null;
-}
-
-async function scrapeBourses() {
-    // قائمة بأقوى الوسطاء المجانية. السيرفر راح يجربهم واحد ورا الثاني!
-    const proxies = [
-        'https://corsproxy.io/?https://t.me/s/dollar_iraq_now',
-        'https://api.allorigins.win/raw?url=https://t.me/s/dollar_iraq_now',
-        'https://thingproxy.freeboard.io/fetch/https://t.me/s/dollar_iraq_now'
-    ];
-
-    let htmlData = null;
-
-    // السيرفر يفر على الوسطاء
-    for (let proxy of proxies) {
-        try {
-            // ننتظر 8 ثواني كحد أقصى لكل وسيط
-            const response = await axios.get(proxy, { timeout: 8000 });
-            if (response.data) {
-                htmlData = response.data;
-                console.log(`✅ [نجاح]: تم سحب البورصة عبر الوسيط: ${proxy.split('/')[2]}`);
-                break; // لكينا البيانات، نطلع من اللوب وما نجرب البقية
-            }
-        } catch (e) {
-            // إذا فشل هذا الوسيط، ما نطلع خطأ، بس نطبع تنبيه ونعبر للوسيط اللي بعده
-            console.log(`⚠️ [تخطي]: الوسيط ${proxy.split('/')[2]} لا يستجيب حالياً.`);
-        }
-    }
-
-    // إذا كل الوسطاء فشلوا (حالة نادرة جداً)
-    if (!htmlData) {
-        console.log('❌ [رادار البورصة]: كل سيرفرات الوسطاء مشغولة الآن. سيتم المحاولة لاحقاً.');
-        return;
-    }
-
-    try {
-        // معالجة البيانات اللي حصلناها
-        const $ = cheerio.load(htmlData);
-        const messages = $('.tgme_widget_message_text');
-        
-        if (messages.length === 0) return;
-
-        let found = false;
-        for (let i = messages.length - 1; i >= 0; i--) {
-            const text = $(messages[i]).text();
-            
-            if (text.includes('الكفاح') || text.includes('صرف')) {
-                const k = extractIraqiRate(text, 'الكفاح');
-                const h = extractIraqiRate(text, 'الحارثية');
-                const e = extractIraqiRate(text, 'اربيل');
-                const b = extractIraqiRate(text, 'البصرة');
-
-                if (k) localBourses.kifah = k;
-                if (h) localBourses.harthiya = h;
-                else if (k) localBourses.harthiya = k; 
-                if (e) localBourses.erbil = e;
-                if (b) localBourses.basra = b;
-
-                if (k || e || b) {
-                    localBourses.lastUpdated = new Date().toISOString();
-                    console.log('🎯 [رادار البورصة]: تم تحديث أسعار السوق المحلية بنجاح!', localBourses);
-                    found = true;
-                    break; 
-                }
-            }
-        }
-    } catch (err) {
-        console.error('❌ [رادار البورصة]: خطأ أثناء قراءة البيانات.', err.message);
-    }
-}
-
-// تشغيل الرادار كل 3 دقائق
-scrapeBourses();
-setInterval(scrapeBourses, 180000);
-
-// ==========================================
 // 💸 نظام رادار البورصات المحلية (عبر تقنية RSS)
 // ==========================================
 let localBourses = {
@@ -256,7 +157,6 @@ async function scrapeBourses() {
 // تشغيل الرادار فوراً ثم كل 5 دقائق
 scrapeBourses();
 setInterval(scrapeBourses, 300000);
-
 
 // ==========================================
 // 📰 نظام سحب أخبار الرواتب (الذكي)
@@ -359,6 +259,7 @@ app.get('/api/nuke-all-data', async (req, res) => {
         res.status(500).send(err.message);
     }
 });
+
 // السماح للسيرفر بقراءة ملفات التصميم (مثل style.css)
 app.use(express.static(__dirname));
 
@@ -366,6 +267,7 @@ app.use(express.static(__dirname));
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
+
 app.listen(PORT, () => {
     console.log(`🌐 Server is running successfully on port ${PORT}`);
 });
