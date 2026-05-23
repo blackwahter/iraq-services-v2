@@ -170,11 +170,22 @@ async function scrapeSalaries() {
     const channels = ['roatabn', 'iraqnow4', 'omeralij', 'marwaan1980']; // قنوات الأخبار والرواتب المعتمدة
     const salaryKeywords = ['راتب', 'رواتب', 'تمويل', 'مصرف', 'متقاعدين', 'الرعاية', 'صرف', 'موظفي', 'المالية', 'سلفة', 'سلف', 'إطلاق', 'باشر', 'عاجل'];
 
+    const userAgents = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Safari/605.1.15',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0'
+    ];
+
     for (let channel of channels) {
         try {
-            // سحب مباشر وسريع بدون وسيط (بدون كاش)
+            // توقف عشوائي بين 1 إلى 3 ثوانٍ قبل فحص كل قناة لتجنب البلوك (Anti-Ban Delay)
+            await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * 2000) + 1000));
+            
+            const randomAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
+            
+            // سحب مباشر وسريع بدون وسيط
             const response = await axios.get(`https://t.me/s/${channel}`, { 
-                headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+                headers: { 'User-Agent': randomAgent },
                 timeout: 8000 
             });
             const $ = cheerio.load(response.data);
@@ -198,12 +209,12 @@ async function scrapeSalaries() {
                 }
             }
         } catch (e) {
-            console.error(`⚠️ تأخير في استجابة قناة ${channel}`);
+            console.error(`⚠️ تأخير أو حظر مؤقت في استجابة قناة ${channel}`);
         } 
     }
 }
 scrapeSalaries();
-setInterval(scrapeSalaries, 35000); // يفحص كل 35 ثانية
+setInterval(scrapeSalaries, 60000); // تم زيادتها إلى 60 ثانية لحماية السيرفر من الحظر
 
 // ==========================================
 // 🧹 نظام الصيانة والتنظيف الذكي
