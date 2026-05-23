@@ -8,27 +8,44 @@
     <link rel="stylesheet" href="style.css">
     <style>
         /* =========================================
-           نظام المظهر الفاتح (Light Theme)
+           إيقاف الحركات (Animations) للوجو والعنوان
+        ========================================= */
+        .cyber-coin svg circle { animation: none !important; stroke-dasharray: none !important; stroke-dashoffset: 0 !important; }
+        .logo-pulse { display: none !important; }
+        .glitch-text { animation: none !important; text-shadow: none !important; }
+        .glitch-text::before, .glitch-text::after { display: none !important; }
+
+        /* =========================================
+           نظام المظهر الفاتح (Light Theme) المعدل جذرياً
         ========================================= */
         body.light-theme {
-            background: #f0f4f8 !important;
-            color: #1a202c !important;
+            background: #f8fafc !important;
+            color: #0f172a !important;
         }
         body.light-theme .cyber-card {
             background: #ffffff !important;
             border-color: #cbd5e1 !important;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05) !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
         }
         body.light-theme .hud-header {
             background: #ffffff !important;
             border-bottom: 2px solid #cbd5e1 !important;
         }
-        body.light-theme .glitch-text, body.light-theme h3, body.light-theme h4, body.light-theme .cyber-subtitle {
+        
+        /* إزالة الخلفية السوداء المشوهة من العنوان */
+        body.light-theme .glitch-text, body.light-theme .header-main h1 {
+            background: transparent !important;
+            background-color: transparent !important;
+            color: #0f172a !important;
+            text-shadow: none !important;
+        }
+        
+        body.light-theme h3, body.light-theme h4, body.light-theme .cyber-subtitle, body.light-theme label {
             color: #0f172a !important;
             text-shadow: none !important;
         }
         body.light-theme .tab-btn {
-            background: #e2e8f0 !important;
+            background: #f1f5f9 !important;
             color: #475569 !important;
             border-color: #cbd5e1 !important;
         }
@@ -44,11 +61,42 @@
         body.light-theme .status-msg {
             color: #334155 !important;
         }
+        
+        /* ضبط الحقول في المود الفاتح */
         body.light-theme .input-wrapper input, body.light-theme .input-wrapper select {
-            background: #f8fafc !important;
+            background: #ffffff !important;
+            color: #0f172a !important;
+            border: 1px solid #94a3b8 !important;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+        }
+        body.light-theme .input-wrapper input:focus, body.light-theme .input-wrapper select:focus {
+            border-color: #0ea5e9 !important;
+            box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
+        }
+        body.light-theme .formula-box {
+            background: #f1f5f9 !important;
+            border-color: #cbd5e1 !important;
             color: #1e293b !important;
+        }
+        body.light-theme .formula-box code {
+            color: #dc2626 !important;
+        }
+        body.light-theme .search-wrapper input {
+            background: #ffffff !important;
+            color: #0f172a !important;
+            border: 1px solid #94a3b8 !important;
+        }
+        body.light-theme .search-wrapper input:focus {
+            border-color: #0ea5e9 !important;
+            box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
+        }
+        body.light-theme .page-btn {
+            background: #f1f5f9 !important;
+            color: #0f172a !important;
             border-color: #cbd5e1 !important;
         }
+        body.light-theme .page-btn:hover { background: #e2e8f0 !important; }
+        body.light-theme .page-btn.active { background: #0ea5e9 !important; color: #fff !important; border-color: #0ea5e9 !important; }
         
         /* تنسيق كارتات الأخبار لتدعم الوضعين */
         .news-item-card {
@@ -70,18 +118,14 @@
             font-family: monospace;
             font-size: 0.85rem;
         }
-        body.light-theme .news-item-time {
-            color: #64748b;
-        }
+        body.light-theme .news-item-time { color: #64748b; }
         .news-item-text {
             color: #e2e8f0;
             font-size: 1.05rem;
             line-height: 1.6;
             margin: 0;
         }
-        body.light-theme .news-item-text {
-            color: #1e293b;
-        }
+        body.light-theme .news-item-text { color: #1e293b; }
         .news-badge {
             background: rgba(0, 255, 170, 0.2); 
             color: var(--cyber-cyan, #00ffaa); 
@@ -96,6 +140,29 @@
             color: #0369a1;
             border-color: #bae6fd;
         }
+
+        /* =========================================
+           ستايلات شريط البحث والصفحات (Pagination)
+        ========================================= */
+        .search-wrapper { position: relative; margin-bottom: 20px; }
+        .search-wrapper input {
+            width: 100%; padding: 12px 40px 12px 15px; 
+            background: rgba(0, 240, 255, 0.05); 
+            border: 1px solid var(--cyber-cyan, #00f0ff); 
+            border-radius: 6px; color: #fff; font-family: inherit; font-size: 1rem; outline: none; transition: 0.3s;
+        }
+        .search-wrapper input:focus { box-shadow: 0 0 10px rgba(0, 240, 255, 0.3); }
+        .search-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-size: 1.2rem; }
+        
+        .pagination-controls { display: flex; justify-content: center; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
+        .page-btn {
+            background: rgba(0, 240, 255, 0.1); border: 1px solid var(--cyber-cyan, #00f0ff); 
+            color: var(--cyber-cyan, #00f0ff); padding: 6px 14px; border-radius: 4px; 
+            cursor: pointer; font-family: monospace; transition: 0.3s; font-weight: bold;
+        }
+        .page-btn:hover:not(:disabled) { background: var(--cyber-cyan, #00f0ff); color: #000; }
+        .page-btn.active { background: var(--cyber-cyan, #00f0ff); color: #000; }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; border-color: gray; color: gray; }
     </style>
 </head>
 
@@ -116,7 +183,7 @@
                     <span id="hud-clock">00:00:00 AM</span>
                 </div>
                 <div class="hud-item sound-control" style="display: flex; gap: 10px;">
-                    <button id="theme-toggle" class="cyber-btn-mini" title="تبديل المظهر (داكن/فاتح)">
+                    <button id="theme-toggle" class="cyber-btn-mini" title="تبديل المظهر">
                         <span class="icon" id="theme-icon">🌓</span> <span id="theme-text">المظهر: داكن</span>
                     </button>
                     <button id="sound-toggle" class="cyber-btn-mini sound-active" title="تفعيل/كتم المؤثرات الصوتية">
@@ -128,9 +195,8 @@
             <div class="header-main">
                 <div class="cyber-logo">
                     <span class="logo-inner">IQD</span>
-                    <span class="logo-pulse"></span>
                 </div>
-                <h1 class="glitch-text" data-text="بوابة العراق المالية">بوابة العراق المالية</h1>
+                <h1 class="glitch-text">بوابة العراق المالية</h1>
                 <div class="hud-divider">
                     <span class="line"></span>
                     <span class="dot"></span>
@@ -149,10 +215,6 @@
                 <span id="update-status" class="status-msg">جاري تحميل مصفوفة البيانات...</span>
             </div>
             <button id="refresh-btn" class="cyber-btn refresh-btn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
-                </svg>
                 <span>تحديث المصفوفة</span>
             </button>
         </div>
@@ -162,8 +224,8 @@
             <button class="tab-btn" data-tab="currencies">💵 شاشات العملات </button>
             <button class="tab-btn" data-tab="metals">✨ الذهب والفضه</button>
             <button class="tab-btn" data-tab="oil">🛢️ النفط</button>
-            <button class="tab-btn" data-tab="markets">🏛️ البورصات المحلية</button>
-            <button class="tab-btn" data-tab="converter-tab">🧮 تحويل الكمي  </button>
+            <button class="tab-btn" data-tab="markets"> البورصات المحلية</button>
+            <button class="tab-btn" data-tab="converter-tab">🧮 التحويل الكمي</button>
         </div>
 
         <div class="tab-content active" id="salaries-tab">
@@ -171,12 +233,19 @@
                 <div class="card-glow"></div>
                 <div class="salaries-header-flex">
                     <div class="salaries-title-block">
-                        <h3>📅 نظام رصد وإطلاق الرواتب الحكومية</h3>
+                        <h3>نظام رصد وإطلاق الرواتب الحكومية</h3>
                         <p class="section-desc">متابعة لحظية وحية لتمويل وصرف رواتب موظفي الدولة والمتقاعدين في العراق</p>
                     </div>
-                    </div>
+                </div>
 
-                <div id="salaries-grid" class="rates-grid" style="margin-top: 20px;"></div>
+                <div class="search-wrapper" style="margin-top: 15px;">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="salary-search-input" placeholder="ابحث عن وزارة، هيئة، أو محافظة...">
+                </div>
+
+                <div id="salaries-smart-grid" class="rates-grid" style="margin-top: 10px;"></div>
+                
+                <div id="smart-pagination-controls" class="pagination-controls"></div>
             </div>
         </div>
 
@@ -186,7 +255,7 @@
             <div class="cyber-card chart-card">
                 <div class="card-glow"></div>
                 <div class="chart-header">
-                    <h3>📈 سجل حركة موازي بغداد (100 دولار مقابل الدينار)</h3>
+                    <h3>سجل حركة موازي بغداد (100 دولار مقابل الدينار)</h3>
                     <p class="chart-sub">رصد بياني متطور لتقلبات السوق الحرة في السبعة أيام الماضية</p>
                 </div>
                 <div class="chart-container">
@@ -204,7 +273,7 @@
             
             <div class="cyber-card info-bulletin">
                 <div class="card-glow"></div>
-                <h4>💡 خوارزمية التسعير المحلي للذهب والفضة</h4>
+                <h4>خوارزمية التسعير المحلي للذهب والفضة</h4>
                 <p>يتم احتساب غرام الذهب في الأسواق العراقية بناءً على السعر العالمي للأونصة مقسوماً على 31.103 غرام، ثم يتم تحويل القيمة للدينار العراقي بالاستناد إلى سعر صرف الدولار في السوق الموازي لضمان دقة القيمة الفعلية للنقد المتداول.</p>
                 <div class="formula-box">
                     <code>سعر الغرام بالدينار = (السعر العالمي للذهب ÷ 31.10348) × دولار السوق الحرة × العيار</code>
@@ -218,7 +287,7 @@
             
             <div class="cyber-card info-bulletin energy-bulletin">
                 <div class="card-glow"></div>
-                <h4>📊 الأثر المالي لصادرات الطاقة</h4>
+                <h4>الأثر المالي لصادرات الطاقة</h4>
                 <p>يعتمد الاقتصاد العراقي بنسبة تفوق 90% على الإيرادات النفطية. يتم تقييم الصادرات البحرية عبر موانئ البصرة بأسعار نسبية لبرنت العالمي. صعود أسعار برميل النفط بالدينار العراقي يعزز متانة الاحتياطي النقدي للبنك المركزي.</p>
             </div>
         </div>
@@ -230,10 +299,7 @@
         <div class="tab-content" id="converter-tab">
             <div class="cyber-card converter-section">
                 <div class="card-glow"></div>
-                <h3>
-                    <span>🧮</span>
-                    <span>المحول المالي والكمي المطور</span>
-                </h3>
+                <h3>المحول المالي والكمي المطور</h3>
                 <p class="converter-desc">قم بالتحويل الفوري المتبادل والذكي بين كافة العملات والذهب والفضة مباشرة بالدينار العراقي وسعر السوق الموازي.</p>
                 
                 <div class="converter-grid">
@@ -270,8 +336,7 @@
 
                     <div class="swap-icon-container">
                         <div class="swap-icon" id="swap-btn" title="عكس مدخلات المصفوفة">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                                stroke-linecap="round" stroke-linejoin="round">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="m16 3 4 4-4 4M20 7H9M8 21l-4-4 4-4M4 17h11" />
                             </svg>
                         </div>
@@ -320,12 +385,13 @@
     <script src="app.js"></script>
 
     <script>
-        // إعدادات تغيير المظهر (Dark/Light Mode)
+        // ==========================================
+        // 🌓 إعدادات المظهر الفاتح والداكن
+        // ==========================================
         const themeToggleBtn = document.getElementById('theme-toggle');
         const themeIcon = document.getElementById('theme-icon');
         const themeText = document.getElementById('theme-text');
         
-        // التحقق من الوضع المحفوظ مسبقاً
         if (localStorage.getItem('theme') === 'light') {
             document.body.classList.add('light-theme');
             themeIcon.textContent = '🌞';
@@ -345,39 +411,88 @@
             }
         });
 
-        // سحب البيانات من السيرفر وعرضها
+        // ==========================================
+        // 📰 نظام الرواتب الذكي (مستقل عن app.js القديم)
+        // ==========================================
+        let allSalariesData = [];
+        let currentPage = 1;
+        const itemsPerPage = 5;
+
         async function fetchCyberUpdates() {
             try {
                 const response = await fetch('/api/updates');
                 const data = await response.json();
                 
-                const salariesGrid = document.getElementById('salaries-grid');
-                if (salariesGrid) {
-                    const salariesNews = data.filter(item => item.category === 'رواتب');
-                    
-                    if (salariesNews.length > 0) {
-                        salariesGrid.innerHTML = salariesNews.map(item => {
-                            const time = new Date(item.created_at).toLocaleTimeString('ar-IQ', {hour: '2-digit', minute:'2-digit'});
-                            return `
-                                <div class="news-item-card">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                        <span class="news-badge">خبر عاجل</span>
-                                        <span class="news-item-time">[${time}]</span>
-                                    </div>
-                                    <p class="news-item-text">${item.content}</p>
-                                </div>
-                            `;
-                        }).join('');
-                    } else {
-                        salariesGrid.innerHTML = '<p style="color: var(--cyber-cyan, #00f0ff); text-align: center; grid-column: 1/-1;">جاري انتظار التحديثات الحية للرواتب...</p>';
-                    }
+                const newSalaries = data.filter(item => item.category === 'رواتب');
+                
+                if (JSON.stringify(newSalaries) !== JSON.stringify(allSalariesData)) {
+                    allSalariesData = newSalaries;
+                    renderSmartSalaries();
                 }
             } catch (err) {
                 console.error("Connection Error:", err);
             }
         }
 
-        // تشغيل نظام التحديث التلقائي
+        function renderSmartSalaries() {
+            const salariesGrid = document.getElementById('salaries-smart-grid');
+            const paginationControls = document.getElementById('smart-pagination-controls');
+            const searchInput = document.getElementById('salary-search-input').value.trim().toLowerCase();
+            
+            if (!salariesGrid) return;
+
+            const filteredSalaries = allSalariesData.filter(item => 
+                item.content.toLowerCase().includes(searchInput)
+            );
+
+            if (filteredSalaries.length === 0) {
+                salariesGrid.innerHTML = '<p style="color: var(--cyber-cyan, #00f0ff); text-align: center; grid-column: 1/-1;">لا توجد أخبار مطابقة للبحث حالياً...</p>';
+                paginationControls.innerHTML = '';
+                return;
+            }
+
+            const totalPages = Math.ceil(filteredSalaries.length / itemsPerPage);
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const currentItems = filteredSalaries.slice(startIndex, startIndex + itemsPerPage);
+
+            salariesGrid.innerHTML = currentItems.map(item => {
+                const time = new Date(item.created_at).toLocaleTimeString('ar-IQ', {hour: '2-digit', minute:'2-digit'});
+                return `
+                    <div class="news-item-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <span class="news-badge">خبر عاجل</span>
+                            <span class="news-item-time">[${time}]</span>
+                        </div>
+                        <p class="news-item-text">${item.content}</p>
+                    </div>
+                `;
+            }).join('');
+
+            if (totalPages > 1) {
+                let pagHtml = `<button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>السابق</button>`;
+                for (let i = 1; i <= totalPages; i++) {
+                    pagHtml += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+                }
+                pagHtml += `<button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>التالي</button>`;
+                paginationControls.innerHTML = pagHtml;
+            } else {
+                paginationControls.innerHTML = ''; 
+            }
+        }
+
+        window.changePage = function(page) {
+            currentPage = page;
+            renderSmartSalaries();
+        };
+
+        document.getElementById('salary-search-input')?.addEventListener('input', () => {
+            currentPage = 1;
+            renderSmartSalaries();
+        });
+
         fetchCyberUpdates();
         setInterval(fetchCyberUpdates, 10000);
     </script>
