@@ -751,24 +751,18 @@ async function fetchUpdates() {
         const response = await fetch(API_BASE + '/api/updates'); 
         const data = await response.json();
         
-        // تفريغ الحاويات بالكامل قبل إدراج الجديد لضمان عدم التراكم
-        if (pricesList) pricesList.innerHTML = ''; 
-        if (modalTeleLogs) modalTeleLogs.innerHTML = '';
-        if (salariesGrid) {
-            salariesGrid.querySelectorAll('.dynamic-news-card').forEach(c => c.remove()); 
-        }
-        
-        // 🔥 السيرفر يرسل آخر 300 خبر، سنعرضهم جميعاً لكي يحتفظ بالرسائل القديمة (أو يمكننا تحديد رقم كبير مثل 100)
-        // قمنا بعكس الترتيب ليكون الأحدث في الأعلى
+        // 🔥 السيرفر يرسل آخر الأخبار، قمنا بعكس الترتيب ليكون الأحدث في الأعلى
         const latestData = data.reverse(); 
         
         latestData.forEach(item => {
             const date = new Date(item.created_at).toLocaleTimeString('ar-IQ', {hour: '2-digit', minute: '2-digit'});
             let catColor = item.category === 'رواتب' ? '#00ffaa' : '#00ffcc'; 
-            
-            // 1. طباعة بالترمنال الصغير
-            if (pricesList) {
+            const itemId = `news-${item.id}`;
+
+            // 1. طباعة بالترمنال الصغير (إذا لم يكن موجوداً)
+            if (pricesList && !document.getElementById(`term-${itemId}`)) {
                 const logElement = document.createElement('div'); 
+                logElement.id = `term-${itemId}`;
                 logElement.style.padding = '6px 0'; 
                 logElement.style.color = '#fff'; 
                 logElement.style.fontFamily = 'monospace'; 
@@ -777,12 +771,16 @@ async function fetchUpdates() {
                     <span style="color: ${catColor}; font-weight: bold;">[${item.category}]</span> 
                     <span>${item.content}</span> 
                     <span style="color: #666; font-size: 11px; margin-right: 8px;">(${date})</span>`; 
-                pricesList.appendChild(logElement);
+                // إضافة للأعلى
+                pricesList.insertBefore(logElement, pricesList.firstChild);
+                // تحديد عدد العناصر بـ 50 لمنع ثقل المتصفح
+                while (pricesList.childElementCount > 50) pricesList.removeChild(pricesList.lastChild);
             }
 
             // 2. طباعة بالترمنال الكبير (شاشة المراقبة)
-            if (modalTeleLogs) {
+            if (modalTeleLogs && !document.getElementById(`modal-${itemId}`)) {
                 const modalLogElement = document.createElement('div'); 
+                modalLogElement.id = `modal-${itemId}`;
                 modalLogElement.style.padding = '8px 0'; 
                 modalLogElement.style.color = '#fff'; 
                 modalLogElement.style.fontFamily = 'monospace'; 
