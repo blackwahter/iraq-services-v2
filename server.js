@@ -2,18 +2,21 @@ const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
 const TelegramBot = require('node-telegram-bot-api');
-const axios = require('axios'); // بقيناه بس علمود النفط
+const axios = require('axios'); 
 require('dotenv').config();
 const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ==========================================
-// 🛡️ استيراد مكتبات الحساب المبرمج (UserBot)
+// 🛡️ صائد الانهيارات (تأمين السيرفر من التوقف)
 // ==========================================
-const { TelegramClient } = require("telegram");
-const { StringSession } = require("telegram/sessions");
-const { NewMessage } = require("telegram/events");
+process.on('uncaughtException', (err) => {
+    console.error('🔥 [طوارئ]: تم منع انهيار السيرفر:', err.message);
+});
+process.on('unhandledRejection', (reason) => {
+    console.error('🔥 [طوارئ]: رفض غير معالج:', reason);
+});
 
 // ==========================================
 // 🗄️ إعدادات قاعدة البيانات (PostgreSQL - Neon)
@@ -52,7 +55,6 @@ bot.on('message', async (msg) => {
     const text = msg.text;
     if (!text) return; 
 
-    // النشر اليدوي الفوري
     if (text.startsWith('راتب ')) {
         const news = text.replace('راتب ', '').trim();
         try {
@@ -73,7 +75,7 @@ bot.on('message', async (msg) => {
 });
 
 // ==========================================
-// 🦅 نظام الاستخبارات والصيد الفوري (UserBot)
+// 🦅 نظام الاستخبارات المطور (صيد ذكي بالأرقام)
 // ==========================================
 let localBourses = {
     kifah: 146500, harthiya: 146500, erbil: 146700, basra: 146200,
@@ -93,10 +95,14 @@ function extractIraqiRate(text, cityName) {
     return null;
 }
 
-// ⚠️ خلي معلوماتك هنا بين الأقواس (لا تشاركها وية أحد)
-const apiId = 31693594; // الـ API ID مالتك
-const apiHash = "9ba82cfa52cc57470b2b1cc3ea619a0d"; // الـ API Hash مالتك
-const stringSession = new StringSession("1AgAOMTQ5LjE1NC4xNjcuNTABu2AqxGKLKmTF4ip3f9ZwKAQaKH2jc1gRRplZ1lrRw+FPUi0vXmJ5hvLkapkueRCvnhu3HXF/IqtbArFewPIYqmAOnjxmeA+RYpwSc6FFJQLuVXjmb6dVWor5/WbCjurUtcM1UJuNizpiafBw6bYxns7JPFtWugcDgFoOvLTmT8Yr4oRKdYacWZY4X4iW+3ifM9lRDypbzwpKganzSlysVaMzffrGQfnSHQzp+jQ1yGp1MFNSLOsvSjIFBe9Y9Ilj6yYEiUtU17G8KA4CA4UVYUWqydawBEIDyx/GMdrAGH2KW63LhfOVcfEqGZrjnyjjKVPL7gN8FQNhngv27jA2fM0="); // الصق السشن الطويل هنا
+// استيراد مكتبات الحساب المبرمج
+const { TelegramClient } = require("telegram");
+const { StringSession } = require("telegram/sessions");
+const { NewMessage } = require("telegram/events");
+
+const apiId = 31693594; 
+const apiHash = "9ba82cfa52cc57470b2b1cc3ea619a0d"; 
+const stringSession = new StringSession("1AgAOMTQ5LjE1NC4xNjcuNTABu2AqxGKLKmTF4ip3f9ZwKAQaKH2jc1gRRplZ1lrRw+FPUi0vXmJ5hvLkapkueRCvnhu3HXF/IqtbArFewPIYqmAOnjxmeA+RYpwSc6FFJQLuVXjmb6dVWor5/WbCjurUtcM1UJuNizpiafBw6bYxns7JPFtWugcDgFoOvLTmT8Yr4oRKdYacWZY4X4iW+3ifM9lRDypbzwpKganzSlysVaMzffrGQfnSHQzp+jQ1yGp1MFNSLOsvSjIFBe9Y9Ilj6yYEiUtU17G8KA4CA4UVYUWqydawBEIDyx/GMdrAGH2KW63LhfOVcfEqGZrjnyjjKVPL7gN8FQNhngv27jA2fM0="); 
 
 const client = new TelegramClient(stringSession, apiId, apiHash, {
     connectionRetries: 5,
@@ -105,19 +111,44 @@ const client = new TelegramClient(stringSession, apiId, apiHash, {
 async function startUserBot() {
     try {
         await client.connect();
-        console.log("✅ [UserBot]: الحساب المبرمج متصل ويعمل كحارس شخصي!");
+        console.log("✅ [UserBot]: الحساب متصل بنجاح!");
 
-        // استماع فوري لأي رسالة جديدة بالتليجرام
+        // جلب هويات القنوات مرة واحدة عند التشغيل لكسر الحظر للأبد
+        const channelIds = {};
+        
+        try {
+            const rEntity = await client.getEntity('roatabn');
+            channelIds[rEntity.id.toString()] = 'roatabn';
+            console.log(`📡 تم أتمتة قناة الرواتب بـ ID: ${rEntity.id}`);
+        } catch(e) { console.log("⚠️ فشل جلب ID قناة roatabn"); }
+
+        try {
+            const iEntity = await client.getEntity('iraq_now');
+            channelIds[iEntity.id.toString()] = 'iraq_now';
+            console.log(`📡 تم أتمتة قناة العراق الآن بـ ID: ${iEntity.id}`);
+        } catch(e) { console.log("⚠️ فشل جلب ID قناة iraq_now"); }
+
+        try {
+            const dEntity = await client.getEntity('dollar_iraq_now');
+            channelIds[dEntity.id.toString()] = 'dollar_iraq_now';
+            console.log(`📡 تم أتمتة قناة البورصة بـ ID: ${dEntity.id}`);
+        } catch(e) { console.log("⚠️ فشل جلب ID قناة dollar_iraq_now"); }
+
+        // لسينر فوري وخفيف جداً بدون أي استعلامات تسبب حظر
         client.addEventHandler(async (event) => {
             const message = event.message;
-            if (!message || !message.text) return;
-            
-            const text = message.text;
-            const chat = await event.getChat();
-            const username = chat.username ? chat.username.toLowerCase() : '';
+            if (!message || !message.text || !message.peerId || !message.peerId.channelId) return;
 
-            // 1. صيد أخبار الرواتب فوراً من قناة الرواتب
-            if (username === 'roatabn' || username === 'iraq_now') {
+            const currentId = message.peerId.channelId.toString();
+            const channelName = channelIds[currentId];
+
+            if (!channelName) return; // تجاهل أي قناة ثانية غير مضافة
+
+            const text = message.text;
+            console.log(`📩 [صيد فوري] رسالة من ${channelName}: ${text.substring(0, 40)}...`);
+
+            // معالجة أخبار الرواتب
+            if (channelName === 'roatabn' || channelName === 'iraq_now') {
                 const salaryKeywords = ['راتب', 'رواتب', 'تمويل', 'مصرف', 'متقاعدين', 'الرعاية', 'صرف', 'موظفي', 'المالية', 'سلفة', 'سلف', 'إطلاق', 'باشر', 'عاجل'];
                 const isSalaryNews = salaryKeywords.some(keyword => text.includes(keyword));
 
@@ -125,13 +156,13 @@ async function startUserBot() {
                     const checkQuery = await pool.query("SELECT content FROM telegram_updates WHERE category = 'رواتب' ORDER BY id DESC LIMIT 1");
                     if (checkQuery.rows.length === 0 || checkQuery.rows[0].content !== text) {
                         await pool.query(`INSERT INTO telegram_updates (category, content) VALUES ($1, $2)`, ['رواتب', text]);
-                        console.log(`🎯 [تلقائي - صيد فوري]: تم نشر خبر الرواتب!`);
+                        console.log(`🎯 [نجاح]: تم نشر خبر الرواتب بالموقع فوراً!`);
                     }
                 }
             }
 
-            // 2. صيد أسعار البورصة فوراً من قناة الدولار
-            if (username === 'dollar_iraq_now') {
+            // معالجة أسعار البورصة
+            if (channelName === 'dollar_iraq_now') {
                 if (text.includes('الكفاح') || text.includes('صرف')) {
                     const k = extractIraqiRate(text, 'الكفاح');
                     if (k) {
@@ -140,21 +171,20 @@ async function startUserBot() {
                         localBourses.erbil = extractIraqiRate(text, 'اربيل') || localBourses.erbil;
                         localBourses.basra = extractIraqiRate(text, 'البصرة') || localBourses.basra;
                         localBourses.lastUpdated = new Date().toISOString();
-                        console.log(`🎯 [تلقائي - صيد فوري]: تم تحديث البورصة!`);
+                        console.log(`🎯 [نجاح]: تم تحديث أسعار البورصة بالموقع فوراً!`, localBourses);
                     }
                 }
             }
-        }, new NewMessage({})); // استماع لكل الرسائل الجديدة
+        }, new NewMessage({}));
 
     } catch (error) {
-        console.error("❌ خطأ في اتصال الـ UserBot:", error.message);
+        console.error("❌ خطأ في تشغيل الـ UserBot:", error.message);
     }
 }
-// تشغيل الحساب المبرمج
 startUserBot();
 
 // ==========================================
-// 🧹 التنظيف و API السيرفر 
+// 🧹 الصيانة و الـ APIs
 // ==========================================
 setInterval(async () => {
     try { await pool.query(`DELETE FROM telegram_updates WHERE created_at < NOW() - INTERVAL '30 days';`); } catch (err) {}
@@ -199,6 +229,6 @@ app.use(express.static(__dirname));
 app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); });
 
 app.listen(PORT, () => {
-    console.log(`🌐 Server is running successfully on port ${PORT}`);
-    console.log(`🚀 النظام المؤسساتي (UserBot) جاهز ومفعل 24/7`);
+    console.log(`🌐 Server is running on port ${PORT}`);
+    console.log(`🚀 نظام الصيد الرقمي الفوري مستقر ويعمل الآن بدون حظر`);
 });
