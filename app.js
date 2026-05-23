@@ -23,12 +23,12 @@ let soundEnabled = true;
 let marketChartInstance = null; 
 
 const targetCurrencies = [
-    { code: 'USD', name: 'دولار أمريكي', flag: '🇺🇸' },
-    { code: 'EUR', name: 'يورو', flag: '🇪🇺' },
-    { code: 'GBP', name: 'جنيه إسترليني', flag: '🇬🇧' },
-    { code: 'TRY', name: 'ليرة تركية', flag: '🇹🇷' },
-    { code: 'AED', name: 'درهم إماراتي', flag: '🇦🇪' },
-    { code: 'SAR', name: 'ريال سعودي', flag: '🇸🇦' }
+    { code: 'USD', name: 'دولار أمريكي', flag: '🇺🇸', desc: 'العملة الاحتياطية الأولى عالمياً؛ تُستخدم لتسعير السلع الأساسية، العقارات، والواردات الخارجية في الأسواق العراقية.' },
+    { code: 'EUR', name: 'يورو أوروبي', flag: '🇪🇺', desc: 'العملة الرسمية لبلدان منطقة اليورو؛ تُستخدم في المعاملات التجارية وعمليات الاستيراد والشراكات الأوروبية.' },
+    { code: 'GBP', name: 'جنيه إسترليني', flag: '🇬🇧', desc: 'العملة الرسمية للمملكة المتحدة؛ وتعد واحدة من أقوى وأعرق العملات الاحتياطية في النظام المالي العالمي.' },
+    { code: 'TRY', name: 'ليرة تركية', flag: '🇹🇷', desc: 'العملة الرسمية لتركيا؛ تُستخدم بكثافة في الاستيراد المباشر للبضائع، السياحة، والتبادل التجاري العراقي التركي.' },
+    { code: 'AED', name: 'درهم إماراتي', flag: '🇦🇪', desc: 'العملة الرسمية لدولة الإمارات العربية المتحدة؛ وتعد مركزاً رئيساً لتسوية الحوالات الخارجية والتجارة الإقليمية.' },
+    { code: 'SAR', name: 'ريال سعودي', flag: '🇸🇦', desc: 'العملة الرسمية للمملكة العربية السعودية؛ وتنشط في التبادلات الخليجية وتغطية مصاريف ونفقات مواسم الحج والعمرة.' }
 ];
 
 // عناصر HTML الأساسية
@@ -418,10 +418,11 @@ function drawChart() {
                     borderWidth: 3, 
                     pointBackgroundColor: '#ffb700', 
                     pointBorderColor: '#111', 
-                    pointRadius: 4, 
-                    pointHoverRadius: 8, 
+                    pointRadius: 6, 
+                    pointHoverRadius: 10, 
+                    pointHitRadius: 30, 
                     fill: true, 
-                    tension: 0.4 
+                    tension: 0.4  
                 },
                 { 
                     label: 'السعر الرسمي (مركزي)', 
@@ -438,6 +439,10 @@ function drawChart() {
         options: { 
             responsive: true, 
             maintainAspectRatio: false, 
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
             plugins: { 
                 legend: { display: false }, 
                 tooltip: { 
@@ -543,6 +548,9 @@ function renderPriceBoard() {
                         <span class="price-value">${Math.round(marketRate).toLocaleString('ar-IQ')} <span class="unit">د.ع</span></span>
                     </div>
                 </div>
+                <p class="currency-desc" style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 12px; line-height: 1.5; border-top: 1px dashed rgba(0, 240, 255, 0.1); padding-top: 10px; text-align: justify; margin-bottom: 0;">
+                    ${currency.desc}
+                </p>
             </div>`;
     }); 
     currenciesGrid.innerHTML = html;
