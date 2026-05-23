@@ -472,22 +472,9 @@ body.light-theme .system-clock-badge .pulse-dot {
         text-shadow: 0 0 5px var(--cyber-cyan-glow) !important;
     }
     
-    /* إظهار زر التبديل (الهامبرغر) في الهيدر */
+    /* إخفاء زر التبديل (الهامبرغر) على الموبايل تماماً */
     #sidebar-toggle {
-        position: absolute !important;
-        top: 10px;
-        left: 10px;
-        margin: 0 !important;
-        z-index: 100;
-        width: 36px;
-        height: 36px;
-        display: flex !important;
-        align-items: center;
-        justify-content: center;
-        padding: 0 !important;
-        border-radius: 4px !important;
-        border-color: rgba(0, 240, 255, 0.4);
-        color: var(--cyber-cyan);
+        display: none !important;
     }
     #sidebar-toggle-text {
         display: none !important;
@@ -499,16 +486,21 @@ body.light-theme .system-clock-badge .pulse-dot {
         display: none !important;
     }
     #theme-toggle {
-        width: 36px;
-        height: 36px;
+        width: 40px !important;
+        height: 40px !important;
         display: flex !important;
         align-items: center;
         justify-content: center;
         padding: 0 !important;
-        border-radius: 4px !important;
+        border-radius: 50% !important; /* تصميم دائري احترافي */
+        border: 1px solid var(--cyber-cyan) !important;
+        box-shadow: 0 0 10px var(--cyber-cyan-glow) !important;
+        background: rgba(6, 12, 22, 0.7) !important;
+        font-size: 1.15rem !important;
+        transition: all 0.3s ease !important;
     }
     .sound-control {
-        margin-left: 45px !important;
+        margin-left: 0 !important;
     }
     
     /* غطاء الخلفية الشفاف عند فتح السايد بار */
@@ -553,10 +545,11 @@ body.light-theme .system-clock-badge .pulse-dot {
         box-shadow: none !important;
     }
     
-    body.light-theme #sidebar-toggle {
+    body.light-theme #theme-toggle {
         border-color: #cbd5e1 !important;
         color: #0f172a !important;
-        background: #f8fafc !important;
+        background: #ffffff !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
     }
 }
 
