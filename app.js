@@ -39,8 +39,6 @@ const oilGrid = document.getElementById('oil-grid');
 
 const fromAmountInput = document.getElementById('from-amount');
 const toAmountInput = document.getElementById('to-amount');
-const fromCurrencySelect = document.getElementById('from-currency');
-const toCurrencySelect = document.getElementById('to-currency');
 const swapBtn = document.getElementById('swap-btn');
 
 window.addEventListener('DOMContentLoaded', () => {
