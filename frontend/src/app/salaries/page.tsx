@@ -12,7 +12,11 @@ export default function SalariesPage() {
       try {
         const res = await fetch("/api/updates")
         const data = await res.json()
-        setUpdates(data.filter((u: any) => u.category === "رواتب"))
+        if (Array.isArray(data)) {
+          setUpdates(data.filter((u: any) => u.category === "رواتب"))
+        } else {
+          setUpdates([])
+        }
       } catch (error) {
         console.error("Error fetching salaries:", error)
       }

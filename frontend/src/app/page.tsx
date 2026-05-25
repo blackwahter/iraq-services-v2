@@ -29,7 +29,11 @@ export default function Home() {
         }
 
         const updatesData = await updatesRes.json()
-        setUpdates(updatesData.slice(0, 5)) // Get latest 5 updates
+        if (Array.isArray(updatesData)) {
+          setUpdates(updatesData.slice(0, 5))
+        } else {
+          setUpdates([])
+        }
       } catch (error) {
         console.error("Error fetching data:", error)
       }

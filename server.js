@@ -290,6 +290,7 @@ app.use(express.static(path.join(__dirname, 'frontend', 'out')));
 
 app.use((req, res) => { 
     if (req.url.startsWith('/api')) return res.status(404).json({error: 'Not found'});
+    if (req.url.match(/\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$/)) return res.status(404).send('Not found');
     res.sendFile(path.join(__dirname, 'frontend', 'out', 'index.html')); 
 });
 
