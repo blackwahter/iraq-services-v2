@@ -170,41 +170,37 @@ export default function SalariesPage() {
             const isExpanded = expandedIds.has(update.id);
             
             return (
-              <div key={update.id} className="group relative bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-6 md:p-8 rounded-3xl border border-white/20 dark:border-white/10 shadow-lg hover:shadow-xl hover:shadow-emerald-500/5 transition-all duration-300 overflow-hidden">
+              <div key={update.id} className="group relative bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-4 md:p-5 rounded-2xl border border-white/20 dark:border-white/10 shadow-sm hover:shadow-md hover:shadow-emerald-500/5 transition-all duration-300 overflow-hidden">
                 {/* Accent Line */}
-                <div className="absolute right-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-emerald-400 to-teal-600 rounded-r-3xl"></div>
+                <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-400 to-teal-600 rounded-r-2xl"></div>
                 
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-                  <span className="px-4 py-1.5 bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 rounded-full text-sm font-bold w-max shadow-sm border border-emerald-200 dark:border-emerald-500/30 flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                  <span className="px-3 py-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 rounded-full text-xs font-bold w-max shadow-sm border border-emerald-200 dark:border-emerald-500/30 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                     إشعار عاجل
                   </span>
-                  <span className="text-slate-500 dark:text-slate-400 font-mono text-sm bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-lg w-max" dir="ltr">
+                  <span className="text-slate-500 dark:text-slate-400 font-mono text-xs bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md w-max" dir="ltr">
                     {new Date(update.created_at).toLocaleTimeString('ar-IQ', {hour: '2-digit', minute:'2-digit'})} - {new Date(update.created_at).toLocaleDateString('ar-IQ')}
                   </span>
                 </div>
                 
                 <div className="relative">
-                  <div className={`transition-all duration-500 ${isExpanded ? '' : 'h-[4rem] md:h-[5.5rem]'}`}>
-                    <p className={`text-lg md:text-xl font-medium text-slate-800 dark:text-slate-200 leading-relaxed ${isExpanded ? '' : 'line-clamp-2'}`}>
-                      {update.content}
-                    </p>
-                  </div>
+                  <p className={`text-base md:text-lg font-medium text-slate-800 dark:text-slate-200 leading-relaxed transition-all duration-300 ${isExpanded ? '' : 'line-clamp-2'}`}>
+                    {update.content}
+                  </p>
                   
-                  <div className="mt-4 h-[40px]">
-                    {update.content.length > 80 && (
-                      <button 
-                        onClick={() => toggleExpand(update.id)}
-                        className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors bg-emerald-50 dark:bg-emerald-900/30 px-4 py-2 rounded-xl"
-                      >
-                        {isExpanded ? (
-                          <>عرض أقل <ChevronUp className="w-4 h-4" /></>
-                        ) : (
-                          <>اقرأ المزيد <ChevronDown className="w-4 h-4" /></>
-                        )}
-                      </button>
-                    )}
-                  </div>
+                  {update.content.length > 80 && (
+                    <button 
+                      onClick={() => toggleExpand(update.id)}
+                      className="mt-2 flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1.5 rounded-lg text-sm w-max"
+                    >
+                      {isExpanded ? (
+                        <>عرض أقل <ChevronUp className="w-4 h-4" /></>
+                      ) : (
+                        <>اقرأ المزيد <ChevronDown className="w-4 h-4" /></>
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
             )
