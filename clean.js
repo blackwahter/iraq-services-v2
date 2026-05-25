@@ -12,7 +12,7 @@ const pool = new Pool({
 console.log("🧹 جاري فرمتة جدول الأخبار ومسح البيانات الوهمية...");
 
 // أمر مسح كل البيانات من الجدول
-pool.query('TRUNCATE TABLE updates;', (err, res) => {
+pool.query('TRUNCATE TABLE telegram_updates;', (err, res) => {
     if (err) {
         console.error('❌ صار خطأ بعملية المسح:', err);
     } else {

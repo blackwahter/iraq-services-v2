@@ -161,7 +161,11 @@
             </div>
 
             <div class="tabs-nav">
-                <button class="tab-btn active" data-tab="salaries-tab">
+                <button class="tab-btn active" data-tab="dashboard-tab">
+                    <span class="tab-icon">🏠</span>
+                    <span class="tab-text">لوحة التحكم</span>
+                </button>
+                <button class="tab-btn" data-tab="salaries-tab">
                     <span class="tab-icon">📅</span>
                     <span class="tab-text">أخبار الرواتب</span>
                 </button>
@@ -182,8 +186,12 @@
                     <span class="tab-text">البورصات المحلية</span>
                 </button>
                 <button class="tab-btn" data-tab="converter-tab">
-                    <span class="tab-icon">💰</span>
-                    <span class="tab-text">حاسبة العملات</span>
+                    <span class="tab-icon">💱</span>
+                    <span class="tab-text">المحول المالي</span>
+                </button>
+                <button class="tab-btn" data-tab="settings-tab">
+                    <span class="tab-icon">⚙️</span>
+                    <span class="tab-text">الإعدادات</span>
                 </button>
             </div>
         </aside>
@@ -250,7 +258,27 @@
                 </button>
             </div>
 
-            <div class="tab-content active" id="salaries-tab">
+            <!-- ===================================== -->
+            <!-- 0. تبويب لوحة التحكم المفضلات -->
+            <!-- ===================================== -->
+            <section id="dashboard-tab" class="tab-content active">
+                <div class="cyber-header">
+                    <div class="glitch-wrapper">
+                        <h2 class="cyber-title" data-text="لوحة التحكم والمفضلات">لوحة التحكم والمفضلات</h2>
+                    </div>
+                    <p class="cyber-subtitle">العناصر المفضلة لديك تظهر هنا للوصول السريع</p>
+                </div>
+                
+                <div id="dashboard-grid" class="dashboard-grid">
+                    <!-- Favorites will be injected here -->
+                    <div class="empty-dashboard-state" style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-muted); border: 1px dashed rgba(255,255,255,0.1); border-radius: 10px;">
+                        <h3>لم تقم بإضافة أي مفضلة بعد</h3>
+                        <p>انقر على أيقونة النجمة ⭐️ بجوار أي كرت لإضافته هنا.</p>
+                    </div>
+                </div>
+            </section>
+
+            <div class="tab-content" id="salaries-tab">
                 <div class="cyber-card salaries-section">
                     <div class="card-glow"></div>
                     <div class="salaries-header-flex">
@@ -398,9 +426,49 @@
                 </div>
             </div>
 
-            <footer class="hud-footer">
-                <p class="footer-copy">CYBER-SYSTEM IQD v2.5.0 // SECURE PROTOCOL ACTIVE</p>
-            </footer>
+            <!-- ===================================== -->
+            <!-- 7. تبويب الإعدادات -->
+            <!-- ===================================== -->
+            <section id="settings-tab" class="tab-content">
+                <div class="cyber-header">
+                    <h2 class="cyber-title" data-text="إعدادات النظام">إعدادات النظام</h2>
+                    <p class="cyber-subtitle">تخصيص المظهر والإشعارات</p>
+                </div>
+                <div class="settings-grid" style="display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+                    <!-- Theme Settings -->
+                    <div class="cyber-card settings-card" style="padding: 20px;">
+                        <h3>المظهر (Theme)</h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                            <span>الوضع المضيء (Light Mode)</span>
+                            <label class="switch">
+                                <input type="checkbox" id="theme-toggle">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Notifications Settings -->
+                    <div class="cyber-card settings-card" style="padding: 20px;">
+                        <h3>الإشعارات (Notifications)</h3>
+                        <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>الإشعارات العامة (أخبار الرواتب وغيرها)</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="general-notif-toggle" checked>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>إشعارات المفضلات فقط</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="favorite-notif-toggle" checked>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 

@@ -66,8 +66,16 @@ window.addEventListener('DOMContentLoaded', () => {
     initTerminalSimulator();
     initSalariesTracker(); 
     initModal(); 
-    fetchData(); 
-    fetchUpdates(); 
+    initSettings();
+    initFavorites();
+    fetchData(false); 
+    fetchUpdates(false); 
+
+    // Auto-refresh every 30 seconds silently
+    setInterval(() => {
+        fetchData(true);
+        fetchUpdates(true);
+    }, 30000);
 
     window.addEventListener('resize', () => { 
         resizeCanvas(); 
@@ -314,10 +322,12 @@ function initMobileSidebar() {
 // ==========================================
 // 4. جلب البيانات العالمية والمحلية
 // ==========================================
-async function fetchData() {
-    showLoaders();
-    refreshBtn.classList.add('spinning');
-    updateStatusText.textContent = 'جاري مزامنة مصفوفة البيانات...';
+async function fetchData(isSilent = false) {
+    if (!isSilent) {
+        showLoaders();
+        if (refreshBtn) refreshBtn.classList.add('spinning');
+        if (updateStatusText) updateStatusText.textContent = 'جاري مزامنة مصفوفة البيانات...';
+    }
 
     try {
         const currencyRes = await fetch('https://open.er-api.com/v6/latest/USD'); 
@@ -349,10 +359,9 @@ async function fetchData() {
             if (boursesResp.success && boursesResp.data) localBoursesData = boursesResp.data; 
         } catch (e) {}
 
-        updateStatusText.textContent = `مزامنة النظام: مستقر (${new Date().toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'})})`;
+        if (updateStatusText) updateStatusText.textContent = `مزامنة النظام: مستقر (${new Date().toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'})})`;
         
-        // إشعار حقيقي للترمنال بنجاح التحديث
-        addTerminalLog("تم جلب البيانات بنجاح من الخوادم.");
+        if (!isSilent) addTerminalLog("تم جلب البيانات بنجاح من الخوادم.");
 
         renderPriceBoard(); 
         renderMetalsBoard(); 
@@ -360,13 +369,13 @@ async function fetchData() {
         renderLocalBoursesBoard(); 
         calculateConversion(); 
         drawChart(); 
-        playSuccessChime();
+        if (!isSilent) playSuccessChime();
         
     } catch (error) { 
-        showErrorState(error.message); 
+        if (!isSilent) showErrorState(error.message); 
         addTerminalLog("خطأ في الاتصال بالخوادم!");
     } finally { 
-        refreshBtn.classList.remove('spinning'); 
+        if (refreshBtn) refreshBtn.classList.remove('spinning'); 
     }
 }
 
@@ -496,7 +505,12 @@ function renderLocalBoursesBoard() {
     
     let html = `<div style="width:100%; text-align:right; margin-bottom:15px; color:#00ffaa; font-size:0.85rem; font-weight: bold; grid-column: 1 / -1;">⏱️ آخر تحديث للبورصات: ${lastUpdate}</div>`;
     
-    bourses.forEach(b => {
+    bourses.forEach((b, index) => {
+        const favId = `bourse_${index}`;
+        const dataStr = encodeURIComponent(JSON.stringify(b));
+        const isFav = favorites.some(f => f.id === favId);
+        const starClass = isFav ? 'fav-star active' : 'fav-star';
+        
         html += `
             <div class="cyber-card market-card">
                 <div class="card-glow"></div>
@@ -505,7 +519,10 @@ function renderLocalBoursesBoard() {
                         <span class="market-icon">${b.icon}</span>
                         <h4>${b.name}</h4>
                     </div>
-                    <span class="market-status open">${b.isOnline ? 'ONLINE' : 'OFFLINE'}</span>
+                    <div style="display:flex; align-items:center;">
+                        <button class="${starClass}" onclick="toggleFavorite('${favId}', 'bourse', '${dataStr}')">⭐️</button>
+                        <span class="market-status open">${b.isOnline ? 'ONLINE' : 'OFFLINE'}</span>
+                    </div>
                 </div>
                 <p class="market-desc">${b.desc}</p>
                 <div style="text-align: center; margin: 15px 0;">
@@ -528,11 +545,16 @@ function renderPriceBoard() {
     const iqdPerUsd = currentRates['IQD'] || 1310; 
     let html = '';
     
-    targetCurrencies.forEach(currency => {
+    targetCurrencies.forEach((currency, index) => {
         const rateToUsd = currentRates[currency.code]; 
         if (!rateToUsd) return; 
         
         const marketRate = (iqdPerUsd / rateToUsd) * MARKET_MULTIPLIER;
+        const favId = `currency_${currency.code}`;
+        const dataStr = encodeURIComponent(JSON.stringify({ code: currency.code, name: currency.name, flag: currency.flag, rate: marketRate }));
+        const isFav = favorites.some(f => f.id === favId);
+        const starClass = isFav ? 'fav-star active' : 'fav-star';
+
         html += `
             <div class="rate-card">
                 <div class="card-header">
@@ -543,6 +565,7 @@ function renderPriceBoard() {
                             <span class="currency-title">${currency.name}</span>
                         </div>
                     </div>
+                    <button class="${starClass}" onclick="toggleFavorite('${favId}', 'currency', '${dataStr}')">⭐️</button>
                 </div>
                 <div class="price-display">
                     <div class="price-row">
@@ -577,7 +600,12 @@ function renderMetalsBoard() {
     ];
     
     let html = ''; 
-    metals.forEach(m => { 
+    metals.forEach((m, index) => { 
+        const favId = `metal_${index}`;
+        const dataStr = encodeURIComponent(JSON.stringify(m));
+        const isFav = favorites.some(f => f.id === favId);
+        const starClass = isFav ? 'fav-star active' : 'fav-star';
+
         html += `
             <div class="rate-card ${m.class}">
                 <div class="card-header">
@@ -587,6 +615,7 @@ function renderMetalsBoard() {
                             <span class="currency-code" style="font-size: 1.1rem;">${m.name}</span>
                         </div>
                     </div>
+                    <button class="${starClass}" onclick="toggleFavorite('${favId}', 'metal', '${dataStr}')">⭐️</button>
                 </div>
                 <div class="price-display" style="gap: 8px;">
                     <div class="price-row" style="border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px;">
@@ -613,7 +642,12 @@ function renderOilBoard() {
     ];
     
     let html = ''; 
-    oilList.forEach(o => { 
+    oilList.forEach((o, index) => { 
+        const favId = `oil_${o.symbol}`;
+        const dataStr = encodeURIComponent(JSON.stringify(o));
+        const isFav = favorites.some(f => f.id === favId);
+        const starClass = isFav ? 'fav-star active' : 'fav-star';
+
         html += `
             <div class="rate-card oil-card">
                 <div class="card-header">
@@ -621,6 +655,7 @@ function renderOilBoard() {
                         <span class="currency-flag">${o.flag}</span>
                         <span class="currency-code">${o.symbol}</span>
                     </div>
+                    <button class="${starClass}" onclick="toggleFavorite('${favId}', 'oil', '${dataStr}')">⭐️</button>
                 </div>
                 <div class="price-display">
                     <div class="price-row">
@@ -746,7 +781,7 @@ function renderSalariesBoard() {
 // ==========================================
 // 8. ✈️ الرادار المزدوج لتيليجرام (ديناميكي ومستمر)
 // ==========================================
-async function fetchUpdates() {
+async function fetchUpdates(isSilent = false) {
     try {
         const response = await fetch(API_BASE + '/api/updates'); 
         const data = await response.json();
@@ -808,7 +843,9 @@ async function fetchUpdates() {
                         </div>
                         <span style="color: #888; font-size: 11px;">⌚ ${date}</span>
                     </div>
-                    <p style="color: #e0e0e0; font-size: 14px; margin: 0;">${item.content}</p>`; 
+                    <p class="news-content collapsed" id="news-text-${item.id}" style="color: #e0e0e0; font-size: 14px; margin: 0; line-height: 1.6;">${item.content}</p>
+                    ${item.content.length > 100 ? `<button class="read-more-btn" onclick="document.getElementById('news-text-${item.id}').classList.toggle('collapsed'); this.innerText = this.innerText === 'المزيد...' ? 'إخفاء' : 'المزيد...';">المزيد...</button>` : ''}
+                `; 
                 salariesGrid.prepend(card); 
             }
         });
@@ -816,4 +853,172 @@ async function fetchUpdates() {
         console.error("Error fetching updates:", error);
     }
 }
-setInterval(fetchUpdates, 5000);
+setInterval(() => fetchUpdates(true), 15000); // 15 seconds silent update
+
+// ==========================================
+// Settings Logic
+// ==========================================
+function initSettings() {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'light') {
+            document.documentElement.classList.add('light-mode');
+            themeToggle.checked = true;
+        }
+        
+        themeToggle.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                document.documentElement.classList.add('light-mode');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.classList.remove('light-mode');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+    }
+
+    const genNotif = document.getElementById('general-notif-toggle');
+    const favNotif = document.getElementById('favorite-notif-toggle');
+    if (genNotif && favNotif) {
+        genNotif.checked = localStorage.getItem('notif_general') !== 'false';
+        favNotif.checked = localStorage.getItem('notif_favorite') !== 'false';
+
+        genNotif.addEventListener('change', e => localStorage.setItem('notif_general', e.target.checked));
+        favNotif.addEventListener('change', e => localStorage.setItem('notif_favorite', e.target.checked));
+    }
+}
+
+// ==========================================
+// Favorites Logic
+// ==========================================
+let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+
+function initFavorites() {
+    renderDashboard();
+}
+
+function toggleFavorite(id, type, dataString) {
+    const index = favorites.findIndex(f => f.id === id);
+    if (index > -1) {
+        favorites.splice(index, 1);
+    } else {
+        favorites.push({ id, type, data: JSON.parse(decodeURIComponent(dataString)) });
+    }
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+    renderDashboard();
+    
+    // Refresh all UI to update star colors
+    renderPriceBoard();
+    renderMetalsBoard();
+    renderOilBoard();
+    renderLocalBoursesBoard();
+}
+
+function renderDashboard() {
+    const grid = document.getElementById('dashboard-grid');
+    if (!grid) return;
+    
+    if (favorites.length === 0) {
+        grid.innerHTML = `
+            <div class="empty-dashboard-state" style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-muted); border: 1px dashed rgba(255,255,255,0.1); border-radius: 10px;">
+                <h3>لم تقم بإضافة أي مفضلة بعد</h3>
+                <p>انقر على أيقونة النجمة ⭐️ بجوار أي كرت لإضافته هنا.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    grid.innerHTML = '';
+    // Let's just clone elements or create basic cards for them based on ID
+    // For simplicity, we just trigger the main render functions and they can render inside dashboard
+    favorites.forEach(fav => {
+        let cardHtml = '';
+        const isFav = true;
+        const starClass = 'fav-star active';
+        const dataStr = encodeURIComponent(JSON.stringify(fav.data));
+        
+        if (fav.type === 'currency') {
+            const m = fav.data;
+            cardHtml = `
+            <div class="rate-card">
+                <div class="card-header">
+                    <div class="currency-info">
+                        <span class="currency-flag">${m.flag}</span>
+                        <div class="currency-names">
+                            <span class="currency-code">${m.code}</span>
+                            <span class="currency-title">${m.name}</span>
+                        </div>
+                    </div>
+                    <button class="${starClass}" onclick="toggleFavorite('${fav.id}', 'currency', '${dataStr}')">⭐️</button>
+                </div>
+                <div class="price-display">
+                    <div class="price-row">
+                        <span class="price-label">السوق الموازي:</span>
+                        <span class="price-value">${Math.round(m.rate).toLocaleString('ar-IQ')} <span class="unit">د.ع</span></span>
+                    </div>
+                </div>
+            </div>`;
+        } else if (fav.type === 'metal') {
+            const m = fav.data;
+            cardHtml = `
+            <div class="rate-card ${m.class}">
+                <div class="card-header">
+                    <div class="currency-info">
+                        <span class="currency-flag">${m.flag}</span>
+                        <div class="currency-names"><span class="currency-code" style="font-size: 1.1rem;">${m.name}</span></div>
+                    </div>
+                    <button class="${starClass}" onclick="toggleFavorite('${fav.id}', 'metal', '${dataStr}')">⭐️</button>
+                </div>
+                <div class="price-display" style="gap: 8px;">
+                    <div class="price-row" style="border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px;">
+                        <span class="price-label">المثقال (5 غرام):</span>
+                        <span class="price-value" style="color: #00ffaa;">${Math.round(m.mithqalPrice).toLocaleString('ar-IQ')} <span class="unit">د.ع</span></span>
+                    </div>
+                    <div class="price-row">
+                        <span>الغرام:</span><span>${Math.round(m.gramPrice).toLocaleString('ar-IQ')} د.ع</span>
+                    </div>
+                </div>
+            </div>`;
+        } else if (fav.type === 'oil') {
+            const o = fav.data;
+            cardHtml = `
+            <div class="rate-card oil-card">
+                <div class="card-header">
+                    <div class="currency-info">
+                        <span class="currency-flag">${o.flag}</span>
+                        <span class="currency-code">${o.symbol}</span>
+                    </div>
+                    <button class="${starClass}" onclick="toggleFavorite('${fav.id}', 'oil', '${dataStr}')">⭐️</button>
+                </div>
+                <div class="price-display">
+                    <div class="price-row"><span class="price-label">بالدولار:</span><span class="price-value" style="color: var(--cyber-cyan);">$${o.usdPrice.toFixed(2)}</span></div>
+                    <div class="price-row"><span class="price-label">بالدينار:</span><span class="price-value">${Math.round(o.iqdPrice).toLocaleString('ar-IQ')} د.ع</span></div>
+                </div>
+            </div>`;
+        } else if (fav.type === 'bourse') {
+            const b = fav.data;
+            cardHtml = `
+            <div class="cyber-card market-card">
+                <div class="card-glow"></div>
+                <div class="market-header">
+                    <div class="market-title">
+                        <span class="market-icon">${b.icon}</span>
+                        <h4>${b.name}</h4>
+                    </div>
+                    <div style="display:flex; align-items:center;">
+                        <button class="${starClass}" onclick="toggleFavorite('${fav.id}', 'bourse', '${dataStr}')">⭐️</button>
+                        <span class="market-status open">${b.isOnline ? 'ONLINE' : 'OFFLINE'}</span>
+                    </div>
+                </div>
+                <div style="text-align: center; margin: 15px 0;">
+                    <span style="font-size: 1.8rem; font-weight: bold; color: #fff;">
+                        ${Math.round(b.price).toLocaleString('ar-IQ')} <span style="font-size: 0.95rem; color: #00ffaa;">د.ع</span>
+                    </span>
+                </div>
+            </div>`;
+        }
+        grid.innerHTML += cardHtml;
+    });
+}
