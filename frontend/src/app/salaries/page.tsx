@@ -23,7 +23,7 @@ export default function SalariesPage() {
     const fetchUpdates = async () => {
       setIsLoading(true)
       try {
-        const res = await fetch(`/api/updates?category=رواتب&page=${currentPage}&limit=5`)
+        const res = await fetch(`/api/updates?category=${encodeURIComponent('رواتب')}&page=${currentPage}&limit=5`)
         const data = await res.json()
         
         if (data.data && Array.isArray(data.data)) {
@@ -56,8 +56,26 @@ export default function SalariesPage() {
     setExpandedIds(newExpanded)
   }
 
-  // Local search filter (only searches current page to avoid excessive API calls on every keystroke, 
-  // or could implement backend search later)
+  const getVisiblePages = () => {
+    if (!pagination) return [];
+    const total = pagination.totalPages;
+    const current = currentPage;
+    let start = Math.max(1, current - 2);
+    let end = Math.min(total, current + 2);
+
+    if (current <= 2) {
+      end = Math.min(total, 5);
+    }
+    if (current >= total - 1) {
+      start = Math.max(1, total - 4);
+    }
+
+    const pages = [];
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
+  }
+
+  // Local search filter
   const filteredUpdates = updates.filter(u => 
     u.content.toLowerCase().includes(searchQuery.toLowerCase())
   )
@@ -151,31 +169,37 @@ export default function SalariesPage() {
 
       {/* Pagination Controls */}
       {pagination && pagination.totalPages > 1 && (
-        <div className="flex items-center justify-center gap-4 mt-8 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md p-4 rounded-2xl border border-slate-200/50 dark:border-white/5 shadow-sm w-max mx-auto">
+        <div className="flex flex-wrap items-center justify-center gap-2 mt-8 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md p-4 rounded-3xl border border-slate-200/50 dark:border-white/5 shadow-sm w-max mx-auto">
           <button
             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm"
+            className="p-2 md:p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm"
           >
-            <ChevronRight className="w-6 h-6" />
+            <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
           </button>
           
-          <div className="flex items-center gap-2 font-mono" dir="ltr">
-            <span className="w-10 h-10 flex items-center justify-center bg-emerald-500 text-white font-bold rounded-xl shadow-md shadow-emerald-500/20">
-              {currentPage}
-            </span>
-            <span className="text-slate-400 px-2">/</span>
-            <span className="text-slate-500 dark:text-slate-400 font-bold">
-              {pagination.totalPages}
-            </span>
+          <div className="flex items-center gap-2 font-mono px-2" dir="ltr">
+            {getVisiblePages().map((pageNum) => (
+              <button
+                key={pageNum}
+                onClick={() => setCurrentPage(pageNum)}
+                className={`w-10 h-10 md:w-12 md:h-12 flex-shrink-0 flex items-center justify-center font-bold rounded-xl transition-all ${
+                  currentPage === pageNum 
+                    ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/20 scale-110" 
+                    : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700"
+                }`}
+              >
+                {pageNum}
+              </button>
+            ))}
           </div>
 
           <button
             onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p + 1))}
             disabled={currentPage === pagination.totalPages}
-            className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm"
+            className="p-2 md:p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm"
           >
-            <ChevronLeft className="w-6 h-6" />
+            <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
           </button>
         </div>
       )}

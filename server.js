@@ -203,7 +203,7 @@ async function scrapeSalaries() {
                 if (!isSalaryNews) continue;
 
                 // فلتر مانع الإعلانات والرسائل العشوائية ورسائل التثبيت (Blacklist)
-                const spamKeywords = ['اشترك', 'bot', 'استلمت راتب لو لا', 'دز رسالة', 'بوت', 'قناة', 'رابط', 'pinned'];
+                const spamKeywords = ['اشترك', 'bot', 'استلمت راتب لو لا', 'دز رسالة', 'بوت', 'قناة', 'رابط', 'pinned', 'http', 'https', 't.me', 'www'];
                 const isSpam = spamKeywords.some(keyword => msgText.toLowerCase().includes(keyword.toLowerCase()));
                 if (isSpam) continue;
 
