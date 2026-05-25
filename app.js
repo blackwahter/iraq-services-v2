@@ -274,6 +274,16 @@ function initTabs() {
             tabContents.forEach(content => content.classList.remove('active'));
             
             button.classList.add('active'); 
+            // Update Notification Bell Visibility
+            const notifBtn = document.getElementById('global-notif-btn');
+            if (notifBtn) {
+                if (tabId === 'dashboard-tab') {
+                    notifBtn.style.display = 'inline-block';
+                } else {
+                    notifBtn.style.display = 'none';
+                }
+            }
+
             const targetContent = document.getElementById(tabId);
             if (targetContent) {
                 targetContent.classList.add('active');
@@ -898,6 +908,71 @@ function initSettings() {
                 localStorage.setItem(`notif_sec_${sec}`, e.target.checked);
             });
         }
+    });
+
+    initQuickAccess();
+}
+
+// ==========================================
+// Quick Access Logic
+// ==========================================
+function initQuickAccess() {
+    const quickAccessBtn = document.getElementById('add-quick-access-btn');
+    const qaModal = document.getElementById('quick-access-modal');
+    const qaCloseBtn = document.getElementById('close-quick-modal-btn');
+    const qaSaveBtn = document.getElementById('save-quick-access-btn');
+    const qaContainer = document.getElementById('quick-access-container');
+    
+    if (!quickAccessBtn || !qaModal) return;
+
+    let savedQa = JSON.parse(localStorage.getItem('quick_access_sections') || '[]');
+
+    function renderQaCards() {
+        if (!qaContainer) return;
+        qaContainer.innerHTML = '';
+        savedQa.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'cyber-card';
+            card.style.cssText = 'padding: 15px; cursor: pointer; flex: 1 1 150px; min-width: 150px; text-align: center; border-top: 3px solid var(--cyber-cyan); transition: var(--transition-fast); background: rgba(0, 30, 60, 0.4);';
+            card.innerHTML = `<div style="font-size: 2rem; margin-bottom: 10px;">${item.icon}</div><div style="font-weight: bold; color: var(--text-primary);">${item.name}</div>`;
+            card.onmouseover = () => card.style.transform = 'translateY(-5px)';
+            card.onmouseout = () => card.style.transform = 'translateY(0)';
+            card.onclick = () => {
+                // Simulate click on sidebar tab
+                const tabBtn = document.querySelector(`.tab-btn[data-tab="${item.value}"]`);
+                if (tabBtn) tabBtn.click();
+            };
+            qaContainer.appendChild(card);
+        });
+    }
+
+    renderQaCards();
+
+    quickAccessBtn.addEventListener('click', () => {
+        // Check current saved boxes
+        document.querySelectorAll('.qa-cb').forEach(cb => {
+            cb.checked = savedQa.some(q => q.value === cb.value);
+        });
+        qaModal.classList.add('show');
+    });
+
+    if(qaCloseBtn) qaCloseBtn.addEventListener('click', () => qaModal.classList.remove('show'));
+
+    if(qaSaveBtn) qaSaveBtn.addEventListener('click', () => {
+        savedQa = [];
+        document.querySelectorAll('.qa-cb').forEach(cb => {
+            if (cb.checked) {
+                savedQa.push({
+                    value: cb.value,
+                    name: cb.getAttribute('data-name'),
+                    icon: cb.getAttribute('data-icon')
+                });
+            }
+        });
+        localStorage.setItem('quick_access_sections', JSON.stringify(savedQa));
+        renderQaCards();
+        qaModal.classList.remove('show');
+        playCyberSelect();
     });
 }
 

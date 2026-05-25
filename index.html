@@ -144,6 +144,8 @@
     <div class="container">
         <!-- غطاء الخلفية للموبايل -->
         <div class="sidebar-overlay" id="sidebar-overlay"></div>
+        <!-- نافذة المراقبة المركزية -->
+        <div id="terminal-modal" class="cyber-modal"></div>
         <!-- القائمة الجانبية (Sidebar) -->
         <aside class="cyber-sidebar" id="cyber-sidebar">
             <div class="sidebar-brand">
@@ -205,6 +207,10 @@
                         <span id="hud-clock" class="digital-time">00:00:00 AM</span>
                     </div>
                     <div class="hud-item sound-control" style="display: flex; gap: 10px;">
+                        <button id="global-notif-btn" class="cyber-btn-mini notif-bell-btn" title="مركز الإشعارات" style="display: inline-block;">
+                            <span class="icon">🔔</span>
+                            <span class="notif-badge"></span>
+                        </button>
                         <button id="sidebar-toggle" class="cyber-btn-mini" title="فتح القائمة">
                             <span class="icon">☰</span> <span id="sidebar-toggle-text">الأقسام</span>
                         </button>
@@ -261,13 +267,18 @@
                         <div class="glitch-wrapper">
                             <h2 class="cyber-title" data-text="لوحة التحكم والمفضلات">لوحة التحكم والمفضلات</h2>
                         </div>
-                        <p class="cyber-subtitle">العناصر المفضلة لديك تظهر هنا للوصول السريع</p>
+                        <p class="cyber-subtitle">العناصر المفضلة والوصول السريع للأقسام</p>
                     </div>
-                    <button id="dashboard-notif-btn" class="cyber-btn-mini" title="الإشعارات" style="padding: 8px 12px; font-size: 1.2rem;">
-                        🔔
+                    <button id="add-quick-access-btn" class="cyber-btn-mini" title="إضافة أقسام للوصول السريع" style="padding: 6px 12px; font-size: 1.1rem; font-weight: bold; background: rgba(0,240,255,0.1); color: var(--cyber-cyan); border: 1px solid var(--cyber-cyan);">
+                        + إضافة اختصار
                     </button>
                 </div>
                 
+                <!-- Quick Access Sections -->
+                <div id="quick-access-container" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <!-- Quick Access Cards will be injected here -->
+                </div>
+
                 <div id="dashboard-grid" class="dashboard-grid">
                     <!-- Favorites will be injected here -->
                     <div class="empty-dashboard-state" style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-muted); border: 1px dashed rgba(255,255,255,0.1); border-radius: 10px;">
@@ -668,6 +679,43 @@
         fetchCyberUpdates();
         setInterval(fetchCyberUpdates, 3000);
     </script>
+
+    <!-- نافذة الأقسام السريعة (Quick Access Modal) -->
+    <div id="quick-access-modal" class="cyber-modal">
+        <div class="cyber-modal-content" style="max-width: 400px;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0, 240, 255, 0.3); padding-bottom: 10px; margin-bottom: 15px;">
+                <h3 style="color: var(--cyber-cyan); margin: 0;">إضافة للوصول السريع</h3>
+                <button id="close-quick-modal-btn" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px;">اختر الأقسام التي تود الوصول إليها بسرعة من لوحة التحكم:</p>
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" class="qa-cb" value="salaries-tab" data-name="أخبار الرواتب" data-icon="📅">
+                        <span>أخبار الرواتب 📅</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" class="qa-cb" value="currencies" data-name="العملات الأجنبية" data-icon="💵">
+                        <span>العملات الأجنبية 💵</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" class="qa-cb" value="bourses" data-name="البورصات المحلية" data-icon="📈">
+                        <span>البورصات المحلية 📈</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" class="qa-cb" value="metals" data-name="المعادن والذهب" data-icon="🥇">
+                        <span>المعادن والذهب 🥇</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" class="qa-cb" value="oil" data-name="النفط العالمي" data-icon="🛢️">
+                        <span>النفط العالمي 🛢️</span>
+                    </label>
+                </div>
+                <button id="save-quick-access-btn" class="cyber-btn" style="width: 100%; padding: 10px;">حفظ الأقسام</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 
 </html>
