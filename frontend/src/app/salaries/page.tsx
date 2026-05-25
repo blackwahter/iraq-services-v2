@@ -14,6 +14,7 @@ export default function SalariesPage() {
   const [updates, setUpdates] = useState<any[]>([])
   const [pagination, setPagination] = useState<PaginationData | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
+  const [activeFilter, setActiveFilter] = useState("الكل")
   const [currentPage, setCurrentPage] = useState(1)
   const [isLoading, setIsLoading] = useState(true)
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set())
@@ -23,7 +24,13 @@ export default function SalariesPage() {
     const fetchUpdates = async () => {
       setIsLoading(true)
       try {
-        const res = await fetch(`/api/updates?category=${encodeURIComponent('رواتب')}&page=${currentPage}&limit=5`)
+        const searchParam = activeFilter === "الكل" ? "" : activeFilter;
+        let url = `/api/updates?category=${encodeURIComponent('رواتب')}&page=${currentPage}&limit=5`;
+        if (searchParam) {
+            url += `&search=${encodeURIComponent(searchParam)}`;
+        }
+        
+        const res = await fetch(url)
         const data = await res.json()
         
         if (data.data && Array.isArray(data.data)) {
@@ -44,7 +51,7 @@ export default function SalariesPage() {
     // Refresh current page every 30 seconds
     const interval = setInterval(fetchUpdates, 30000)
     return () => clearInterval(interval)
-  }, [currentPage])
+  }, [currentPage, activeFilter])
 
   const toggleExpand = (id: number) => {
     const newExpanded = new Set(expandedIds)
@@ -104,10 +111,30 @@ export default function SalariesPage() {
           <input
             type="text"
             className="w-full pl-4 pr-14 py-4 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all shadow-sm dark:text-white font-medium placeholder-slate-400"
-            placeholder="ابحث في هذه الصفحة..."
+            placeholder="بحث في الصفحة الحالية..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+        </div>
+
+        {/* Quick Filters */}
+        <div className="flex flex-wrap items-center justify-center gap-3 mt-6 relative z-10">
+          {["الكل", "وزارة", "متقاعدين", "الرعاية الاجتماعية", "سلفة"].map((filter) => (
+            <button
+              key={filter}
+              onClick={() => {
+                setActiveFilter(filter)
+                setCurrentPage(1)
+              }}
+              className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                activeFilter === filter 
+                  ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/40 scale-105 border border-emerald-400"
+                  : "bg-white/50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700"
+              }`}
+            >
+              {filter === "وزارة" ? "الوزارات فقط" : filter}
+            </button>
+          ))}
         </div>
       </div>
 

@@ -261,7 +261,7 @@ app.get('/api/oil', async (req, res) => {
 
 app.get('/api/updates', async (req, res) => {
     try {
-        const { category, page, limit } = req.query;
+        const { category, page, limit, search } = req.query;
 
         // Default behavior (no pagination)
         if (!page) {
@@ -286,10 +286,24 @@ app.get('/api/updates', async (req, res) => {
         let countParams = [];
 
         if (category) {
-            dataQueryStr = "SELECT * FROM telegram_updates WHERE category = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3";
-            countQueryStr = "SELECT COUNT(*) FROM telegram_updates WHERE category = $1";
-            dataParams = [category, limitNum, offset];
-            countParams = [category];
+            if (search) {
+                dataQueryStr = "SELECT * FROM telegram_updates WHERE category = $1 AND content LIKE $4 ORDER BY created_at DESC LIMIT $2 OFFSET $3";
+                countQueryStr = "SELECT COUNT(*) FROM telegram_updates WHERE category = $1 AND content LIKE $2";
+                dataParams = [category, limitNum, offset, `%${search}%`];
+                countParams = [category, `%${search}%`];
+            } else {
+                dataQueryStr = "SELECT * FROM telegram_updates WHERE category = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3";
+                countQueryStr = "SELECT COUNT(*) FROM telegram_updates WHERE category = $1";
+                dataParams = [category, limitNum, offset];
+                countParams = [category];
+            }
+        } else {
+            if (search) {
+                dataQueryStr = "SELECT * FROM telegram_updates WHERE content LIKE $3 ORDER BY created_at DESC LIMIT $1 OFFSET $2";
+                countQueryStr = "SELECT COUNT(*) FROM telegram_updates WHERE content LIKE $1";
+                dataParams = [limitNum, offset, `%${search}%`];
+                countParams = [`%${search}%`];
+            }
         }
 
         const dataResult = await pool.query(dataQueryStr, dataParams);
