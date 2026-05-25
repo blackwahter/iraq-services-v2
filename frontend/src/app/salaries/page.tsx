@@ -19,6 +19,7 @@ export default function SalariesPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [isLoading, setIsLoading] = useState(true)
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set())
+  const [truncatableIds, setTruncatableIds] = useState<Set<number>>(new Set())
 
   // Debounce search input
   useEffect(() => {
@@ -82,6 +83,26 @@ export default function SalariesPage() {
     }
     setExpandedIds(newExpanded)
   }
+
+  // Check which texts are actually truncated by line-clamp
+  useEffect(() => {
+    const checkTruncation = () => {
+      const elements = document.querySelectorAll('.salary-text-content');
+      const newTruncatable = new Set<number>();
+      elements.forEach((el) => {
+        // If scrollHeight > clientHeight, it means line-clamp is actively hiding text
+        if (el.scrollHeight > el.clientHeight) {
+          const id = el.getAttribute('data-id');
+          if (id) newTruncatable.add(Number(id));
+        }
+      });
+      setTruncatableIds(newTruncatable);
+    };
+
+    // Small delay to ensure browser has rendered the clamped text
+    const timeout = setTimeout(checkTruncation, 150);
+    return () => clearTimeout(timeout);
+  }, [updates, activeFilter, debouncedSearch]);
 
   const getVisiblePages = () => {
     if (!pagination) return [];
@@ -185,26 +206,25 @@ export default function SalariesPage() {
                 </div>
                 
                 <div className="relative">
-                  <div className={`transition-all duration-300 ${isExpanded ? '' : 'h-[3rem] md:h-[3.5rem] overflow-hidden'}`}>
-                    <p className={`text-base md:text-lg font-medium text-slate-800 dark:text-slate-200 leading-relaxed ${isExpanded ? '' : 'line-clamp-2'}`}>
-                      {update.content}
-                    </p>
-                  </div>
+                  <p 
+                    className={`salary-text-content text-sm md:text-base font-medium text-slate-800 dark:text-slate-200 leading-relaxed transition-all duration-300 ${isExpanded ? '' : 'line-clamp-2'}`}
+                    data-id={update.id}
+                  >
+                    {update.content}
+                  </p>
                   
-                  <div className="mt-2 h-[32px] flex items-center">
-                    {update.content.length > 140 && (
-                      <button 
-                        onClick={() => toggleExpand(update.id)}
-                        className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1.5 rounded-lg text-sm w-max"
-                      >
-                        {isExpanded ? (
-                          <>عرض أقل <ChevronUp className="w-4 h-4" /></>
-                        ) : (
-                          <>اقرأ المزيد <ChevronDown className="w-4 h-4" /></>
-                        )}
-                      </button>
-                    )}
-                  </div>
+                  {(truncatableIds.has(update.id) || isExpanded) && (
+                    <button 
+                      onClick={() => toggleExpand(update.id)}
+                      className="mt-2 flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1.5 rounded-lg text-sm w-max"
+                    >
+                      {isExpanded ? (
+                        <>عرض أقل <ChevronUp className="w-4 h-4" /></>
+                      ) : (
+                        <>اقرأ المزيد <ChevronDown className="w-4 h-4" /></>
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
             )
