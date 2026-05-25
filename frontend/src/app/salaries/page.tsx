@@ -1,83 +1,184 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Search, Wallet } from "lucide-react"
+import { Search, Wallet, ChevronRight, ChevronLeft, ChevronDown, ChevronUp } from "lucide-react"
+
+interface PaginationData {
+  totalCount: number;
+  currentPage: number;
+  totalPages: number;
+  limit: number;
+}
 
 export default function SalariesPage() {
   const [updates, setUpdates] = useState<any[]>([])
+  const [pagination, setPagination] = useState<PaginationData | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [isLoading, setIsLoading] = useState(true)
+  const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set())
 
+  // Fetch paginated data
   useEffect(() => {
     const fetchUpdates = async () => {
+      setIsLoading(true)
       try {
-        const res = await fetch("/api/updates")
+        const res = await fetch(`/api/updates?category=رواتب&page=${currentPage}&limit=5`)
         const data = await res.json()
-        if (Array.isArray(data)) {
-          setUpdates(data.filter((u: any) => u.category === "رواتب"))
-        } else {
-          setUpdates([])
+        
+        if (data.data && Array.isArray(data.data)) {
+          setUpdates(data.data)
+          setPagination(data.pagination)
+        } else if (Array.isArray(data)) {
+          // Fallback if backend hasn't restarted yet
+          setUpdates(data.filter((u: any) => u.category === "رواتب").slice(0, 5))
         }
       } catch (error) {
         console.error("Error fetching salaries:", error)
+      } finally {
+        setIsLoading(false)
       }
     }
     fetchUpdates()
+    
+    // Refresh current page every 30 seconds
     const interval = setInterval(fetchUpdates, 30000)
     return () => clearInterval(interval)
-  }, [])
+  }, [currentPage])
 
+  const toggleExpand = (id: number) => {
+    const newExpanded = new Set(expandedIds)
+    if (newExpanded.has(id)) {
+      newExpanded.delete(id)
+    } else {
+      newExpanded.add(id)
+    }
+    setExpandedIds(newExpanded)
+  }
+
+  // Local search filter (only searches current page to avoid excessive API calls on every keystroke, 
+  // or could implement backend search later)
   const filteredUpdates = updates.filter(u => 
     u.content.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
-      <div className="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm text-center md:text-right">
-        <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
-          <div className="w-14 h-14 bg-emerald-50 dark:bg-emerald-900/30 rounded-full flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
-            <Wallet className="w-7 h-7" />
+    <div className="space-y-8 max-w-5xl mx-auto pb-10">
+      {/* Header Section */}
+      <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl p-8 border border-white/20 dark:border-white/10 shadow-xl text-center md:text-right relative overflow-hidden">
+        {/* Glow effect */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-3xl rounded-full -z-10"></div>
+        
+        <div className="flex flex-col md:flex-row items-center gap-6 mb-8 relative z-10">
+          <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg shadow-emerald-500/30">
+            <Wallet className="w-8 h-8" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">نظام رصد وإطلاق الرواتب الحكومية</h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-1">متابعة لحظية وحية لتمويل وصرف رواتب موظفي الدولة والمتقاعدين في العراق</p>
+            <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight">نظام رصد الرواتب</h1>
+            <p className="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">متابعة حية ودقيقة لتمويل وصرف رواتب الموظفين والمتقاعدين</p>
           </div>
         </div>
 
-        <div className="relative max-w-2xl">
-          <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400">
+        <div className="relative max-w-2xl relative z-10">
+          <div className="absolute inset-y-0 right-0 flex items-center pr-5 pointer-events-none text-slate-400">
             <Search className="w-5 h-5" />
           </div>
           <input
             type="text"
-            className="w-full pl-4 pr-12 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all dark:text-white"
-            placeholder="ابحث عن وزارة، هيئة، أو محافظة..."
+            className="w-full pl-4 pr-14 py-4 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all shadow-sm dark:text-white font-medium placeholder-slate-400"
+            placeholder="ابحث في هذه الصفحة..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
       </div>
 
-      <div className="space-y-4">
-        {filteredUpdates.length > 0 ? filteredUpdates.map((update) => (
-          <div key={update.id} className="bg-white dark:bg-slate-900 p-6 rounded-xl border-r-4 border-emerald-500 border-y border-l border-y-slate-200 border-l-slate-200 dark:border-y-slate-800 dark:border-l-slate-800 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3 mb-3">
-              <span className="px-3 py-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 rounded-md text-sm font-bold">
-                خبر عاجل
-              </span>
-              <span className="text-slate-500 dark:text-slate-400 font-mono text-sm" dir="ltr">
-                {new Date(update.created_at).toLocaleTimeString('ar-IQ', {hour: '2-digit', minute:'2-digit'})} - {new Date(update.created_at).toLocaleDateString('ar-IQ')}
-              </span>
-            </div>
-            <p className="text-lg font-medium text-slate-800 dark:text-slate-200 leading-relaxed">
-              {update.content}
-            </p>
-          </div>
-        )) : (
-          <div className="text-center p-12 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-500">
-            {updates.length === 0 ? "جاري جلب بيانات الرواتب..." : "لا توجد نتائج مطابقة للبحث"}
+      {/* Cards List */}
+      <div className="space-y-5">
+        {isLoading ? (
+          // Skeleton Loader
+          Array(5).fill(0).map((_, i) => (
+            <div key={i} className="bg-white/50 dark:bg-slate-900/50 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800 animate-pulse h-32"></div>
+          ))
+        ) : filteredUpdates.length > 0 ? (
+          filteredUpdates.map((update) => {
+            const isExpanded = expandedIds.has(update.id);
+            const isLongText = update.content.length > 150;
+            
+            return (
+              <div key={update.id} className="group relative bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-6 md:p-8 rounded-3xl border border-white/20 dark:border-white/10 shadow-lg hover:shadow-xl hover:shadow-emerald-500/5 transition-all duration-300 overflow-hidden">
+                {/* Accent Line */}
+                <div className="absolute right-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-emerald-400 to-teal-600 rounded-r-3xl"></div>
+                
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                  <span className="px-4 py-1.5 bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 rounded-full text-sm font-bold w-max shadow-sm border border-emerald-200 dark:border-emerald-500/30 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    إشعار عاجل
+                  </span>
+                  <span className="text-slate-500 dark:text-slate-400 font-mono text-sm bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-lg w-max" dir="ltr">
+                    {new Date(update.created_at).toLocaleTimeString('ar-IQ', {hour: '2-digit', minute:'2-digit'})} - {new Date(update.created_at).toLocaleDateString('ar-IQ')}
+                  </span>
+                </div>
+                
+                <div className="relative">
+                  <p className={`text-lg md:text-xl font-medium text-slate-800 dark:text-slate-200 leading-relaxed transition-all duration-500 ${isExpanded ? '' : 'line-clamp-2 md:line-clamp-3'}`}>
+                    {update.content}
+                  </p>
+                  
+                  {isLongText && (
+                    <button 
+                      onClick={() => toggleExpand(update.id)}
+                      className="mt-4 flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors bg-emerald-50 dark:bg-emerald-900/30 px-4 py-2 rounded-xl"
+                    >
+                      {isExpanded ? (
+                        <>عرض أقل <ChevronUp className="w-4 h-4" /></>
+                      ) : (
+                        <>اقرأ المزيد <ChevronDown className="w-4 h-4" /></>
+                      )}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )
+          })
+        ) : (
+          <div className="text-center p-16 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md rounded-3xl border border-slate-200/50 dark:border-slate-800 text-slate-500 shadow-sm">
+            <Wallet className="w-12 h-12 mx-auto mb-4 opacity-20" />
+            <p className="text-xl font-medium">لا توجد أخبار في هذه الصفحة</p>
           </div>
         )}
       </div>
+
+      {/* Pagination Controls */}
+      {pagination && pagination.totalPages > 1 && (
+        <div className="flex items-center justify-center gap-4 mt-8 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md p-4 rounded-2xl border border-slate-200/50 dark:border-white/5 shadow-sm w-max mx-auto">
+          <button
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+          
+          <div className="flex items-center gap-2 font-mono" dir="ltr">
+            <span className="w-10 h-10 flex items-center justify-center bg-emerald-500 text-white font-bold rounded-xl shadow-md shadow-emerald-500/20">
+              {currentPage}
+            </span>
+            <span className="text-slate-400 px-2">/</span>
+            <span className="text-slate-500 dark:text-slate-400 font-bold">
+              {pagination.totalPages}
+            </span>
+          </div>
+
+          <button
+            onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p + 1))}
+            disabled={currentPage === pagination.totalPages}
+            className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+        </div>
+      )}
     </div>
   )
 }

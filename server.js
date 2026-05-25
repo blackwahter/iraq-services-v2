@@ -261,9 +261,54 @@ app.get('/api/oil', async (req, res) => {
 
 app.get('/api/updates', async (req, res) => {
     try {
-        const result = await pool.query("SELECT * FROM telegram_updates ORDER BY created_at DESC LIMIT 300");
-        res.json(result.rows);
-    } catch (err) { res.status(500).json({ error: 'حدث خطأ في السيرفر' }); }
+        const { category, page, limit } = req.query;
+
+        // Default behavior (no pagination)
+        if (!page) {
+            let queryStr = "SELECT * FROM telegram_updates ORDER BY created_at DESC LIMIT 300";
+            let params = [];
+            if (category) {
+                queryStr = "SELECT * FROM telegram_updates WHERE category = $1 ORDER BY created_at DESC LIMIT 300";
+                params = [category];
+            }
+            const result = await pool.query(queryStr, params);
+            return res.json(result.rows);
+        }
+
+        // Paginated behavior
+        const pageNum = parseInt(page) || 1;
+        const limitNum = parseInt(limit) || 5;
+        const offset = (pageNum - 1) * limitNum;
+
+        let dataQueryStr = "SELECT * FROM telegram_updates ORDER BY created_at DESC LIMIT $1 OFFSET $2";
+        let countQueryStr = "SELECT COUNT(*) FROM telegram_updates";
+        let dataParams = [limitNum, offset];
+        let countParams = [];
+
+        if (category) {
+            dataQueryStr = "SELECT * FROM telegram_updates WHERE category = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3";
+            countQueryStr = "SELECT COUNT(*) FROM telegram_updates WHERE category = $1";
+            dataParams = [category, limitNum, offset];
+            countParams = [category];
+        }
+
+        const dataResult = await pool.query(dataQueryStr, dataParams);
+        const countResult = await pool.query(countQueryStr, countParams);
+        const totalCount = parseInt(countResult.rows[0].count);
+
+        res.json({
+            data: dataResult.rows,
+            pagination: {
+                totalCount,
+                currentPage: pageNum,
+                totalPages: Math.ceil(totalCount / limitNum),
+                limit: limitNum
+            }
+        });
+    } catch (err) { 
+        console.error(err);
+        res.status(500).json({ error: 'حدث خطأ في السيرفر' }); 
+    }
 });
 
 app.get('/api/clear-all', async (req, res) => {
