@@ -205,12 +205,6 @@
                         <span id="hud-clock" class="digital-time">00:00:00 AM</span>
                     </div>
                     <div class="hud-item sound-control" style="display: flex; gap: 10px;">
-                        <button id="theme-toggle" class="cyber-btn-mini" title="تبديل المظهر">
-                            <span class="icon" id="theme-icon"></span> <span id="theme-text">المظهر: داكن</span>
-                        </button>
-                        <button id="sound-toggle" class="cyber-btn-mini sound-active" title="تفعيل/كتم المؤثرات الصوتية">
-                            <span class="icon"></span> <span id="sound-status-text">الصوت: نشط</span>
-                        </button>
                         <button id="sidebar-toggle" class="cyber-btn-mini" title="فتح القائمة">
                             <span class="icon">☰</span> <span id="sidebar-toggle-text">الأقسام</span>
                         </button>
@@ -262,11 +256,16 @@
             <!-- 0. تبويب لوحة التحكم المفضلات -->
             <!-- ===================================== -->
             <section id="dashboard-tab" class="tab-content active">
-                <div class="cyber-header">
-                    <div class="glitch-wrapper">
-                        <h2 class="cyber-title" data-text="لوحة التحكم والمفضلات">لوحة التحكم والمفضلات</h2>
+                <div class="cyber-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <div class="glitch-wrapper">
+                            <h2 class="cyber-title" data-text="لوحة التحكم والمفضلات">لوحة التحكم والمفضلات</h2>
+                        </div>
+                        <p class="cyber-subtitle">العناصر المفضلة لديك تظهر هنا للوصول السريع</p>
                     </div>
-                    <p class="cyber-subtitle">العناصر المفضلة لديك تظهر هنا للوصول السريع</p>
+                    <button id="dashboard-notif-btn" class="cyber-btn-mini" title="الإشعارات" style="padding: 8px 12px; font-size: 1.2rem;">
+                        🔔
+                    </button>
                 </div>
                 
                 <div id="dashboard-grid" class="dashboard-grid">
@@ -435,9 +434,9 @@
                     <p class="cyber-subtitle">تخصيص المظهر والإشعارات</p>
                 </div>
                 <div class="settings-grid" style="display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
-                    <!-- Theme Settings -->
+                    <!-- Theme & Sound Settings -->
                     <div class="cyber-card settings-card" style="padding: 20px;">
-                        <h3>المظهر (Theme)</h3>
+                        <h3>المظهر والصوت (Theme & Sound)</h3>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
                             <span>الوضع المضيء (Light Mode)</span>
                             <label class="switch">
@@ -445,26 +444,40 @@
                                 <span class="slider round"></span>
                             </label>
                         </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                            <span>تفعيل المؤثرات الصوتية (Sound)</span>
+                            <label class="switch">
+                                <input type="checkbox" id="sound-toggle-settings" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
                     </div>
                     
                     <!-- Notifications Settings -->
                     <div class="cyber-card settings-card" style="padding: 20px;">
-                        <h3>الإشعارات (Notifications)</h3>
-                        <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span>الإشعارات العامة (أخبار الرواتب وغيرها)</span>
-                                <label class="switch">
-                                    <input type="checkbox" id="general-notif-toggle" checked>
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span>إشعارات المفضلات فقط</span>
-                                <label class="switch">
-                                    <input type="checkbox" id="favorite-notif-toggle" checked>
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
+                        <h3>إشعارات الأقسام (Section Notifications)</h3>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 15px;">اختر الأقسام التي تود استلام إشعارات منها عند توفر أسعار وأخبار جديدة:</p>
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" id="notif-salaries" class="section-notif-cb" value="salaries" checked>
+                                <span>أخبار الرواتب 📅</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" id="notif-currencies" class="section-notif-cb" value="currencies" checked>
+                                <span>العملات الأجنبية 💵</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" id="notif-bourses" class="section-notif-cb" value="bourses" checked>
+                                <span>البورصات المحلية 📈</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" id="notif-metals" class="section-notif-cb" value="metals" checked>
+                                <span>المعادن والذهب 🥇</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" id="notif-oil" class="section-notif-cb" value="oil">
+                                <span>النفط العالمي 🛢️</span>
+                            </label>
                         </div>
                     </div>
                 </div>

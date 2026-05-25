@@ -48,9 +48,6 @@ const pricesList = document.getElementById('prices-list');
 const modalSysLogs = document.getElementById('modal-sys-logs');
 const modalTeleLogs = document.getElementById('modal-tele-logs');
 
-const soundToggle = document.getElementById('sound-toggle');
-const soundStatusText = document.getElementById('sound-status-text');
-
 const fromAmountInput = document.getElementById('from-amount');
 const toAmountInput = document.getElementById('to-amount');
 const fromCurrencySelect = document.getElementById('from-currency');
@@ -178,17 +175,13 @@ function animateParticles() {
 // 2. الصوتيات
 // ==========================================
 function initSoundEngine() {
-    soundToggle.addEventListener('click', () => {
-        soundEnabled = !soundEnabled;
-        if (soundEnabled) { 
-            soundToggle.classList.add('sound-active'); 
-            soundStatusText.textContent = "الصوت: نشط"; 
-            playSynthSound(523.25, 'sine', 0.1, 0.05); 
-        } else { 
-            soundToggle.classList.remove('sound-active'); 
-            soundStatusText.textContent = "الصوت: مكتوم"; 
-        }
-    });
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (AudioContext) {
+        audioCtx = new AudioContext();
+    }
+    if (localStorage.getItem('sound_enabled') === 'false') {
+        soundEnabled = false;
+    }
 }
 
 function getAudioContext() { 
@@ -879,15 +872,33 @@ function initSettings() {
         });
     }
 
-    const genNotif = document.getElementById('general-notif-toggle');
-    const favNotif = document.getElementById('favorite-notif-toggle');
-    if (genNotif && favNotif) {
-        genNotif.checked = localStorage.getItem('notif_general') !== 'false';
-        favNotif.checked = localStorage.getItem('notif_favorite') !== 'false';
-
-        genNotif.addEventListener('change', e => localStorage.setItem('notif_general', e.target.checked));
-        favNotif.addEventListener('change', e => localStorage.setItem('notif_favorite', e.target.checked));
+    // Sound toggle in settings
+    const soundSettingsToggle = document.getElementById('sound-toggle-settings');
+    if (soundSettingsToggle) {
+        soundSettingsToggle.checked = soundEnabled;
+        soundSettingsToggle.addEventListener('change', (e) => {
+            soundEnabled = e.target.checked;
+            localStorage.setItem('sound_enabled', soundEnabled);
+            if (soundEnabled) playCyberSelect();
+        });
     }
+
+    // Section Notifications Settings
+    const sections = ['salaries', 'currencies', 'bourses', 'metals', 'oil'];
+    sections.forEach(sec => {
+        const cb = document.getElementById(`notif-${sec}`);
+        if (cb) {
+            // Load from localStorage, default true if not set
+            const saved = localStorage.getItem(`notif_sec_${sec}`);
+            if (saved !== null) {
+                cb.checked = saved === 'true';
+            }
+            // Save on change
+            cb.addEventListener('change', (e) => {
+                localStorage.setItem(`notif_sec_${sec}`, e.target.checked);
+            });
+        }
+    });
 }
 
 // ==========================================
