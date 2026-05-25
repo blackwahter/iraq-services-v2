@@ -185,22 +185,26 @@ export default function SalariesPage() {
                 </div>
                 
                 <div className="relative">
-                  <p className={`text-base md:text-lg font-medium text-slate-800 dark:text-slate-200 leading-relaxed transition-all duration-300 ${isExpanded ? '' : 'line-clamp-2'}`}>
-                    {update.content}
-                  </p>
+                  <div className={`transition-all duration-300 ${isExpanded ? '' : 'h-[3rem] md:h-[3.5rem] overflow-hidden'}`}>
+                    <p className={`text-base md:text-lg font-medium text-slate-800 dark:text-slate-200 leading-relaxed ${isExpanded ? '' : 'line-clamp-2'}`}>
+                      {update.content}
+                    </p>
+                  </div>
                   
-                  {update.content.length > 80 && (
-                    <button 
-                      onClick={() => toggleExpand(update.id)}
-                      className="mt-2 flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1.5 rounded-lg text-sm w-max"
-                    >
-                      {isExpanded ? (
-                        <>عرض أقل <ChevronUp className="w-4 h-4" /></>
-                      ) : (
-                        <>اقرأ المزيد <ChevronDown className="w-4 h-4" /></>
-                      )}
-                    </button>
-                  )}
+                  <div className="mt-2 h-[32px] flex items-center">
+                    {update.content.length > 140 && (
+                      <button 
+                        onClick={() => toggleExpand(update.id)}
+                        className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1.5 rounded-lg text-sm w-max"
+                      >
+                        {isExpanded ? (
+                          <>عرض أقل <ChevronUp className="w-4 h-4" /></>
+                        ) : (
+                          <>اقرأ المزيد <ChevronDown className="w-4 h-4" /></>
+                        )}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             )
