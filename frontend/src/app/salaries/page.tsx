@@ -168,7 +168,6 @@ export default function SalariesPage() {
         ) : filteredUpdates.length > 0 ? (
           filteredUpdates.map((update) => {
             const isExpanded = expandedIds.has(update.id);
-            const isLongText = update.content.length > 150;
             
             return (
               <div key={update.id} className="group relative bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-6 md:p-8 rounded-3xl border border-white/20 dark:border-white/10 shadow-lg hover:shadow-xl hover:shadow-emerald-500/5 transition-all duration-300 overflow-hidden">
@@ -186,22 +185,26 @@ export default function SalariesPage() {
                 </div>
                 
                 <div className="relative">
-                  <p className={`text-lg md:text-xl font-medium text-slate-800 dark:text-slate-200 leading-relaxed transition-all duration-500 ${isExpanded ? '' : 'line-clamp-2 md:line-clamp-3'}`}>
-                    {update.content}
-                  </p>
+                  <div className={`transition-all duration-500 ${isExpanded ? '' : 'h-[4rem] md:h-[5.5rem]'}`}>
+                    <p className={`text-lg md:text-xl font-medium text-slate-800 dark:text-slate-200 leading-relaxed ${isExpanded ? '' : 'line-clamp-2'}`}>
+                      {update.content}
+                    </p>
+                  </div>
                   
-                  {isLongText && (
-                    <button 
-                      onClick={() => toggleExpand(update.id)}
-                      className="mt-4 flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors bg-emerald-50 dark:bg-emerald-900/30 px-4 py-2 rounded-xl"
-                    >
-                      {isExpanded ? (
-                        <>عرض أقل <ChevronUp className="w-4 h-4" /></>
-                      ) : (
-                        <>اقرأ المزيد <ChevronDown className="w-4 h-4" /></>
-                      )}
-                    </button>
-                  )}
+                  <div className="mt-4 h-[40px]">
+                    {update.content.length > 80 && (
+                      <button 
+                        onClick={() => toggleExpand(update.id)}
+                        className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors bg-emerald-50 dark:bg-emerald-900/30 px-4 py-2 rounded-xl"
+                      >
+                        {isExpanded ? (
+                          <>عرض أقل <ChevronUp className="w-4 h-4" /></>
+                        ) : (
+                          <>اقرأ المزيد <ChevronDown className="w-4 h-4" /></>
+                        )}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             )
