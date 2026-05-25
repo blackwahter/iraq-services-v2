@@ -102,8 +102,8 @@ export default function Home() {
   const currentBourse = bourseList[currentBourseIndex]
 
   const oilList = [
-    { name: "خام برنت", price: oil?.brent ? `$${oil.brent.toFixed(2)}` : "---" },
-    { name: "الخام الأمريكي", price: oil?.wti ? `$${oil.wti.toFixed(2)}` : "---" }
+    { name: "خام برنت", price: oil?.brent ? `$${oil.brent.toFixed(2)}` : "---", color: "from-slate-700/80 to-gray-900/80", shadow: "shadow-slate-500/20" },
+    { name: "الخام الأمريكي", price: oil?.wti ? `$${oil.wti.toFixed(2)}` : "---", color: "from-cyan-700/80 to-blue-900/80", shadow: "shadow-cyan-500/20" }
   ]
   const currentOil = oilList[currentOilIndex]
 
@@ -186,27 +186,27 @@ export default function Home() {
         </div>
 
         {/* 3. Oil Prices Card */}
-        <Link href="/oil" className="group relative overflow-hidden rounded-3xl p-6 shadow-xl hover:shadow-blue-500/20 transition-all duration-500 hover:scale-[1.02] flex flex-col justify-between min-h-[200px] border border-white/20 dark:border-white/10 backdrop-blur-xl bg-gradient-to-br from-slate-100/80 to-slate-200/80 dark:from-slate-800/80 dark:to-slate-900/80">
+        <Link href="/oil" className={`group relative overflow-hidden rounded-3xl p-6 shadow-xl hover:${currentOil.shadow} transition-all duration-700 hover:scale-[1.02] flex flex-col justify-between min-h-[200px] border border-white/20 dark:border-white/10 backdrop-blur-xl bg-gradient-to-br ${currentOil.color}`}>
           
           {/* Classy Shimmer Loading Effect */}
-          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-blue-500/10 to-transparent animate-[shimmerSweep_5s_ease-in-out_infinite]"></div>
+          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmerSweep_5s_ease-in-out_infinite]"></div>
 
           <div className="relative z-10 flex justify-between items-start mb-4">
-            <div className="bg-blue-500/20 backdrop-blur-md p-3 rounded-2xl text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform duration-300">
+            <div className="bg-white/20 backdrop-blur-md p-3 rounded-2xl text-white group-hover:scale-110 transition-transform duration-300">
               <Droplet className="w-6 h-6" />
             </div>
-            <ArrowUpRight className="text-slate-400 group-hover:text-blue-500 transition-colors" />
+            <ArrowUpRight className="text-white/50 group-hover:text-white transition-colors" />
           </div>
           
           <div className="relative z-10 mt-auto">
-            <h3 className="text-slate-900 dark:text-white font-bold text-lg mb-4">النفط العالمي</h3>
+            <h3 className="text-white font-bold text-lg mb-4">النفط العالمي</h3>
             <div className={`transition-all duration-500 transform ${isOilTransitioning ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
-              <p className="text-slate-600 dark:text-slate-300 font-medium text-lg mb-1 flex items-center gap-2">
+              <p className="text-white/80 font-medium text-lg mb-1 flex items-center gap-2">
                 {currentOil.name}
-                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
               </p>
               <div className="flex items-end gap-3">
-                <h2 className="text-5xl md:text-6xl font-black text-slate-900 dark:text-white font-mono tracking-tighter drop-shadow-lg">
+                <h2 className="text-5xl md:text-6xl font-black text-white font-mono tracking-tighter drop-shadow-lg">
                   {currentOil.price}
                 </h2>
               </div>
