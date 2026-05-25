@@ -2,11 +2,11 @@
 
 @theme {
   --font-cairo: var(--font-cairo), ui-sans-serif, system-ui, sans-serif;
-  --animate-slideRight: slideRight 10s linear infinite;
+  --animate-shimmerSweep: shimmerSweep 5s ease-in-out infinite;
   
-  @keyframes slideRight {
-    from { width: 0%; }
-    to { width: 100%; }
+  @keyframes shimmerSweep {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
   }
 }
 

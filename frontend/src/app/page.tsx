@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Building2, Coins, Droplet, TrendingUp, Newspaper, ArrowUpRight, ChevronLeft } from "lucide-react"
+import { Building2, Coins, Droplet, TrendingUp, Wallet, ArrowUpRight } from "lucide-react"
 import Link from "next/link"
 
 interface BourseData {
@@ -26,6 +26,7 @@ export default function Home() {
   const [currentBourseIndex, setCurrentBourseIndex] = useState(0)
   const [isTransitioning, setIsTransitioning] = useState(false)
 
+  // Data Fetcher
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -43,7 +44,7 @@ export default function Home() {
         if (updatesRes) {
           const updatesData = await updatesRes.json()
           if (Array.isArray(updatesData)) {
-            setUpdates(updatesData.slice(0, 5))
+            setUpdates(updatesData)
           }
         }
 
@@ -61,7 +62,7 @@ export default function Home() {
     return () => clearInterval(interval)
   }, [])
 
-  // 10-second Cycler for Bourses
+  // 5-second Cycler for Bourses
   useEffect(() => {
     const cycleInterval = setInterval(() => {
       setIsTransitioning(true)
@@ -69,19 +70,20 @@ export default function Home() {
         setCurrentBourseIndex((prev) => (prev + 1) % 4)
         setIsTransitioning(false)
       }, 500) // 500ms fade duration
-    }, 10000) // 10 seconds
+    }, 5000) // 5 seconds
 
     return () => clearInterval(cycleInterval)
   }, [])
 
   const bourseList = [
-    { name: "بورصة الكفاح (بغداد)", price: bourses?.kifah },
-    { name: "بورصة الحارثية (بغداد)", price: bourses?.harthiya },
-    { name: "بورصة أربيل (الشمال)", price: bourses?.erbil },
-    { name: "بورصة البصرة (الجنوب)", price: bourses?.basra }
+    { name: "الكفاح", price: bourses?.kifah, color: "from-blue-600/80 to-indigo-700/80", shadow: "shadow-blue-500/20" },
+    { name: "الحارثية", price: bourses?.harthiya, color: "from-emerald-600/80 to-teal-700/80", shadow: "shadow-emerald-500/20" },
+    { name: "أربيل", price: bourses?.erbil, color: "from-amber-500/80 to-orange-600/80", shadow: "shadow-amber-500/20" },
+    { name: "البصرة", price: bourses?.basra, color: "from-purple-600/80 to-pink-700/80", shadow: "shadow-purple-500/20" }
   ]
 
   const currentBourse = bourseList[currentBourseIndex]
+  const salaryUpdates = updates.filter(u => u.category === "رواتب").slice(0, 3)
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -104,17 +106,18 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Bento Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* 2x2 Grid Layout */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
-        {/* Main Bourse Cycler Card (Spans 2 columns on Desktop) */}
-        <Link href="/markets" className="group md:col-span-2 relative overflow-hidden bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl p-6 md:p-10 shadow-lg hover:shadow-blue-500/25 transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between min-h-[220px]">
-          {/* Animated Background Glow */}
-          <div className="absolute top-0 right-0 w-72 h-72 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 group-hover:scale-110 transition-transform duration-700"></div>
+        {/* 1. Bourse Cycler Card */}
+        <Link href="/markets" className={`group relative overflow-hidden rounded-3xl p-6 shadow-xl hover:${currentBourse.shadow} transition-all duration-700 hover:scale-[1.02] flex flex-col justify-between min-h-[200px] border border-white/20 dark:border-white/10 backdrop-blur-xl bg-gradient-to-br ${currentBourse.color}`}>
           
-          <div className="relative z-10 flex justify-between items-start mb-6">
+          {/* Classy Shimmer Loading Effect (5s) */}
+          <div key={`shimmer-${currentBourseIndex}`} className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmerSweep_5s_ease-in-out]"></div>
+          
+          <div className="relative z-10 flex justify-between items-start mb-4">
             <div className="bg-white/20 backdrop-blur-md p-3 rounded-2xl text-white">
-              <Building2 className="w-8 h-8" />
+              <Building2 className="w-6 h-6" />
             </div>
             <div className="flex items-center gap-1 text-white/90 bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
               بث حي <TrendingUp className="w-4 h-4" />
@@ -123,107 +126,101 @@ export default function Home() {
           
           <div className="relative z-10 mt-auto">
             <div className={`transition-all duration-500 transform ${isTransitioning ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
-              <p className="text-blue-100 font-medium text-lg md:text-xl mb-1 flex items-center gap-2">
-                {currentBourse.name}
-                <span className="w-2 h-2 rounded-full bg-blue-300 animate-pulse"></span>
+              <p className="text-white/80 font-medium text-lg mb-1 flex items-center gap-2">
+                بورصة {currentBourse.name}
+                <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
               </p>
               <div className="flex items-end gap-3">
-                <h2 className="text-5xl md:text-7xl font-black text-white font-mono tracking-tighter drop-shadow-md">
+                <h2 className="text-5xl md:text-6xl font-black text-white font-mono tracking-tighter drop-shadow-lg">
                   {currentBourse.price ? currentBourse.price.toLocaleString() : "---"}
                 </h2>
-                <span className="text-xl md:text-2xl text-blue-200 font-medium mb-2 md:mb-3">دينار</span>
+                <span className="text-xl text-white/80 font-medium mb-2">دينار</span>
               </div>
-            </div>
-            
-            {/* Progress Bar for the 10s interval */}
-            <div className="absolute bottom-0 left-0 w-full h-1 bg-white/10 rounded-full overflow-hidden mt-6">
-              <div 
-                key={currentBourseIndex} 
-                className="h-full bg-white/40 animate-[slideRight_10s_linear]"
-                style={{ animationName: 'slideRight', animationDuration: '10s', animationTimingFunction: 'linear' }}
-              ></div>
             </div>
           </div>
         </Link>
 
-        {/* Right Column: Oil & Gold */}
-        <div className="flex flex-col gap-6">
-          {/* Oil Prices Card */}
-          <Link href="/oil" className="group bg-slate-900 dark:bg-slate-950 rounded-3xl p-6 border border-slate-800 shadow-sm hover:border-blue-500/50 transition-all duration-300 hover:-translate-y-1 flex-1 flex flex-col justify-between">
-            <div className="flex justify-between items-start mb-6">
-              <div className="w-12 h-12 bg-blue-500/20 rounded-2xl flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
-                <Droplet className="w-6 h-6" />
-              </div>
-              <ArrowUpRight className="text-slate-500 group-hover:text-blue-400 transition-colors" />
-            </div>
-            
-            <div className="space-y-4">
-              <h3 className="text-slate-400 font-bold text-lg">النفط العالمي</h3>
-              <div className="flex justify-between items-end border-b border-slate-800 pb-3">
-                <span className="text-slate-300 font-medium">خام برنت</span>
-                <span className="text-2xl font-black text-white font-mono">{oil?.brent ? `$${oil.brent.toFixed(2)}` : "---"}</span>
-              </div>
-              <div className="flex justify-between items-end">
-                <span className="text-slate-300 font-medium">الخام الأمريكي</span>
-                <span className="text-xl font-bold text-slate-400 font-mono">{oil?.wti ? `$${oil.wti.toFixed(2)}` : "---"}</span>
-              </div>
-            </div>
-          </Link>
+        {/* 2. Gold & Metals Card (Same size as Bourses) */}
+        <div className="group relative overflow-hidden rounded-3xl p-6 shadow-xl hover:shadow-amber-500/20 transition-all duration-500 hover:scale-[1.02] flex flex-col justify-between min-h-[200px] border border-white/20 dark:border-white/10 backdrop-blur-xl bg-gradient-to-br from-slate-100/80 to-slate-200/80 dark:from-slate-800/80 dark:to-slate-900/80 cursor-pointer">
+          
+          {/* Classy Shimmer Loading Effect */}
+          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-amber-500/10 to-transparent animate-[shimmerSweep_5s_ease-in-out_infinite]"></div>
 
-          {/* Gold & Metals Placeholder */}
-          <div className="group relative overflow-hidden bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm hover:border-amber-500/50 transition-all duration-300 flex-1 cursor-pointer">
-            <div className="absolute inset-0 bg-amber-500/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out"></div>
-            <div className="relative z-10 flex flex-col h-full justify-between">
-              <div className="flex justify-between items-start mb-4">
-                <div className="w-12 h-12 bg-amber-50 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center text-amber-600 dark:text-amber-400 group-hover:scale-110 group-hover:rotate-12 transition-all">
-                  <Coins className="w-6 h-6" />
-                </div>
-                <span className="text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 px-2 py-1 rounded-lg">قريباً</span>
+          <div className="relative z-10 flex justify-between items-start mb-4">
+            <div className="bg-amber-500/20 backdrop-blur-md p-3 rounded-2xl text-amber-600 dark:text-amber-400 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-300">
+              <Coins className="w-6 h-6" />
+            </div>
+            <span className="text-xs font-bold bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 px-2 py-1 rounded-lg">قريباً</span>
+          </div>
+          
+          <div className="relative z-10 mt-auto">
+            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">المعادن والذهب</h3>
+            <p className="text-slate-500 dark:text-slate-400 font-medium">
+              سيتم التفعيل فور ربط السيرفر بالأسعار المباشرة.
+            </p>
+          </div>
+        </div>
+
+        {/* 3. Oil Prices Card */}
+        <Link href="/oil" className="group relative overflow-hidden rounded-3xl p-6 shadow-xl hover:shadow-blue-500/20 transition-all duration-500 hover:scale-[1.02] flex flex-col justify-between min-h-[200px] border border-white/20 dark:border-white/10 backdrop-blur-xl bg-gradient-to-br from-slate-100/80 to-slate-200/80 dark:from-slate-800/80 dark:to-slate-900/80">
+          
+          {/* Classy Shimmer Loading Effect */}
+          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-blue-500/10 to-transparent animate-[shimmerSweep_5s_ease-in-out_infinite]"></div>
+
+          <div className="relative z-10 flex justify-between items-start mb-4">
+            <div className="bg-blue-500/20 backdrop-blur-md p-3 rounded-2xl text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform duration-300">
+              <Droplet className="w-6 h-6" />
+            </div>
+            <ArrowUpRight className="text-slate-400 group-hover:text-blue-500 transition-colors" />
+          </div>
+          
+          <div className="relative z-10 mt-auto space-y-3">
+            <h3 className="text-slate-900 dark:text-white font-bold text-lg mb-2">النفط العالمي</h3>
+            <div className="flex justify-between items-end border-b border-slate-300 dark:border-slate-700 pb-2">
+              <span className="text-slate-600 dark:text-slate-300 font-medium">خام برنت</span>
+              <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">{oil?.brent ? `$${oil.brent.toFixed(2)}` : "---"}</span>
+            </div>
+            <div className="flex justify-between items-end">
+              <span className="text-slate-500 dark:text-slate-400 font-medium">الخام الأمريكي</span>
+              <span className="text-xl font-bold text-slate-700 dark:text-slate-300 font-mono">{oil?.wti ? `$${oil.wti.toFixed(2)}` : "---"}</span>
+            </div>
+          </div>
+        </Link>
+
+        {/* 4. Urgent Salaries Mini Card */}
+        <Link href="/salaries" className="group relative overflow-hidden rounded-3xl p-6 shadow-xl hover:shadow-emerald-500/20 transition-all duration-500 hover:scale-[1.02] flex flex-col min-h-[200px] border border-white/20 dark:border-white/10 backdrop-blur-xl bg-gradient-to-br from-emerald-50/90 to-teal-50/90 dark:from-slate-800/80 dark:to-slate-900/80">
+          
+          {/* Classy Shimmer Loading Effect */}
+          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-emerald-500/10 to-transparent animate-[shimmerSweep_5s_ease-in-out_infinite]"></div>
+
+          <div className="relative z-10 flex justify-between items-start mb-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-emerald-500/20 backdrop-blur-md p-3 rounded-2xl text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform duration-300">
+                <Wallet className="w-6 h-6" />
               </div>
-              
-              <div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">المعادن والذهب</h3>
-                <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed font-medium">
-                  سيتم التفعيل فور ربط السيرفر بالأسعار المباشرة.
+              <h3 className="text-slate-900 dark:text-white font-bold text-lg">إشعارات الرواتب</h3>
+            </div>
+            <ArrowUpRight className="text-slate-400 group-hover:text-emerald-500 transition-colors" />
+          </div>
+          
+          <div className="relative z-10 flex flex-col gap-2 flex-1">
+            {salaryUpdates.length > 0 ? salaryUpdates.map((update, idx) => (
+              <div key={update.id} className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm p-3 rounded-xl border border-white/50 dark:border-white/5">
+                <p className="text-slate-700 dark:text-slate-200 text-sm font-medium line-clamp-1 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
+                  {update.content}
+                </p>
+                <p className="text-xs text-slate-400 mt-1 font-mono" dir="ltr">
+                  {new Date(update.created_at).toLocaleTimeString('ar-IQ', {hour: '2-digit', minute:'2-digit'})}
                 </p>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Latest News Feed */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 border border-slate-200 dark:border-slate-800 shadow-sm mt-8">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-600 dark:text-slate-300">
-              <Newspaper className="w-5 h-5" />
-            </div>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">شريط الأخبار المباشر</h2>
-          </div>
-          <Link href="/salaries" className="text-sm font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 flex items-center gap-1">
-            عرض الكل <ChevronLeft className="w-4 h-4" />
-          </Link>
-        </div>
-        
-        <div className="flex flex-col gap-3">
-          {updates.length > 0 ? updates.map((update) => (
-            <div key={update.id} className="group flex flex-col md:flex-row md:items-center gap-3 md:gap-6 p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all cursor-default border border-transparent hover:border-slate-200 dark:hover:border-slate-700">
-              <div className="flex items-center gap-3 md:w-48 shrink-0">
-                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-                <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{update.category}</span>
-                <span className="text-xs text-slate-400 font-mono" dir="ltr">
-                  {new Date(update.created_at).toLocaleTimeString('ar-IQ', {hour: '2-digit', minute:'2-digit'})}
-                </span>
+            )) : (
+              <div className="flex-1 flex items-center justify-center text-slate-500 font-medium">
+                جاري المراقبة وسحب أحدث الرواتب...
               </div>
-              <p className="text-slate-600 dark:text-slate-300 font-medium leading-relaxed group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
-                {update.content}
-              </p>
-            </div>
-          )) : (
-            <div className="text-center py-8 text-slate-500 font-medium">جاري المراقبة وسحب الأخبار...</div>
-          )}
-        </div>
+            )}
+          </div>
+        </Link>
+
       </div>
     </div>
   )
