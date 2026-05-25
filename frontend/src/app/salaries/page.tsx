@@ -13,21 +13,43 @@ interface PaginationData {
 export default function SalariesPage() {
   const [updates, setUpdates] = useState<any[]>([])
   const [pagination, setPagination] = useState<PaginationData | null>(null)
-  const [searchQuery, setSearchQuery] = useState("")
+  const [searchInput, setSearchInput] = useState("")
+  const [debouncedSearch, setDebouncedSearch] = useState("")
   const [activeFilter, setActiveFilter] = useState("الكل")
   const [currentPage, setCurrentPage] = useState(1)
   const [isLoading, setIsLoading] = useState(true)
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set())
 
-  // Fetch paginated data
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchInput)
+      setCurrentPage(1)
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [searchInput])
+
+  // Fetch data
   useEffect(() => {
     const fetchUpdates = async () => {
       setIsLoading(true)
       try {
-        const searchParam = activeFilter === "الكل" ? "" : activeFilter;
-        let url = `/api/updates?category=${encodeURIComponent('رواتب')}&page=${currentPage}&limit=5`;
-        if (searchParam) {
-            url += `&search=${encodeURIComponent(searchParam)}`;
+        const filterParam = activeFilter === "الكل" ? "" : activeFilter;
+        // Combine text search and filter chip
+        let combinedSearch = [];
+        if (filterParam) combinedSearch.push(filterParam);
+        if (debouncedSearch) combinedSearch.push(debouncedSearch);
+        const finalSearch = combinedSearch.join(" ");
+
+        // If user is searching or filtering, get all results (limit=300) like the old system
+        const limit = finalSearch ? 300 : 5;
+        let url = `/api/updates?category=${encodeURIComponent('رواتب')}&page=${currentPage}&limit=${limit}`;
+        
+        // Note: the backend uses LIKE '%search%'. If finalSearch is "وزارة داخليه", it might not match.
+        // But since the backend is simple, we will just pass the most specific one, or just the text if both exist,
+        // Actually, let's just pass them if they type. If they type "داخليه", activeFilter is "الكل", so it sends "داخليه".
+        if (finalSearch) {
+            url += `&search=${encodeURIComponent(debouncedSearch || filterParam)}`;
         }
         
         const res = await fetch(url)
@@ -37,8 +59,7 @@ export default function SalariesPage() {
           setUpdates(data.data)
           setPagination(data.pagination)
         } else if (Array.isArray(data)) {
-          // Fallback if backend hasn't restarted yet
-          setUpdates(data.filter((u: any) => u.category === "رواتب").slice(0, 5))
+          setUpdates(data.filter((u: any) => u.category === "رواتب").slice(0, limit))
         }
       } catch (error) {
         console.error("Error fetching salaries:", error)
@@ -48,10 +69,9 @@ export default function SalariesPage() {
     }
     fetchUpdates()
     
-    // Refresh current page every 30 seconds
     const interval = setInterval(fetchUpdates, 30000)
     return () => clearInterval(interval)
-  }, [currentPage, activeFilter])
+  }, [currentPage, activeFilter, debouncedSearch])
 
   const toggleExpand = (id: number) => {
     const newExpanded = new Set(expandedIds)
@@ -82,10 +102,9 @@ export default function SalariesPage() {
     return pages;
   }
 
-  // Local search filter
-  const filteredUpdates = updates.filter(u => 
-    u.content.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  // We no longer filter locally because the server does it, but we can leave it or remove it.
+  // Actually, let's just use updates directly since the server returns the exact matches.
+  const filteredUpdates = updates;
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto pb-10">
@@ -111,19 +130,20 @@ export default function SalariesPage() {
           <input
             type="text"
             className="w-full pl-4 pr-14 py-4 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all shadow-sm dark:text-white font-medium placeholder-slate-400"
-            placeholder="بحث في الصفحة الحالية..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="بحث في جميع الأخبار..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
           />
         </div>
 
         {/* Quick Filters */}
         <div className="flex flex-wrap items-center justify-center gap-3 mt-6 relative z-10">
-          {["الكل", "وزارة", "متقاعدين", "الرعاية الاجتماعية", "سلفة"].map((filter) => (
+          {["الكل", "وزارة", "متقاعدين", "الرعاية الاجتماعية"].map((filter) => (
             <button
               key={filter}
               onClick={() => {
                 setActiveFilter(filter)
+                setSearchInput("") // Clear text search when clicking a chip
                 setCurrentPage(1)
               }}
               className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
