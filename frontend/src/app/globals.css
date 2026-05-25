@@ -2,6 +2,12 @@
 
 @theme {
   --font-cairo: var(--font-cairo), ui-sans-serif, system-ui, sans-serif;
+  --animate-slideRight: slideRight 10s linear infinite;
+  
+  @keyframes slideRight {
+    from { width: 0%; }
+    to { width: 100%; }
+  }
 }
 
 @layer base {
