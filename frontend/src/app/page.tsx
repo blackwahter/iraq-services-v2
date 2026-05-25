@@ -26,6 +26,10 @@ export default function Home() {
   const [currentBourseIndex, setCurrentBourseIndex] = useState(0)
   const [isTransitioning, setIsTransitioning] = useState(false)
 
+  // Oil Cycler State
+  const [currentOilIndex, setCurrentOilIndex] = useState(0)
+  const [isOilTransitioning, setIsOilTransitioning] = useState(false)
+
   // Data Fetcher
   useEffect(() => {
     const fetchData = async () => {
@@ -75,6 +79,19 @@ export default function Home() {
     return () => clearInterval(cycleInterval)
   }, [])
 
+  // 5-second Cycler for Oil
+  useEffect(() => {
+    const cycleInterval = setInterval(() => {
+      setIsOilTransitioning(true)
+      setTimeout(() => {
+        setCurrentOilIndex((prev) => (prev + 1) % 2)
+        setIsOilTransitioning(false)
+      }, 500) // 500ms fade duration
+    }, 5000) // 5 seconds
+
+    return () => clearInterval(cycleInterval)
+  }, [])
+
   const bourseList = [
     { name: "الكفاح", price: bourses?.kifah, color: "from-blue-600/80 to-indigo-700/80", shadow: "shadow-blue-500/20" },
     { name: "الحارثية", price: bourses?.harthiya, color: "from-emerald-600/80 to-teal-700/80", shadow: "shadow-emerald-500/20" },
@@ -83,6 +100,13 @@ export default function Home() {
   ]
 
   const currentBourse = bourseList[currentBourseIndex]
+
+  const oilList = [
+    { name: "خام برنت", price: oil?.brent ? `$${oil.brent.toFixed(2)}` : "---" },
+    { name: "الخام الأمريكي", price: oil?.wti ? `$${oil.wti.toFixed(2)}` : "---" }
+  ]
+  const currentOil = oilList[currentOilIndex]
+
   const salaryUpdates = updates.filter(u => u.category === "رواتب").slice(0, 3)
 
   return (
@@ -174,15 +198,18 @@ export default function Home() {
             <ArrowUpRight className="text-slate-400 group-hover:text-blue-500 transition-colors" />
           </div>
           
-          <div className="relative z-10 mt-auto space-y-3">
-            <h3 className="text-slate-900 dark:text-white font-bold text-lg mb-2">النفط العالمي</h3>
-            <div className="flex justify-between items-end border-b border-slate-300 dark:border-slate-700 pb-2">
-              <span className="text-slate-600 dark:text-slate-300 font-medium">خام برنت</span>
-              <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">{oil?.brent ? `$${oil.brent.toFixed(2)}` : "---"}</span>
-            </div>
-            <div className="flex justify-between items-end">
-              <span className="text-slate-500 dark:text-slate-400 font-medium">الخام الأمريكي</span>
-              <span className="text-xl font-bold text-slate-700 dark:text-slate-300 font-mono">{oil?.wti ? `$${oil.wti.toFixed(2)}` : "---"}</span>
+          <div className="relative z-10 mt-auto">
+            <h3 className="text-slate-900 dark:text-white font-bold text-lg mb-4">النفط العالمي</h3>
+            <div className={`transition-all duration-500 transform ${isOilTransitioning ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
+              <p className="text-slate-600 dark:text-slate-300 font-medium text-lg mb-1 flex items-center gap-2">
+                {currentOil.name}
+                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+              </p>
+              <div className="flex items-end gap-3">
+                <h2 className="text-5xl md:text-6xl font-black text-slate-900 dark:text-white font-mono tracking-tighter drop-shadow-lg">
+                  {currentOil.price}
+                </h2>
+              </div>
             </div>
           </div>
         </Link>
