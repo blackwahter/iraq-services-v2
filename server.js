@@ -288,7 +288,7 @@ setInterval(async () => {
 // تقديم ملفات الواجهة الجديدة (Next.js Export)
 app.use(express.static(path.join(__dirname, 'frontend', 'out')));
 
-app.get('*', (req, res) => { 
+app.use((req, res) => { 
     if (req.url.startsWith('/api')) return res.status(404).json({error: 'Not found'});
     res.sendFile(path.join(__dirname, 'frontend', 'out', 'index.html')); 
 });
