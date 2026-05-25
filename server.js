@@ -285,9 +285,13 @@ setInterval(async () => {
     try { await axios.get(`https://iraq-services-v2.onrender.com/api/health`); } catch (e) {}
 }, 14 * 60 * 1000); 
 
-app.use(express.static(__dirname));
+// تقديم ملفات الواجهة الجديدة (Next.js Export)
+app.use(express.static(path.join(__dirname, 'frontend', 'out')));
 
-app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); });
+app.get('*', (req, res) => { 
+    if (req.url.startsWith('/api')) return res.status(404).json({error: 'Not found'});
+    res.sendFile(path.join(__dirname, 'frontend', 'out', 'index.html')); 
+});
 
 app.listen(PORT, () => {
     console.log(`🌐 Server is running successfully on port ${PORT}`);
