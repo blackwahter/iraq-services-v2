@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Building2, Coins, Droplet, TrendingUp, Newspaper, ArrowUpRight } from "lucide-react"
+import { Building2, Coins, Droplet, TrendingUp, Newspaper, ArrowUpRight, ChevronLeft } from "lucide-react"
 import Link from "next/link"
 
 interface BourseData {
