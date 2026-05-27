@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Coins, Sparkles, Scale, TrendingUp, Gem, ArrowUpRight, ArrowDownRight, Minus } from "lucide-react"
+import { useSettings } from "@/components/settings-provider"
 
 interface MetalData {
   price: number;
@@ -12,6 +13,7 @@ export default function MetalsPage() {
   const [metals, setMetals] = useState<{ gold: MetalData, silver: MetalData } | null>(null)
   const [dollar, setDollar] = useState<{ price: number, previous: number } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const { settings } = useSettings()
 
   useEffect(() => {
     const fetchData = async (showLoading = false) => {
@@ -38,9 +40,9 @@ export default function MetalsPage() {
     }
 
     fetchData(true)
-    const interval = setInterval(() => fetchData(false), 60000) 
+    const interval = setInterval(() => fetchData(false), settings.refreshRate) 
     return () => clearInterval(interval)
-  }, [])
+  }, [settings.refreshRate])
 
   const TROY_OUNCE_GRAMS = 31.1034768
 

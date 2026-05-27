@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Building2, TrendingUp } from "lucide-react"
+import { Building2, TrendingUp, TrendingDown, Minus, Clock, MapPin, Activity } from "lucide-react"
+import { useSettings } from "@/components/settings-provider"
 
 interface BourseItem {
   price: number;
@@ -19,6 +20,7 @@ interface BourseData {
 
 export default function MarketsPage() {
   const [bourses, setBourses] = useState<BourseData | null>(null)
+  const { settings } = useSettings()
 
   useEffect(() => {
     const fetchBourses = async (showLoading = false) => {
@@ -36,9 +38,9 @@ export default function MarketsPage() {
 
     fetchBourses(true)
     
-    const interval = setInterval(() => fetchBourses(false), 30000)
+    const interval = setInterval(() => fetchBourses(false), settings.refreshRate)
     return () => clearInterval(interval)
-  }, [])
+  }, [settings.refreshRate])
 
   const BourseCard = ({ title, value, color }: { title: string, value: number | undefined, color: string }) => (
     <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group hover:border-blue-500 transition-colors">

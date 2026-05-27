@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Droplet, ArrowUpRight } from "lucide-react"
+import { Droplet, ArrowUpRight, TrendingUp, TrendingDown, Minus } from "lucide-react"
+import { useSettings } from "@/components/settings-provider"
 
 interface OilData {
   brent: number;
@@ -9,8 +10,9 @@ interface OilData {
 }
 
 export default function OilPage() {
-  const [oilData, setOilData] = useState<OilData | null>(null)
+  const [oilData, setOilData] = useState<{ brent: number, wti: number } | null>(null)
   const [loading, setLoading] = useState(true)
+  const { settings } = useSettings()
 
   useEffect(() => {
     const fetchOil = async (showLoading = false) => {
@@ -29,9 +31,9 @@ export default function OilPage() {
     }
 
     fetchOil(true)
-    const interval = setInterval(() => fetchOil(false), 60000)
+    const interval = setInterval(() => fetchOil(false), settings.refreshRate)
     return () => clearInterval(interval)
-  }, [])
+  }, [settings.refreshRate])
 
   const OilCard = ({ title, price, type }: { title: string, price: number | undefined, type: string }) => (
     <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden flex flex-col justify-between h-48 group hover:border-slate-400 dark:hover:border-slate-600 transition-all">

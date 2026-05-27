@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useSettings } from "@/components/settings-provider"
 import { DollarSign, ArrowUpRight, ArrowDownRight, Minus, Activity, MapPin } from "lucide-react"
 import {
   AreaChart,
@@ -37,7 +38,8 @@ export default function CurrenciesPage() {
   const [bourses, setBourses] = useState<BourseData | null>(null)
   const [chartData, setChartData] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [activeCity, setActiveCity] = useState<keyof typeof CITIES>('kifah')
+  const { settings } = useSettings()
+  const [activeCity, setActiveCity] = useState<keyof typeof CITIES>(settings.defaultBourse as keyof typeof CITIES)
 
   useEffect(() => {
     const fetchUpdates = async (showLoading = false) => {
@@ -71,10 +73,10 @@ export default function CurrenciesPage() {
 
     fetchUpdates(true)
     
-    const interval = setInterval(() => fetchUpdates(false), 30000)
+    const interval = setInterval(() => fetchUpdates(false), settings.refreshRate)
     
     return () => clearInterval(interval)
-  }, [])
+  }, [settings.refreshRate])
 
   const currentDollar = bourses ? bourses[activeCity] : null;
 

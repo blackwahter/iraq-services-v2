@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react"
 import { ArrowDownUp, DollarSign, Wallet, Calculator, ArrowRightLeft, Scale, Sparkles, Gem, ChevronDown } from "lucide-react"
+import { useSettings } from "@/components/settings-provider"
 
 interface BourseItem {
   price: number;
@@ -15,6 +16,7 @@ interface MetalData {
 }
 
 export default function ConverterPage() {
+  const { settings } = useSettings()
   const [bourses, setBourses] = useState<BourseData | null>(null)
   const [metals, setMetals] = useState<{ gold: MetalData, silver: MetalData } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -46,13 +48,14 @@ export default function ConverterPage() {
       }
     }
     fetchData(true)
-    const interval = setInterval(() => fetchData(false), 60000)
+    const interval = setInterval(() => fetchData(false), settings.refreshRate)
     return () => clearInterval(interval)
-  }, [])
+  }, [settings.refreshRate])
 
   // Calculate prices in IQD
   const pricesInIqd = useMemo(() => {
-    const dollarRate = bourses ? bourses.kifah.price / 100 : 1465;
+    const bourseName = settings.defaultBourse as keyof BourseData;
+    const dollarRate = bourses && bourses[bourseName] ? bourses[bourseName].price / 100 : 1465;
     const goldOzUsd = metals ? metals.gold.price : 2350;
     const silverOzUsd = metals ? metals.silver.price : 30;
     const TROY_OUNCE_GRAMS = 31.1034768;
@@ -298,7 +301,7 @@ export default function ConverterPage() {
           </div>
 
           <div className="mt-8 text-center text-sm font-medium text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl">
-            يتم التحويل بناءً على السعر اللحظي لبورصة الكفاح وأسعار المعادن العالمية
+            يتم التحويل بناءً على السعر اللحظي لبورصة {settings.defaultBourse === 'erbil' ? 'أربيل' : settings.defaultBourse === 'basra' ? 'البصرة' : settings.defaultBourse === 'harthiya' ? 'الحارثية' : 'الكفاح'} وأسعار المعادن العالمية
           </div>
 
         </div>

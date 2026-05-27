@@ -3,22 +3,13 @@
 import { useState, useEffect } from "react"
 import { useTheme } from "next-themes"
 import { Settings, Bell, Moon, Sun, Monitor, RefreshCw, Trash2, ShieldCheck, CheckCircle2 } from "lucide-react"
+import { useSettings } from "@/components/settings-provider"
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme()
+  const { settings, updateSettings } = useSettings()
   const [mounted, setMounted] = useState(false)
   const [cleared, setCleared] = useState(false)
-
-  // Settings State (Mock for now, but fully interactive)
-  const [notifications, setNotifications] = useState({
-    salaries: true,
-    bourses: true,
-    metals: false,
-    sound: true
-  })
-
-  const [refreshRate, setRefreshRate] = useState("30s")
-  const [defaultBourse, setDefaultBourse] = useState("kifah")
 
   // Ensure hydration matches for next-themes
   useEffect(() => {
@@ -73,7 +64,7 @@ export default function SettingsPage() {
           </div>
           <div>
             <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight">الإعدادات</h1>
-            <p className="text-slate-600 dark:text-slate-400 mt-2 text-lg font-medium">قم بتخصيص مظهر التطبيق والإشعارات حسب رغبتك</p>
+            <p className="text-slate-600 dark:text-slate-400 mt-2 text-lg font-medium">التحكم المركزي بمظهر التطبيق والإشعارات</p>
           </div>
         </div>
       </div>
