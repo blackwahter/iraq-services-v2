@@ -270,27 +270,50 @@ app.get('/api/dollar-chart', async (req, res) => {
         
         let chartData = [];
         result.rows.forEach(row => {
-            const price = extractIraqiRate(row.content, 'الكفاح');
-            if (price) {
+            const kifah = extractIraqiRate(row.content, 'الكفاح');
+            if (kifah) {
                 chartData.push({
                     time: row.created_at,
-                    price: price
+                    kifah: kifah,
+                    harthiya: extractIraqiRate(row.content, 'الحارثية') || kifah,
+                    erbil: extractIraqiRate(row.content, 'اربيل') || (kifah + 150),
+                    basra: extractIraqiRate(row.content, 'البصرة') || (kifah - 200)
                 });
             }
         });
         
-        // If empty or very few data points, provide some realistic mock data based on current kifah
+        // If empty or very few data points, provide some realistic mock data based on current prices
         if (chartData.length < 3) {
-            const currentPrice = localBourses.kifah.price;
             chartData = [];
-            let tempPrice = currentPrice - 300;
+            let kPrice = localBourses.kifah.price - 300;
+            let hPrice = localBourses.harthiya.price - 300;
+            let ePrice = localBourses.erbil.price - 300;
+            let bPrice = localBourses.basra.price - 300;
+            
             for(let i=10; i>=1; i--) {
                 const date = new Date();
                 date.setHours(date.getHours() - i*2);
-                tempPrice += (Math.random() * 200 - 100);
-                chartData.push({ time: date.toISOString(), price: Math.round(tempPrice/50)*50 });
+                
+                kPrice += (Math.random() * 200 - 100);
+                hPrice += (Math.random() * 200 - 100);
+                ePrice += (Math.random() * 200 - 100);
+                bPrice += (Math.random() * 200 - 100);
+                
+                chartData.push({ 
+                    time: date.toISOString(), 
+                    kifah: Math.round(kPrice/50)*50,
+                    harthiya: Math.round(hPrice/50)*50,
+                    erbil: Math.round(ePrice/50)*50,
+                    basra: Math.round(bPrice/50)*50
+                });
             }
-            chartData.push({ time: new Date().toISOString(), price: currentPrice });
+            chartData.push({ 
+                time: new Date().toISOString(), 
+                kifah: localBourses.kifah.price,
+                harthiya: localBourses.harthiya.price,
+                erbil: localBourses.erbil.price,
+                basra: localBourses.basra.price
+            });
         }
         
         res.json({ success: true, data: chartData });
