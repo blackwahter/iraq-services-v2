@@ -14,7 +14,8 @@ export default function MetalsPage() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (showLoading = false) => {
+      if (showLoading) setIsLoading(true)
       try {
         const metalsRes = await fetch("/api/metals")
         const metalsData = await metalsRes.json()
@@ -36,8 +37,8 @@ export default function MetalsPage() {
       }
     }
 
-    fetchData()
-    const interval = setInterval(fetchData, 60000) 
+    fetchData(true)
+    const interval = setInterval(() => fetchData(false), 60000) 
     return () => clearInterval(interval)
   }, [])
 

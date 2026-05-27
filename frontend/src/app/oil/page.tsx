@@ -13,7 +13,8 @@ export default function OilPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchOil = async () => {
+    const fetchOil = async (showLoading = false) => {
+      if (showLoading) setLoading(true)
       try {
         const res = await fetch("/api/oil")
         const data = await res.json()
@@ -26,8 +27,9 @@ export default function OilPage() {
         setLoading(false)
       }
     }
-    fetchOil()
-    const interval = setInterval(fetchOil, 60000)
+
+    fetchOil(true)
+    const interval = setInterval(() => fetchOil(false), 60000)
     return () => clearInterval(interval)
   }, [])
 

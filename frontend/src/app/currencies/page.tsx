@@ -40,43 +40,38 @@ export default function CurrenciesPage() {
   const [activeCity, setActiveCity] = useState<keyof typeof CITIES>('kifah')
 
   useEffect(() => {
-    const fetchBourses = async () => {
+    const fetchUpdates = async (showLoading = false) => {
+      if (showLoading) setIsLoading(true)
       try {
-        const res = await fetch("/api/bourses")
-        const data = await res.json()
-        if (data.success) {
-          setBourses(data.data)
+        const [resBourses, resChart] = await Promise.all([
+          fetch("/api/bourses"),
+          fetch("/api/dollar-chart")
+        ])
+        
+        const boursesData = await resBourses.json()
+        const chartDataRes = await resChart.json()
+        
+        if (boursesData.success) {
+          setBourses(boursesData.data)
         }
-      } catch (error) {
-        console.error("Error fetching bourses:", error)
-      }
-    }
-
-    const fetchChartData = async () => {
-      try {
-        const res = await fetch("/api/dollar-chart")
-        const data = await res.json()
-        if (data.success) {
-          const formattedData = data.data.map((item: any) => ({
+        
+        if (chartDataRes.success) {
+          const formattedData = chartDataRes.data.map((item: any) => ({
             ...item,
             timeLabel: new Date(item.time).toLocaleTimeString('ar-IQ', { hour: '2-digit', minute: '2-digit' }),
           }))
           setChartData(formattedData)
         }
       } catch (error) {
-        console.error("Error fetching chart data:", error)
+        console.error("Error fetching data:", error)
       } finally {
         setIsLoading(false)
       }
     }
 
-    fetchBourses()
-    fetchChartData()
+    fetchUpdates(true)
     
-    const interval = setInterval(() => {
-        fetchBourses();
-        fetchChartData();
-    }, 30000)
+    const interval = setInterval(() => fetchUpdates(false), 30000)
     
     return () => clearInterval(interval)
   }, [])

@@ -32,8 +32,8 @@ export default function SalariesPage() {
 
   // Fetch data
   useEffect(() => {
-    const fetchUpdates = async () => {
-      setIsLoading(true)
+    const fetchUpdates = async (showLoading = false) => {
+      if (showLoading) setIsLoading(true)
       try {
         const filterParam = activeFilter === "الكل" ? "" : activeFilter;
         // Combine text search and filter chip
@@ -68,9 +68,9 @@ export default function SalariesPage() {
         setIsLoading(false)
       }
     }
-    fetchUpdates()
+    fetchUpdates(true)
     
-    const interval = setInterval(fetchUpdates, 30000)
+    const interval = setInterval(() => fetchUpdates(false), 30000)
     return () => clearInterval(interval)
   }, [currentPage, activeFilter, debouncedSearch])
 

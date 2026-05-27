@@ -21,7 +21,8 @@ export default function MarketsPage() {
   const [bourses, setBourses] = useState<BourseData | null>(null)
 
   useEffect(() => {
-    const fetchBourses = async () => {
+    const fetchBourses = async (showLoading = false) => {
+      if (showLoading) setIsLoading(true)
       try {
         const res = await fetch("/api/bourses")
         const data = await res.json()
@@ -32,8 +33,10 @@ export default function MarketsPage() {
         console.error("Error fetching bourses:", error)
       }
     }
-    fetchBourses()
-    const interval = setInterval(fetchBourses, 15000)
+
+    fetchBourses(true)
+    
+    const interval = setInterval(() => fetchBourses(false), 30000)
     return () => clearInterval(interval)
   }, [])
 

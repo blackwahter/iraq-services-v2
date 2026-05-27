@@ -27,7 +27,8 @@ export default function ConverterPage() {
   const [isToDropdownOpen, setIsToDropdownOpen] = useState(false)
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (showLoading = false) => {
+      if (showLoading) setIsLoading(true)
       try {
         const [bRes, mRes] = await Promise.all([
           fetch("/api/bourses"),
@@ -44,8 +45,8 @@ export default function ConverterPage() {
         setIsLoading(false)
       }
     }
-    fetchData()
-    const interval = setInterval(fetchData, 60000)
+    fetchData(true)
+    const interval = setInterval(() => fetchData(false), 60000)
     return () => clearInterval(interval)
   }, [])
 
