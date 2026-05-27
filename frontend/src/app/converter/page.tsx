@@ -61,11 +61,10 @@ export default function ConverterPage() {
     return {
       iqd: 1,
       usd: dollarRate,
+      mithqal24k: goldGram24K_IQD * 5,
+      mithqal22k: (goldGram24K_IQD * (22 / 24)) * 5,
       mithqal21k: (goldGram24K_IQD * (21 / 24)) * 5,
-      gold24k: goldGram24K_IQD,
-      gold22k: goldGram24K_IQD * (22 / 24),
-      gold21k: goldGram24K_IQD * (21 / 24),
-      gold18k: goldGram24K_IQD * (18 / 24),
+      mithqal18k: (goldGram24K_IQD * (18 / 24)) * 5,
       silver_oz: silverOzUsd * dollarRate,
       silver_g: (silverOzUsd / TROY_OUNCE_GRAMS) * dollarRate,
     }
@@ -74,11 +73,10 @@ export default function ConverterPage() {
   const ASSETS = [
     { id: 'iqd', name: 'دينار عراقي (IQD)', icon: Wallet, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
     { id: 'usd', name: 'دولار أمريكي (USD)', icon: DollarSign, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
-    { id: 'mithqal21k', name: 'مثقال ذهب عيار 21', icon: Scale, color: 'text-yellow-600', bg: 'bg-yellow-50 dark:bg-yellow-900/20' },
-    { id: 'gold24k', name: 'غرام ذهب عيار 24', icon: Sparkles, color: 'text-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-900/20' },
-    { id: 'gold22k', name: 'غرام ذهب عيار 22', icon: Sparkles, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-900/20' },
-    { id: 'gold21k', name: 'غرام ذهب عيار 21', icon: Sparkles, color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/20' },
-    { id: 'gold18k', name: 'غرام ذهب عيار 18', icon: Sparkles, color: 'text-rose-500', bg: 'bg-rose-50 dark:bg-rose-900/20' },
+    { id: 'mithqal24k', name: 'مثقال ذهب عيار 24', icon: Sparkles, color: 'text-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-900/20' },
+    { id: 'mithqal22k', name: 'مثقال ذهب عيار 22', icon: Sparkles, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-900/20' },
+    { id: 'mithqal21k', name: 'مثقال ذهب عيار 21', icon: Scale, color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/20' },
+    { id: 'mithqal18k', name: 'مثقال ذهب عيار 18', icon: Sparkles, color: 'text-rose-500', bg: 'bg-rose-50 dark:bg-rose-900/20' },
     { id: 'silver_oz', name: 'أونصة فضة', icon: Gem, color: 'text-slate-400', bg: 'bg-slate-100 dark:bg-slate-800' },
     { id: 'silver_g', name: 'غرام فضة', icon: Gem, color: 'text-slate-500', bg: 'bg-slate-100 dark:bg-slate-800' },
   ];
@@ -169,7 +167,7 @@ export default function ConverterPage() {
         </button>
 
         {isOpen && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 max-h-64 overflow-y-auto z-50 p-2 custom-scrollbar">
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 max-h-64 overflow-y-auto z-50 p-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
             {ASSETS.map(asset => (
               <button
                 key={asset.id}
