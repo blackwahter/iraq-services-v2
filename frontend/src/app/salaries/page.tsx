@@ -90,8 +90,10 @@ export default function SalariesPage() {
       const elements = document.querySelectorAll('.salary-text-content');
       const newTruncatable = new Set<number>();
       elements.forEach((el) => {
-        // If scrollHeight > clientHeight, it means line-clamp is actively hiding text
-        if (el.scrollHeight > el.clientHeight) {
+        // Use a 2px tolerance for subpixel rounding differences in some browsers
+        // Also ensure the text is at least a certain length to prevent false positives on short sentences
+        const textLength = el.textContent?.trim().length || 0;
+        if (el.scrollHeight > el.clientHeight + 2 && textLength > 80) {
           const id = el.getAttribute('data-id');
           if (id) newTruncatable.add(Number(id));
         }
