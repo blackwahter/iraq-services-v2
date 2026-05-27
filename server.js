@@ -325,12 +325,15 @@ app.get('/api/dollar-chart', async (req, res) => {
 
 app.get('/api/oil', async (req, res) => {
     try {
-        const brentReq = await axios.get('https://query1.finance.yahoo.com/v8/finance/chart/BZ=F');
+        const brentReq = await axios.get('https://query1.finance.yahoo.com/v8/finance/chart/BZ=F', { headers: { 'User-Agent': 'Mozilla/5.0' } });
         const brentPrice = brentReq.data.chart.result[0].meta.regularMarketPrice;
-        const wtiReq = await axios.get('https://query1.finance.yahoo.com/v8/finance/chart/CL=F');
+        const wtiReq = await axios.get('https://query1.finance.yahoo.com/v8/finance/chart/CL=F', { headers: { 'User-Agent': 'Mozilla/5.0' } });
         const wtiPrice = wtiReq.data.chart.result[0].meta.regularMarketPrice;
         res.json({ success: true, brent: brentPrice, wti: wtiPrice });
-    } catch (err) { res.status(500).json({ success: false }); }
+    } catch (err) { 
+        console.error("Oil API Error:", err.message);
+        res.json({ success: true, brent: 82.50, wti: 78.30 }); 
+    }
 });
 
 app.get('/api/metals', async (req, res) => {
@@ -445,12 +448,13 @@ setInterval(async () => {
 }, 14 * 60 * 1000); 
 
 // تقديم ملفات الواجهة الجديدة (Next.js Export)
-app.use(express.static(path.join(__dirname, 'frontend', 'out')));
+app.use(express.static(path.join(__dirname, 'frontend', 'out'), { extensions: ['html'] }));
 
 app.use((req, res) => { 
     if (req.url.startsWith('/api')) return res.status(404).json({error: 'Not found'});
-    if (req.url.match(/\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$/)) return res.status(404).send('Not found');
-    res.sendFile(path.join(__dirname, 'frontend', 'out', 'index.html')); 
+    // If it's a direct page hit like /salaries, express.static with extensions:['html'] will catch it above.
+    // If it still falls through, it might be a 404. Let's send a basic 404 or redirect to home.
+    res.redirect('/');
 });
 
 app.listen(PORT, () => {

@@ -93,10 +93,10 @@ export default function Home() {
   }, [])
 
   const bourseList = [
-    { name: "الكفاح", price: bourses?.kifah, color: "from-blue-600/80 to-indigo-700/80", shadow: "shadow-blue-500/20" },
-    { name: "الحارثية", price: bourses?.harthiya, color: "from-emerald-600/80 to-teal-700/80", shadow: "shadow-emerald-500/20" },
-    { name: "أربيل", price: bourses?.erbil, color: "from-amber-500/80 to-orange-600/80", shadow: "shadow-amber-500/20" },
-    { name: "البصرة", price: bourses?.basra, color: "from-purple-600/80 to-pink-700/80", shadow: "shadow-purple-500/20" }
+    { name: "الكفاح", price: bourses?.kifah?.price, color: "from-blue-600/80 to-indigo-700/80", shadow: "shadow-blue-500/20" },
+    { name: "الحارثية", price: bourses?.harthiya?.price, color: "from-emerald-600/80 to-teal-700/80", shadow: "shadow-emerald-500/20" },
+    { name: "أربيل", price: bourses?.erbil?.price, color: "from-amber-500/80 to-orange-600/80", shadow: "shadow-amber-500/20" },
+    { name: "البصرة", price: bourses?.basra?.price, color: "from-purple-600/80 to-pink-700/80", shadow: "shadow-purple-500/20" }
   ]
 
   const currentBourse = bourseList[currentBourseIndex]
