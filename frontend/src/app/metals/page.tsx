@@ -2,18 +2,94 @@
 
 import { useEffect, useState } from "react"
 import { Coins, Sparkles, Scale, TrendingUp, Gem, ArrowUpRight, ArrowDownRight, Minus } from "lucide-react"
-import { useSettings } from "@/components/settings-provider"
 
 interface MetalData {
   price: number;
   previous: number;
 }
 
+const formatPrice = (price: number) => {
+  return Math.round(price).toLocaleString("en-US")
+}
+
+const getStatusInfo = (current: number, previous: number) => {
+  if (!current || !previous) return { icon: Minus, color: "text-slate-400" };
+  if (Math.round(current) > Math.round(previous)) return { icon: ArrowUpRight, color: "text-emerald-400" };
+  if (Math.round(current) < Math.round(previous)) return { icon: ArrowDownRight, color: "text-red-400" };
+  return { icon: Minus, color: "text-yellow-400" };
+}
+
+const MetalCard = ({ title, value, prevValue, subtitle, icon: Icon, theme, delay = 0, isLoading }: any) => {
+  const status = getStatusInfo(value, prevValue);
+  const StatusIcon = status.icon;
+
+  // Elegant themes mapping
+  const themes = {
+    gold: {
+      wrapper: "from-yellow-900/40 via-amber-900/20 to-slate-900 border-yellow-700/30 hover:border-yellow-500/50 shadow-yellow-900/20",
+      iconBg: "bg-gradient-to-br from-yellow-500 to-amber-700",
+      iconText: "text-white",
+      valueText: "text-yellow-500",
+      titleText: "text-yellow-100",
+      accentLine: "from-yellow-400 via-amber-500 to-yellow-600"
+    },
+    silver: {
+      wrapper: "from-slate-800 via-slate-800/80 to-slate-900 border-slate-600/30 hover:border-slate-400/50 shadow-slate-900/20",
+      iconBg: "bg-gradient-to-br from-slate-300 to-slate-500",
+      iconText: "text-slate-900",
+      valueText: "text-slate-300",
+      titleText: "text-slate-100",
+      accentLine: "from-slate-300 via-slate-400 to-slate-500"
+    }
+  };
+
+  const currentTheme = themes[theme as keyof typeof themes];
+
+  return (
+    <div className={`bg-gradient-to-br ${currentTheme.wrapper} p-6 rounded-3xl border shadow-lg relative overflow-hidden group hover:shadow-2xl hover:shadow-blue-900/10 transition-all duration-500 transform hover:-translate-y-2 animate-fade-in-up flex flex-col justify-between min-h-[160px]`} style={{ animationDelay: `${delay}ms` }}>
+      <div className={`absolute top-0 right-0 w-full h-1 bg-gradient-to-r opacity-70 group-hover:opacity-100 transition-opacity ${currentTheme.accentLine}`}></div>
+      
+      {/* Glow effect on hover */}
+      <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+
+      <div className="flex justify-between items-start mb-4 relative z-10">
+        <h3 className={`text-lg font-bold ${currentTheme.titleText}`}>{title}</h3>
+        <div className={`p-2.5 rounded-xl ${currentTheme.iconBg} shadow-lg`}>
+          <Icon className={`w-5 h-5 ${currentTheme.iconText}`} />
+        </div>
+      </div>
+
+      <div className="relative z-10">
+        <div className="flex items-center justify-between">
+          <div className="flex items-end gap-2">
+            {isLoading ? (
+              <div className="h-10 w-32 bg-slate-800 rounded animate-pulse"></div>
+            ) : (
+              <>
+                <span className={`text-3xl font-black font-mono tracking-tight ${currentTheme.valueText}`}>
+                  {formatPrice(value)}
+                </span>
+                <span className="text-sm font-bold text-slate-500 mb-1">د.ع</span>
+              </>
+            )}
+          </div>
+          
+          {!isLoading && (
+            <div className={`flex items-center gap-1 ${status.color} bg-black/20 px-2 py-1 rounded-lg backdrop-blur-sm border border-white/5`}>
+              <StatusIcon className="w-4 h-4" />
+            </div>
+          )}
+        </div>
+        <p className="text-sm text-slate-400 mt-3 font-medium border-t border-white/5 pt-2">{subtitle}</p>
+      </div>
+    </div>
+  );
+}
+
 export default function MetalsPage() {
   const [metals, setMetals] = useState<{ gold: MetalData, silver: MetalData } | null>(null)
   const [dollar, setDollar] = useState<{ price: number, previous: number } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const { settings } = useSettings()
 
   useEffect(() => {
     const fetchData = async (showLoading = false) => {
@@ -40,9 +116,9 @@ export default function MetalsPage() {
     }
 
     fetchData(true)
-    const interval = setInterval(() => fetchData(false), settings.refreshRate) 
+    const interval = setInterval(() => fetchData(false), 30000)
     return () => clearInterval(interval)
-  }, [settings.refreshRate])
+  }, [])
 
   const TROY_OUNCE_GRAMS = 31.1034768
 
@@ -66,83 +142,7 @@ export default function MetalsPage() {
   const silverGram_IQD = metals && dollar ? (metals.silver.price / TROY_OUNCE_GRAMS) * dollar.price : 0
   const prevSilverGram_IQD = metals && dollar ? (metals.silver.previous / TROY_OUNCE_GRAMS) * dollar.previous : 0
 
-  const formatPrice = (price: number) => {
-    return Math.round(price).toLocaleString("en-US")
-  }
 
-  const getStatusInfo = (current: number, previous: number) => {
-    if (!current || !previous) return { icon: Minus, color: "text-slate-400" };
-    if (Math.round(current) > Math.round(previous)) return { icon: ArrowUpRight, color: "text-emerald-400" };
-    if (Math.round(current) < Math.round(previous)) return { icon: ArrowDownRight, color: "text-red-400" };
-    return { icon: Minus, color: "text-yellow-400" };
-  }
-
-  const MetalCard = ({ title, value, prevValue, subtitle, icon: Icon, theme, delay = 0 }: any) => {
-    const status = getStatusInfo(value, prevValue);
-    const StatusIcon = status.icon;
-
-    // Elegant themes mapping
-    const themes = {
-      gold: {
-        wrapper: "from-yellow-900/40 via-amber-900/20 to-slate-900 border-yellow-700/30 hover:border-yellow-500/50 shadow-yellow-900/20",
-        iconBg: "bg-gradient-to-br from-yellow-500 to-amber-700",
-        iconText: "text-white",
-        valueText: "text-yellow-500",
-        titleText: "text-yellow-100",
-        accentLine: "from-yellow-400 via-amber-500 to-yellow-600"
-      },
-      silver: {
-        wrapper: "from-slate-800 via-slate-800/80 to-slate-900 border-slate-600/30 hover:border-slate-400/50 shadow-slate-900/20",
-        iconBg: "bg-gradient-to-br from-slate-300 to-slate-500",
-        iconText: "text-slate-900",
-        valueText: "text-slate-300",
-        titleText: "text-slate-100",
-        accentLine: "from-slate-300 via-slate-400 to-slate-500"
-      }
-    };
-
-    const currentTheme = themes[theme as keyof typeof themes];
-
-    return (
-      <div className={`bg-gradient-to-br ${currentTheme.wrapper} p-6 rounded-3xl border shadow-lg relative overflow-hidden group hover:shadow-2xl hover:shadow-blue-900/10 transition-all duration-500 transform hover:-translate-y-2 animate-fade-in-up flex flex-col justify-between min-h-[160px]`} style={{ animationDelay: `${delay}ms` }}>
-        <div className={`absolute top-0 right-0 w-full h-1 bg-gradient-to-r opacity-70 group-hover:opacity-100 transition-opacity ${currentTheme.accentLine}`}></div>
-        
-        {/* Glow effect on hover */}
-        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-
-        <div className="flex justify-between items-start mb-4 relative z-10">
-          <h3 className={`text-lg font-bold ${currentTheme.titleText}`}>{title}</h3>
-          <div className={`p-2.5 rounded-xl ${currentTheme.iconBg} shadow-lg`}>
-            <Icon className={`w-5 h-5 ${currentTheme.iconText}`} />
-          </div>
-        </div>
-
-        <div className="relative z-10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-end gap-2">
-              {isLoading ? (
-                <div className="h-10 w-32 bg-slate-800 rounded animate-pulse"></div>
-              ) : (
-                <>
-                  <span className={`text-3xl font-black font-mono tracking-tight ${currentTheme.valueText}`}>
-                    {formatPrice(value)}
-                  </span>
-                  <span className="text-sm font-bold text-slate-500 mb-1">د.ع</span>
-                </>
-              )}
-            </div>
-            
-            {!isLoading && (
-              <div className={`flex items-center gap-1 ${status.color} bg-black/20 px-2 py-1 rounded-lg backdrop-blur-sm border border-white/5`}>
-                <StatusIcon className="w-4 h-4" />
-              </div>
-            )}
-          </div>
-          <p className="text-sm text-slate-400 mt-3 font-medium border-t border-white/5 pt-2">{subtitle}</p>
-        </div>
-      </div>
-    );
-  }
 
   const mithqalStatus = getStatusInfo(mithqal21K_IQD, prevMithqal21K_IQD);
   const MithqalIcon = mithqalStatus.icon;
@@ -219,6 +219,7 @@ export default function MetalsPage() {
           icon={Sparkles} 
           theme="gold"
           delay={100}
+          isLoading={isLoading}
         />
         <MetalCard 
           title="غرام الذهب عيار 22" 
@@ -228,6 +229,7 @@ export default function MetalsPage() {
           icon={Sparkles} 
           theme="gold"
           delay={200}
+          isLoading={isLoading}
         />
         <MetalCard 
           title="غرام الذهب عيار 21" 
@@ -237,6 +239,7 @@ export default function MetalsPage() {
           icon={Sparkles} 
           theme="gold"
           delay={300}
+          isLoading={isLoading}
         />
         <MetalCard 
           title="غرام الذهب عيار 18" 
@@ -246,6 +249,7 @@ export default function MetalsPage() {
           icon={Sparkles} 
           theme="gold"
           delay={400}
+          isLoading={isLoading}
         />
       </div>
 
@@ -259,6 +263,7 @@ export default function MetalsPage() {
           icon={TrendingUp} 
           theme="silver"
           delay={500}
+          isLoading={isLoading}
         />
         <MetalCard 
           title="غرام الفضة الخالصة" 
@@ -268,6 +273,7 @@ export default function MetalsPage() {
           icon={Gem} 
           theme="silver"
           delay={600}
+          isLoading={isLoading}
         />
       </div>
     </div>

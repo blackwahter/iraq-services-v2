@@ -2,17 +2,41 @@
 
 import { useEffect, useState } from "react"
 import { Droplet, ArrowUpRight, TrendingUp, TrendingDown, Minus } from "lucide-react"
-import { useSettings } from "@/components/settings-provider"
 
 interface OilData {
   brent: number;
   wti: number;
 }
 
+const OilCard = ({ title, price, type }: { title: string, price: number | undefined, type: string }) => (
+  <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden flex flex-col justify-between h-48 group hover:border-slate-400 dark:hover:border-slate-600 transition-all">
+    <div className="flex justify-between items-start">
+      <div>
+        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">{title}</h3>
+        <p className="text-slate-500 font-medium">{type}</p>
+      </div>
+      <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-700 dark:text-slate-300">
+        <Droplet className="w-6 h-6" />
+      </div>
+    </div>
+    <div className="flex items-end justify-between">
+      <div className="flex items-end gap-1">
+        <span className="text-5xl font-black text-slate-900 dark:text-white font-mono tracking-tighter">
+          {price ? price.toFixed(2) : "---"}
+        </span>
+        <span className="text-lg font-bold text-slate-500 mb-1">$</span>
+      </div>
+      <div className="flex items-center gap-1 text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1.5 rounded-lg text-sm">
+        <ArrowUpRight className="w-4 h-4" />
+        مباشر
+      </div>
+    </div>
+  </div>
+)
+
 export default function OilPage() {
   const [oilData, setOilData] = useState<{ brent: number, wti: number } | null>(null)
   const [loading, setLoading] = useState(true)
-  const { settings } = useSettings()
 
   useEffect(() => {
     const fetchOil = async (showLoading = false) => {
@@ -31,35 +55,11 @@ export default function OilPage() {
     }
 
     fetchOil(true)
-    const interval = setInterval(() => fetchOil(false), settings.refreshRate)
+    const interval = setInterval(() => fetchOil(false), 30000)
     return () => clearInterval(interval)
-  }, [settings.refreshRate])
+  }, [])
 
-  const OilCard = ({ title, price, type }: { title: string, price: number | undefined, type: string }) => (
-    <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden flex flex-col justify-between h-48 group hover:border-slate-400 dark:hover:border-slate-600 transition-all">
-      <div className="flex justify-between items-start">
-        <div>
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">{title}</h3>
-          <p className="text-slate-500 font-medium">{type}</p>
-        </div>
-        <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-700 dark:text-slate-300">
-          <Droplet className="w-6 h-6" />
-        </div>
-      </div>
-      <div className="flex items-end justify-between">
-        <div className="flex items-end gap-1">
-          <span className="text-5xl font-black text-slate-900 dark:text-white font-mono tracking-tighter">
-            {price ? price.toFixed(2) : "---"}
-          </span>
-          <span className="text-lg font-bold text-slate-500 mb-1">$</span>
-        </div>
-        <div className="flex items-center gap-1 text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1.5 rounded-lg text-sm">
-          <ArrowUpRight className="w-4 h-4" />
-          مباشر
-        </div>
-      </div>
-    </div>
-  )
+
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto">

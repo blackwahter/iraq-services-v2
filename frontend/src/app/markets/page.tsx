@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react"
 import { Building2, TrendingUp, TrendingDown, Minus, Clock, MapPin, Activity } from "lucide-react"
-import { useSettings } from "@/components/settings-provider"
 
 interface BourseItem {
   price: number;
@@ -11,16 +10,30 @@ interface BourseItem {
 }
 
 interface BourseData {
-  kifah: BourseItem;
-  harthiya: BourseItem;
-  erbil: BourseItem;
-  basra: BourseItem;
-  lastUpdated: string;
+  [key: string]: BourseItem;
 }
+
+const BourseCard = ({ title, value, color }: { title: string, value: number | undefined, color: string }) => (
+  <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group hover:border-blue-500 transition-colors">
+    <div className={`absolute top-0 right-0 w-2 h-full ${color}`}></div>
+    <div className="flex justify-between items-start mb-4">
+      <div className="text-slate-500 dark:text-slate-400 font-medium">
+        {title}
+      </div>
+      <div className={`p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-400 group-hover:${color.replace('bg-', 'text-')}`}>
+        <Building2 className="w-5 h-5" />
+      </div>
+    </div>
+    <div className="text-3xl font-black text-slate-900 dark:text-white font-mono">
+      {value ? value.toLocaleString() : "..."}
+    </div>
+    <div className="text-sm text-slate-500 mt-2">نقطة</div>
+  </div>
+)
 
 export default function MarketsPage() {
   const [bourses, setBourses] = useState<BourseData | null>(null)
-  const { settings } = useSettings()
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     const fetchBourses = async (showLoading = false) => {
@@ -38,26 +51,9 @@ export default function MarketsPage() {
 
     fetchBourses(true)
     
-    const interval = setInterval(() => fetchBourses(false), settings.refreshRate)
+    const interval = setInterval(() => fetchBourses(false), 30000)
     return () => clearInterval(interval)
-  }, [settings.refreshRate])
-
-  const BourseCard = ({ title, value, color }: { title: string, value: number | undefined, color: string }) => (
-    <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group hover:border-blue-500 transition-colors">
-      <div className={`absolute top-0 right-0 w-2 h-full ${color}`}></div>
-      <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300 mb-2">{title}</h3>
-      <div className="flex items-end gap-2">
-        <span className="text-4xl font-black text-slate-900 dark:text-white font-mono tracking-tight">
-          {value ? value.toLocaleString("en-US") : "---"}
-        </span>
-        <span className="text-sm font-bold text-slate-500 mb-1">د.ع</span>
-      </div>
-      <div className="mt-4 flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-900/20 w-fit px-2 py-1 rounded">
-        <TrendingUp className="w-4 h-4" />
-        تحديث مباشر
-      </div>
-    </div>
-  )
+  }, [])
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">

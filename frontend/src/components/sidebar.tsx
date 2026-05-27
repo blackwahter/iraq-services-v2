@@ -12,7 +12,6 @@ const navItems = [
   { name: "أسعار النفط", href: "/oil", icon: Droplet },
   { name: "البورصات المحلية", href: "/markets", icon: Building2 },
   { name: "المحول المالي", href: "/converter", icon: Calculator },
-  { name: "الإعدادات", href: "/settings", icon: Settings },
 ]
 
 export function Sidebar() {

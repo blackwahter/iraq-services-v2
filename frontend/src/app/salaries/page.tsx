@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react"
 import { Search, Wallet, ChevronRight, ChevronLeft, ChevronDown, ChevronUp } from "lucide-react"
-import { useSettings } from "@/components/settings-provider"
 
 interface PaginationData {
   totalCount: number;
@@ -21,7 +20,6 @@ export default function SalariesPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set())
   const [truncatableIds, setTruncatableIds] = useState<Set<number>>(new Set())
-  const { settings } = useSettings()
 
   // Debounce search input
   useEffect(() => {
@@ -72,9 +70,9 @@ export default function SalariesPage() {
     }
     fetchUpdates(true)
     
-    const interval = setInterval(() => fetchUpdates(false), settings.refreshRate)
+    const interval = setInterval(() => fetchUpdates(false), 30000)
     return () => clearInterval(interval)
-  }, [currentPage, activeFilter, debouncedSearch, settings.refreshRate])
+  }, [currentPage, activeFilter, debouncedSearch])
 
   const toggleExpand = (id: number) => {
     const newExpanded = new Set(expandedIds)

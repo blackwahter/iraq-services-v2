@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useMemo } from "react"
 import { ArrowDownUp, DollarSign, Wallet, Calculator, ArrowRightLeft, Scale, Sparkles, Gem, ChevronDown } from "lucide-react"
-import { useSettings } from "@/components/settings-provider"
 
 interface BourseItem {
   price: number;
@@ -15,8 +14,77 @@ interface MetalData {
   price: number;
 }
 
+const ASSETS = [
+  { id: 'iqd', name: 'دينار عراقي', nameEn: 'IQD', icon: Wallet, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
+  { id: 'usd', name: 'دولار أمريكي', nameEn: 'USD', icon: DollarSign, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' },
+  { id: 'mithqal24k', name: 'مثقال ذهب عيار 24', nameEn: '24K Mithqal', icon: Sparkles, color: 'text-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-900/20' },
+  { id: 'mithqal22k', name: 'مثقال ذهب عيار 22', nameEn: '22K Mithqal', icon: Sparkles, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
+  { id: 'mithqal21k', name: 'مثقال ذهب عيار 21', nameEn: '21K Mithqal', icon: Sparkles, color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/20' },
+  { id: 'mithqal18k', name: 'مثقال ذهب عيار 18', nameEn: '18K Mithqal', icon: Sparkles, color: 'text-yellow-600', bg: 'bg-yellow-100 dark:bg-yellow-900/30' },
+  { id: 'silver', name: 'غرام فضة', nameEn: 'Silver', icon: Gem, color: 'text-slate-500', bg: 'bg-slate-50 dark:bg-slate-800' },
+];
+
+const CustomDropdown = ({ selected, onSelect, isOpen, setIsOpen, label }: any) => {
+  const selectedAsset = ASSETS.find(a => a.id === selected) || ASSETS[0];
+  const SelectedIcon = selectedAsset.icon;
+
+  return (
+    <div className="relative">
+      <label className="block text-sm font-bold text-slate-500 mb-2">{label}</label>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-500 rounded-2xl p-4 flex items-center justify-between transition-colors shadow-sm"
+      >
+        <div className="flex items-center gap-3">
+          <div className={`p-2 rounded-xl ${selectedAsset.bg}`}>
+            <SelectedIcon className={`w-5 h-5 ${selectedAsset.color}`} />
+          </div>
+          <div className="text-right">
+            <div className="font-bold text-slate-900 dark:text-white">{selectedAsset.name}</div>
+            <div className="text-xs text-slate-500 font-mono font-medium">{selectedAsset.nameEn}</div>
+          </div>
+        </div>
+        <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)}></div>
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-50 overflow-hidden max-h-60 overflow-y-auto hidden-scrollbar">
+            {ASSETS.map((asset) => {
+              const Icon = asset.icon;
+              return (
+                <button
+                  key={asset.id}
+                  onClick={() => {
+                    onSelect(asset.id);
+                    setIsOpen(false);
+                  }}
+                  className={`w-full text-right p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800/50 last:border-0 ${selected === asset.id ? 'bg-blue-50/50 dark:bg-blue-900/10' : ''}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-xl ${asset.bg}`}>
+                      <Icon className={`w-5 h-5 ${asset.color}`} />
+                    </div>
+                    <div>
+                      <div className={`font-bold ${selected === asset.id ? 'text-blue-600 dark:text-blue-400' : 'text-slate-700 dark:text-slate-300'}`}>
+                        {asset.name}
+                      </div>
+                      <div className="text-xs text-slate-400 font-mono">{asset.nameEn}</div>
+                    </div>
+                  </div>
+                  {selected === asset.id && <div className="w-2 h-2 rounded-full bg-blue-500"></div>}
+                </button>
+              )
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 export default function ConverterPage() {
-  const { settings } = useSettings()
   const [bourses, setBourses] = useState<BourseData | null>(null)
   const [metals, setMetals] = useState<{ gold: MetalData, silver: MetalData } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -48,13 +116,13 @@ export default function ConverterPage() {
       }
     }
     fetchData(true)
-    const interval = setInterval(() => fetchData(false), settings.refreshRate)
+    const interval = setInterval(() => fetchData(false), 30000)
     return () => clearInterval(interval)
-  }, [settings.refreshRate])
+  }, [])
 
   // Calculate prices in IQD
   const pricesInIqd = useMemo(() => {
-    const bourseName = settings.defaultBourse as keyof BourseData;
+    const bourseName = "kifah" as keyof BourseData;
     const dollarRate = bourses && bourses[bourseName] ? bourses[bourseName].price / 100 : 1465;
     const goldOzUsd = metals ? metals.gold.price : 2350;
     const silverOzUsd = metals ? metals.silver.price : 30;
@@ -69,21 +137,9 @@ export default function ConverterPage() {
       mithqal22k: (goldGram24K_IQD * (22 / 24)) * 5,
       mithqal21k: (goldGram24K_IQD * (21 / 24)) * 5,
       mithqal18k: (goldGram24K_IQD * (18 / 24)) * 5,
-      silver_oz: silverOzUsd * dollarRate,
-      silver_g: (silverOzUsd / TROY_OUNCE_GRAMS) * dollarRate,
+      silver: (silverOzUsd / TROY_OUNCE_GRAMS) * dollarRate,
     }
   }, [bourses, metals])
-
-  const ASSETS = [
-    { id: 'iqd', name: 'دينار عراقي (IQD)', icon: Wallet, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
-    { id: 'usd', name: 'دولار أمريكي (USD)', icon: DollarSign, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
-    { id: 'mithqal24k', name: 'مثقال ذهب عيار 24', icon: Sparkles, color: 'text-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-900/20' },
-    { id: 'mithqal22k', name: 'مثقال ذهب عيار 22', icon: Sparkles, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-900/20' },
-    { id: 'mithqal21k', name: 'مثقال ذهب عيار 21', icon: Scale, color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/20' },
-    { id: 'mithqal18k', name: 'مثقال ذهب عيار 18', icon: Sparkles, color: 'text-rose-500', bg: 'bg-rose-50 dark:bg-rose-900/20' },
-    { id: 'silver_oz', name: 'أونصة فضة', icon: Gem, color: 'text-slate-400', bg: 'bg-slate-100 dark:bg-slate-800' },
-    { id: 'silver_g', name: 'غرام فضة', icon: Gem, color: 'text-slate-500', bg: 'bg-slate-100 dark:bg-slate-800' },
-  ];
 
   const fromAsset = ASSETS.find(a => a.id === fromAssetId)!;
   const toAsset = ASSETS.find(a => a.id === toAssetId)!;
@@ -153,44 +209,7 @@ export default function ConverterPage() {
     return "";
   }
 
-  const CustomDropdown = ({ selected, onSelect, isOpen, setIsOpen, label }: any) => {
-    return (
-      <div className="relative">
-        <button 
-          onClick={() => setIsOpen(!isOpen)}
-          className={`flex items-center gap-3 w-full bg-white dark:bg-slate-800 px-4 py-3 rounded-2xl shadow-sm border ${isOpen ? 'border-blue-500' : 'border-slate-200 dark:border-slate-700'} hover:border-blue-400 transition-colors`}
-        >
-          <div className={`p-2 rounded-xl ${selected.bg}`}>
-            <selected.icon className={`w-5 h-5 ${selected.color}`} />
-          </div>
-          <div className="flex flex-col items-start flex-1 text-right">
-            <span className="text-xs font-bold text-slate-400">{label}</span>
-            <span className="font-bold text-slate-800 dark:text-slate-200">{selected.name}</span>
-          </div>
-          <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-        </button>
 
-        {isOpen && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 max-h-64 overflow-y-auto z-50 p-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-            {ASSETS.map(asset => (
-              <button
-                key={asset.id}
-                onClick={() => { onSelect(asset.id); setIsOpen(false); }}
-                className={`flex items-center gap-3 w-full p-3 rounded-xl transition-colors ${selected.id === asset.id ? 'bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-slate-50 dark:hover:bg-slate-700/50'}`}
-              >
-                <div className={`p-1.5 rounded-lg ${asset.bg}`}>
-                  <asset.icon className={`w-4 h-4 ${asset.color}`} />
-                </div>
-                <span className={`font-bold text-sm ${selected.id === asset.id ? 'text-blue-600 dark:text-blue-400' : 'text-slate-700 dark:text-slate-300'}`}>
-                  {asset.name}
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-    )
-  }
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto pb-10 px-4 sm:px-0">
@@ -301,7 +320,7 @@ export default function ConverterPage() {
           </div>
 
           <div className="mt-8 text-center text-sm font-medium text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl">
-            يتم التحويل بناءً على السعر اللحظي لبورصة {settings.defaultBourse === 'erbil' ? 'أربيل' : settings.defaultBourse === 'basra' ? 'البصرة' : settings.defaultBourse === 'harthiya' ? 'الحارثية' : 'الكفاح'} وأسعار المعادن العالمية
+            يتم التحويل بناءً على السعر اللحظي لبورصة الكفاح وأسعار المعادن العالمية
           </div>
 
         </div>

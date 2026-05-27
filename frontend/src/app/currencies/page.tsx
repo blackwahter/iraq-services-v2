@@ -1,8 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useSettings } from "@/components/settings-provider"
-import { DollarSign, ArrowUpRight, ArrowDownRight, Minus, Activity, MapPin } from "lucide-react"
+import { DollarSign, ArrowUpRight, ArrowDownRight, Minus, MapPin, Activity } from "lucide-react"
 import {
   AreaChart,
   Area,
@@ -34,12 +33,50 @@ const CITIES = {
   basra: "بورصة البصرة (الجنوب)"
 }
 
+const BourseCard = ({ title, value, previous, id, isActive, onClick }: any) => {
+  const isUp = value > previous;
+  const isDown = value < previous;
+  const isStable = value === previous;
+  
+  return (
+    <button 
+      onClick={() => onClick(id)}
+      className={`w-full text-right p-5 rounded-2xl border transition-all ${
+        isActive 
+        ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 shadow-md' 
+        : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-700'
+      }`}
+    >
+      <div className="flex justify-between items-start mb-4">
+        <span className={`text-lg font-bold ${isActive ? 'text-blue-700 dark:text-blue-400' : 'text-slate-700 dark:text-slate-300'}`}>
+          {title}
+        </span>
+        <div className={`p-2 rounded-xl ${isActive ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400' : 'bg-slate-50 dark:bg-slate-800 text-slate-500'}`}>
+          <MapPin className="w-5 h-5" />
+        </div>
+      </div>
+
+      <div className="flex items-end justify-between">
+        <div>
+          <div className="text-2xl font-black text-slate-900 dark:text-white font-mono tracking-tight">
+            {value.toLocaleString()}
+          </div>
+          <div className="text-sm text-slate-500 mt-1 font-medium">دينار عراقي</div>
+        </div>
+        
+        <div className={`flex items-center gap-1 font-bold ${isUp ? 'text-emerald-500' : isDown ? 'text-rose-500' : 'text-slate-400'}`}>
+          {isUp ? <ArrowUpRight className="w-5 h-5" /> : isDown ? <ArrowDownRight className="w-5 h-5" /> : <Minus className="w-5 h-5" />}
+        </div>
+      </div>
+    </button>
+  )
+}
+
 export default function CurrenciesPage() {
   const [bourses, setBourses] = useState<BourseData | null>(null)
   const [chartData, setChartData] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const { settings } = useSettings()
-  const [activeCity, setActiveCity] = useState<keyof typeof CITIES>(settings.defaultBourse as keyof typeof CITIES)
+  const [activeCity, setActiveCity] = useState<keyof typeof CITIES>("kifah")
 
   useEffect(() => {
     const fetchUpdates = async (showLoading = false) => {
@@ -73,10 +110,10 @@ export default function CurrenciesPage() {
 
     fetchUpdates(true)
     
-    const interval = setInterval(() => fetchUpdates(false), settings.refreshRate)
+    const interval = setInterval(() => fetchUpdates(false), 30000)
     
     return () => clearInterval(interval)
-  }, [settings.refreshRate])
+  }, [])
 
   const currentDollar = bourses ? bourses[activeCity] : null;
 
