@@ -3,11 +3,17 @@
 import { useEffect, useState } from "react"
 import { Building2, TrendingUp } from "lucide-react"
 
+interface BourseItem {
+  price: number;
+  previous: number;
+  status: 'up' | 'down' | 'stable';
+}
+
 interface BourseData {
-  kifah: number;
-  harthiya: number;
-  erbil: number;
-  basra: number;
+  kifah: BourseItem;
+  harthiya: BourseItem;
+  erbil: BourseItem;
+  basra: BourseItem;
   lastUpdated: string;
 }
 
@@ -66,10 +72,10 @@ export default function MarketsPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-        <BourseCard title="بورصة الكفاح (بغداد)" value={bourses?.kifah} color="bg-blue-500" />
-        <BourseCard title="بورصة الحارثية (بغداد)" value={bourses?.harthiya} color="bg-indigo-500" />
-        <BourseCard title="بورصة أربيل (الشمال)" value={bourses?.erbil} color="bg-emerald-500" />
-        <BourseCard title="بورصة البصرة (الجنوب)" value={bourses?.basra} color="bg-amber-500" />
+        <BourseCard title="بورصة الكفاح (بغداد)" value={bourses?.kifah?.price} color="bg-blue-500" />
+        <BourseCard title="بورصة الحارثية (بغداد)" value={bourses?.harthiya?.price} color="bg-indigo-500" />
+        <BourseCard title="بورصة أربيل (الشمال)" value={bourses?.erbil?.price} color="bg-emerald-500" />
+        <BourseCard title="بورصة البصرة (الجنوب)" value={bourses?.basra?.price} color="bg-amber-500" />
       </div>
     </div>
   )
