@@ -333,6 +333,21 @@ app.get('/api/oil', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
+app.get('/api/metals', async (req, res) => {
+    try {
+        const goldReq = await axios.get('https://query1.finance.yahoo.com/v8/finance/chart/GC=F');
+        const goldPrice = goldReq.data.chart.result[0].meta.regularMarketPrice; // Price per Troy Ounce in USD
+        
+        const silverReq = await axios.get('https://query1.finance.yahoo.com/v8/finance/chart/SI=F');
+        const silverPrice = silverReq.data.chart.result[0].meta.regularMarketPrice; // Price per Troy Ounce in USD
+        
+        res.json({ success: true, gold: goldPrice, silver: silverPrice });
+    } catch (err) { 
+        console.error("Metals API Error:", err.message);
+        res.status(500).json({ success: false }); 
+    }
+});
+
 app.get('/api/updates', async (req, res) => {
     try {
         const { category, page, limit, search } = req.query;
