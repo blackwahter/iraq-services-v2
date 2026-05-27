@@ -5,6 +5,35 @@ import { useTheme } from "next-themes"
 import { Settings, Bell, Moon, Sun, Monitor, RefreshCw, Trash2, ShieldCheck, CheckCircle2 } from "lucide-react"
 import { useSettings } from "@/components/settings-provider"
 
+const Toggle = ({ enabled, onChange }: { enabled: boolean, onChange: () => void }) => (
+  <button 
+    onClick={onChange}
+    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 ${
+      enabled ? 'bg-blue-600' : 'bg-slate-200 dark:bg-slate-700'
+    }`}
+  >
+    <span 
+      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+        enabled ? 'translate-x-6' : 'translate-x-1'
+      }`}
+    />
+  </button>
+)
+
+const SettingSection = ({ title, icon: Icon, children }: any) => (
+  <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 border border-slate-200 dark:border-slate-800/50 shadow-sm hover:shadow-md transition-shadow">
+    <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
+      <div className="bg-blue-50 dark:bg-blue-900/20 p-2.5 rounded-xl text-blue-600 dark:text-blue-400">
+        <Icon className="w-5 h-5" />
+      </div>
+      <h2 className="text-xl font-bold text-slate-800 dark:text-white">{title}</h2>
+    </div>
+    <div className="space-y-6">
+      {children}
+    </div>
+  </div>
+)
+
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme()
   const { settings, updateSettings } = useSettings()
@@ -22,35 +51,6 @@ export default function SettingsPage() {
     setCleared(true)
     setTimeout(() => setCleared(false), 3000)
   }
-
-  const Toggle = ({ enabled, onChange }: { enabled: boolean, onChange: () => void }) => (
-    <button 
-      onClick={onChange}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 ${
-        enabled ? 'bg-blue-600' : 'bg-slate-200 dark:bg-slate-700'
-      }`}
-    >
-      <span 
-        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-          enabled ? 'translate-x-6' : 'translate-x-1'
-        }`}
-      />
-    </button>
-  )
-
-  const SettingSection = ({ title, icon: Icon, children }: any) => (
-    <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 border border-slate-200 dark:border-slate-800/50 shadow-sm hover:shadow-md transition-shadow">
-      <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
-        <div className="bg-blue-50 dark:bg-blue-900/20 p-2.5 rounded-xl text-blue-600 dark:text-blue-400">
-          <Icon className="w-5 h-5" />
-        </div>
-        <h2 className="text-xl font-bold text-slate-800 dark:text-white">{title}</h2>
-      </div>
-      <div className="space-y-6">
-        {children}
-      </div>
-    </div>
-  )
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto pb-10 px-4 sm:px-0">
