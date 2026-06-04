@@ -448,16 +448,26 @@ setInterval(async () => {
 }, 14 * 60 * 1000); 
 
 // تقديم ملفات الواجهة الجديدة (Next.js Export)
-// معالجة طلبات التوجيه الداخلي (Client-side Navigation) الخاصة بـ Next.js App Router
+// معالجة طلبات التوجيه الداخلي (Client-side Navigation) والـ Direct hits
 const fs = require('fs');
 app.use((req, res, next) => {
-    if (req.headers['rsc'] === '1' && req.method === 'GET' && !req.url.startsWith('/api')) {
+    if (req.method === 'GET' && !req.url.startsWith('/api')) {
         let reqPath = req.path === '/' ? '/index' : req.path;
         if (reqPath.endsWith('/')) reqPath = reqPath.slice(0, -1);
-        const txtPath = path.join(__dirname, 'frontend', 'out', `${reqPath}.txt`);
-        if (fs.existsSync(txtPath)) {
-            res.setHeader('Content-Type', 'text/x-component');
-            return res.sendFile(txtPath);
+        
+        // 1. طلبات Next.js App Router RSC
+        if (req.headers['rsc'] === '1') {
+            const txtPath = path.join(__dirname, 'frontend', 'out', `${reqPath}.txt`);
+            if (fs.existsSync(txtPath)) {
+                res.setHeader('Content-Type', 'text/x-component');
+                return res.sendFile(txtPath);
+            }
+        }
+        
+        // 2. طلبات المتصفح المباشرة (Direct HTML Hits)
+        const htmlPath = path.join(__dirname, 'frontend', 'out', `${reqPath}.html`);
+        if (fs.existsSync(htmlPath)) {
+            return res.sendFile(htmlPath);
         }
     }
     next();
@@ -467,8 +477,6 @@ app.use(express.static(path.join(__dirname, 'frontend', 'out'), { extensions: ['
 
 app.use((req, res) => { 
     if (req.url.startsWith('/api')) return res.status(404).json({error: 'Not found'});
-    // If it's a direct page hit like /salaries, express.static with extensions:['html'] will catch it above.
-    // If it still falls through, it might be a 404. Let's send a basic 404 or redirect to home.
     res.redirect('/');
 });
 
