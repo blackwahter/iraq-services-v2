@@ -448,6 +448,21 @@ setInterval(async () => {
 }, 14 * 60 * 1000); 
 
 // تقديم ملفات الواجهة الجديدة (Next.js Export)
+// معالجة طلبات التوجيه الداخلي (Client-side Navigation) الخاصة بـ Next.js App Router
+const fs = require('fs');
+app.use((req, res, next) => {
+    if (req.headers['rsc'] === '1' && req.method === 'GET' && !req.url.startsWith('/api')) {
+        let reqPath = req.path === '/' ? '/index' : req.path;
+        if (reqPath.endsWith('/')) reqPath = reqPath.slice(0, -1);
+        const txtPath = path.join(__dirname, 'frontend', 'out', `${reqPath}.txt`);
+        if (fs.existsSync(txtPath)) {
+            res.setHeader('Content-Type', 'text/x-component');
+            return res.sendFile(txtPath);
+        }
+    }
+    next();
+});
+
 app.use(express.static(path.join(__dirname, 'frontend', 'out'), { extensions: ['html'] }));
 
 app.use((req, res) => { 
