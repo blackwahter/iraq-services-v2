@@ -1,264 +1,150 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Building2, Coins, Droplet, TrendingUp, Wallet, ArrowUpRight } from "lucide-react"
+import { Building2, Coins, Droplet, Wallet, ArrowUpRight, ArrowDownRight, Minus, Bell } from "lucide-react"
 import Link from "next/link"
 
-interface BourseData {
-  kifah: number;
-  harthiya: number;
-  erbil: number;
-  basra: number;
-  lastUpdated: string;
-}
-
-interface OilData {
-  brent: number;
-  wti: number;
-}
-
 export default function Home() {
-  const [bourses, setBourses] = useState<BourseData | null>(null)
+  const [bourses, setBourses] = useState<any>(null)
   const [updates, setUpdates] = useState<any[]>([])
-  const [oil, setOil] = useState<OilData | null>(null)
+  const [oil, setOil] = useState<any>(null)
   const [metals, setMetals] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Bourse Cycler State
-  const [currentBourseIndex, setCurrentBourseIndex] = useState(0)
-  const [isTransitioning, setIsTransitioning] = useState(false)
-
-  // Oil Cycler State
-  const [currentOilIndex, setCurrentOilIndex] = useState(0)
-  const [isOilTransitioning, setIsOilTransitioning] = useState(false)
-
-  // Data Fetcher
+  // Safe fetcher
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const [boursesRes, updatesRes, oilRes, metalsRes] = await Promise.all([
-          fetch("/api/bourses").catch(() => null),
-          fetch("/api/updates").catch(() => null),
-          fetch("/api/oil").catch(() => null),
-          fetch("/api/metals").catch(() => null)
-        ])
-        
-        if (boursesRes) {
-          const boursesData = await boursesRes.json()
-          if (boursesData.success) setBourses(boursesData.data)
+      setIsLoading(true)
+      
+      const safeFetch = async (url: string) => {
+        try {
+          const res = await fetch(url)
+          if (!res.ok) return null
+          const data = await res.json()
+          return data
+        } catch {
+          return null
         }
-
-        if (updatesRes) {
-          const updatesData = await updatesRes.json()
-          if (Array.isArray(updatesData)) {
-            setUpdates(updatesData)
-          }
-        }
-
-        if (oilRes) {
-          const oilData = await oilRes.json()
-          if (oilData.success) setOil({ brent: oilData.brent, wti: oilData.wti })
-        }
-
-        if (metalsRes) {
-          const metalsData = await metalsRes.json()
-          if (metalsData.success) setMetals({ gold: metalsData.gold, silver: metalsData.silver })
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error)
       }
+
+      const [bData, uData, oData, mData] = await Promise.all([
+        safeFetch("/api/bourses"),
+        safeFetch("/api/updates"),
+        safeFetch("/api/oil"),
+        safeFetch("/api/metals")
+      ])
+
+      if (bData?.success) setBourses(bData.data)
+      if (Array.isArray(uData)) setUpdates(uData)
+      else if (uData?.data && Array.isArray(uData.data)) setUpdates(uData.data)
+      if (oData?.success) setOil({ brent: oData.brent, wti: oData.wti })
+      if (mData?.success) setMetals({ gold: mData.gold, silver: mData.silver })
+      
+      setIsLoading(false)
     }
 
     fetchData()
-    const interval = setInterval(fetchData, 10000)
+    const interval = setInterval(fetchData, 30000)
     return () => clearInterval(interval)
   }, [])
 
-  // 5-second Cycler for Bourses
-  useEffect(() => {
-    const cycleInterval = setInterval(() => {
-      setIsTransitioning(true)
-      setTimeout(() => {
-        setCurrentBourseIndex((prev) => (prev + 1) % 4)
-        setIsTransitioning(false)
-      }, 500) // 500ms fade duration
-    }, 5000) // 5 seconds
+  const kifah = bourses?.kifah?.price || 149500
+  const gold = metals?.gold?.price || 2350.0
+  const brent = oil?.brent || 80.0
+  const salaries = updates.filter(u => u.category === "رواتب").slice(0, 2)
 
-    return () => clearInterval(cycleInterval)
-  }, [])
-
-  // 5-second Cycler for Oil
-  useEffect(() => {
-    const cycleInterval = setInterval(() => {
-      setIsOilTransitioning(true)
-      setTimeout(() => {
-        setCurrentOilIndex((prev) => (prev + 1) % 2)
-        setIsOilTransitioning(false)
-      }, 500) // 500ms fade duration
-    }, 5000) // 5 seconds
-
-    return () => clearInterval(cycleInterval)
-  }, [])
-
-  const bourseList = [
-    { name: "الكفاح", price: bourses?.kifah?.price, color: "from-blue-600/80 to-indigo-700/80", shadow: "shadow-blue-500/20" },
-    { name: "الحارثية", price: bourses?.harthiya?.price, color: "from-emerald-600/80 to-teal-700/80", shadow: "shadow-emerald-500/20" },
-    { name: "أربيل", price: bourses?.erbil?.price, color: "from-amber-500/80 to-orange-600/80", shadow: "shadow-amber-500/20" },
-    { name: "البصرة", price: bourses?.basra?.price, color: "from-purple-600/80 to-pink-700/80", shadow: "shadow-purple-500/20" }
-  ]
-
-  const currentBourse = bourseList[currentBourseIndex]
-
-  const oilList = [
-    { name: "خام برنت", price: oil?.brent ? `$${oil.brent.toFixed(2)}` : "---", color: "from-slate-700/80 to-gray-900/80", shadow: "shadow-slate-500/20" },
-    { name: "الخام الأمريكي", price: oil?.wti ? `$${oil.wti.toFixed(2)}` : "---", color: "from-cyan-700/80 to-blue-900/80", shadow: "shadow-cyan-500/20" }
-  ]
-  const currentOil = oilList[currentOilIndex]
-
-  const salaryUpdates = updates.filter(u => u.category === "رواتب").slice(0, 3)
+  if (isLoading && !bourses) {
+    return <div className="flex justify-center items-center h-64"><div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div></div>
+  }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
-            لوحة التحكم الذكية
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-2 text-lg">
-            مراقبة حية لجميع الأسواق والأخبار العراقية
-          </p>
+    <div className="space-y-4 max-w-md mx-auto w-full px-2">
+      {/* Welcome Message */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-black text-slate-900 dark:text-white">أهلاً بك ☀️</h1>
+        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">تحديثات الأسواق مباشرة الآن</p>
+      </div>
+
+      {/* Primary Card: Kifah Bourse */}
+      <Link href="/markets" className="block relative overflow-hidden rounded-3xl p-5 shadow-lg shadow-blue-500/20 border border-white/10 bg-gradient-to-br from-blue-600 to-indigo-800">
+        <div className="absolute top-0 right-0 p-4 opacity-20"><Building2 className="w-24 h-24" /></div>
+        <div className="relative z-10 flex justify-between items-start mb-6">
+          <div className="bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-full text-white text-xs font-bold flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse"></span>
+            بث حي
+          </div>
         </div>
-        <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 px-4 py-2 rounded-full border border-emerald-100 dark:border-emerald-800/30">
-          <span className="relative flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-          </span>
-          <span className="font-bold text-sm">متصل ومحدث</span>
+        <div className="relative z-10 text-right">
+          <div className="text-white/80 font-medium mb-1">بورصة الكفاح (بغداد)</div>
+          <div className="flex items-end justify-end gap-2">
+            <span className="text-white/80 font-bold mb-1">دينار</span>
+            <span className="text-4xl font-black text-white font-mono tracking-tighter">
+              {kifah.toLocaleString()}
+            </span>
+          </div>
+        </div>
+      </Link>
+
+      {/* Horizontal Scroll for Secondary Assets */}
+      <div className="flex gap-4 overflow-x-auto pb-4 snap-x hide-scrollbar">
+        {/* Gold Card */}
+        <div className="min-w-[160px] snap-center rounded-3xl p-4 bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg shadow-amber-500/20 text-white relative overflow-hidden">
+          <div className="absolute -right-4 -bottom-4 opacity-20"><Coins className="w-20 h-20" /></div>
+          <div className="relative z-10">
+            <div className="text-white/80 text-xs font-medium mb-4">الذهب العالمي</div>
+            <div className="text-2xl font-black font-mono">${gold.toFixed(1)}</div>
+            <div className="text-white/70 text-[10px] mt-1">أونصة</div>
+          </div>
+        </div>
+
+        {/* Oil Card */}
+        <div className="min-w-[160px] snap-center rounded-3xl p-4 bg-gradient-to-br from-slate-800 to-slate-950 shadow-lg shadow-slate-500/20 text-white relative overflow-hidden">
+          <div className="absolute -right-4 -bottom-4 opacity-20"><Droplet className="w-20 h-20" /></div>
+          <div className="relative z-10">
+            <div className="text-white/80 text-xs font-medium mb-4">خام برنت</div>
+            <div className="text-2xl font-black font-mono">${brent.toFixed(2)}</div>
+            <div className="text-white/70 text-[10px] mt-1">برميل</div>
+          </div>
         </div>
       </div>
 
-      {/* 2x2 Grid Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Salaries Notifications Stack */}
+      <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+              <Wallet className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <h2 className="font-bold text-slate-900 dark:text-white">إشعارات الرواتب</h2>
+          </div>
+          <Link href="/salaries" className="text-xs text-blue-600 dark:text-blue-400 font-bold">الكل</Link>
+        </div>
         
-        {/* 1. Bourse Cycler Card */}
-        <Link href="/markets" className={`group relative overflow-hidden rounded-3xl p-6 shadow-xl hover:${currentBourse.shadow} transition-all duration-700 hover:scale-[1.02] flex flex-col justify-between min-h-[200px] border border-white/20 dark:border-white/10 backdrop-blur-xl bg-gradient-to-br ${currentBourse.color}`}>
-          
-          {/* Classy Shimmer Loading Effect (5s) */}
-          <div key={`shimmer-${currentBourseIndex}`} className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmerSweep_5s_ease-in-out]"></div>
-          
-          <div className="relative z-10 flex justify-between items-start mb-4">
-            <div className="bg-white/20 backdrop-blur-md p-3 rounded-2xl text-white">
-              <Building2 className="w-6 h-6" />
-            </div>
-            <div className="flex items-center gap-1 text-white/90 bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
-              بث حي <TrendingUp className="w-4 h-4" />
-            </div>
-          </div>
-          
-          <div className="relative z-10 mt-auto">
-            <div className={`transition-all duration-500 transform ${isTransitioning ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
-              <p className="text-white/80 font-medium text-lg mb-1 flex items-center gap-2">
-                بورصة {currentBourse.name}
-                <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-              </p>
-              <div className="flex items-end gap-3">
-                <h2 className="text-5xl md:text-6xl font-black text-white font-mono tracking-tighter drop-shadow-lg">
-                  {currentBourse.price ? currentBourse.price.toLocaleString() : "---"}
-                </h2>
-                <span className="text-xl text-white/80 font-medium mb-2">دينار</span>
-              </div>
-            </div>
-          </div>
-        </Link>
-
-        {/* 2. Gold & Metals Card (Same size as Bourses) */}
-        <Link href="/metals" className="group relative overflow-hidden rounded-3xl p-6 shadow-xl hover:shadow-amber-500/20 transition-all duration-500 hover:scale-[1.02] flex flex-col justify-between min-h-[200px] border border-white/20 dark:border-white/10 backdrop-blur-xl bg-gradient-to-br from-slate-100/80 to-slate-200/80 dark:from-slate-800/80 dark:to-slate-900/80 cursor-pointer">
-          
-          {/* Classy Shimmer Loading Effect */}
-          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-amber-500/10 to-transparent animate-[shimmerSweep_5s_ease-in-out_infinite]"></div>
-
-          <div className="relative z-10 flex justify-between items-start mb-4">
-            <div className="bg-amber-500/20 backdrop-blur-md p-3 rounded-2xl text-amber-600 dark:text-amber-400 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-300">
-              <Coins className="w-6 h-6" />
-            </div>
-            <ArrowUpRight className="text-amber-600/50 group-hover:text-amber-600 dark:text-amber-400/50 dark:group-hover:text-amber-400 transition-colors" />
-          </div>
-          
-          <div className="relative z-10 mt-auto">
-            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">الذهب العالمي</h3>
-            <div className="flex items-end gap-3">
-              <h2 className="text-5xl md:text-6xl font-black text-amber-600 dark:text-amber-500 font-mono tracking-tighter drop-shadow-lg">
-                {metals?.gold?.price ? `$${Math.round(metals.gold.price).toLocaleString()}` : "---"}
-              </h2>
-              <span className="text-xl text-slate-500 dark:text-slate-400 font-medium mb-2">للأونصة</span>
-            </div>
-          </div>
-        </Link>
-
-        {/* 3. Urgent Salaries Mini Card */}
-        <Link href="/salaries" className="group relative overflow-hidden rounded-3xl p-6 shadow-xl hover:shadow-emerald-500/20 transition-all duration-500 hover:scale-[1.02] flex flex-col min-h-[200px] border border-white/20 dark:border-white/10 backdrop-blur-xl bg-gradient-to-br from-emerald-50/90 to-teal-50/90 dark:from-slate-800/80 dark:to-slate-900/80">
-          
-          {/* Classy Shimmer Loading Effect */}
-          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-emerald-500/10 to-transparent animate-[shimmerSweep_5s_ease-in-out_infinite]"></div>
-
-          <div className="relative z-10 flex justify-between items-start mb-4">
-            <div className="flex items-center gap-3">
-              <div className="bg-emerald-500/20 backdrop-blur-md p-3 rounded-2xl text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform duration-300">
-                <Wallet className="w-6 h-6" />
-              </div>
-              <h3 className="text-slate-900 dark:text-white font-bold text-lg">إشعارات الرواتب</h3>
-            </div>
-            <ArrowUpRight className="text-slate-400 group-hover:text-emerald-500 transition-colors" />
-          </div>
-          
-          <div className="relative z-10 flex flex-col gap-2 flex-1">
-            {salaryUpdates.length > 0 ? salaryUpdates.map((update, idx) => (
-              <div key={update.id} className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm p-3 rounded-xl border border-white/50 dark:border-white/5">
-                <p className="text-slate-700 dark:text-slate-200 text-sm font-medium line-clamp-1 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
-                  {update.content}
-                </p>
-                <p className="text-xs text-slate-400 mt-1 font-mono" dir="ltr">
-                  {new Date(update.created_at).toLocaleTimeString('ar-IQ', {hour: '2-digit', minute:'2-digit'})}
+        <div className="space-y-3">
+          {salaries.length === 0 ? (
+            <p className="text-center text-slate-500 text-sm py-4">لا توجد تحديثات حالياً</p>
+          ) : (
+            salaries.map((s, idx) => (
+              <div key={idx} className="flex gap-3 items-start">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 shrink-0"></div>
+                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed line-clamp-2">
+                  {s.content}
                 </p>
               </div>
-            )) : (
-              <div className="flex-1 flex items-center justify-center text-slate-500 font-medium">
-                جاري المراقبة وسحب أحدث الرواتب...
-              </div>
-            )}
-          </div>
-        </Link>
-
-        {/* 4. Oil Prices Card */}
-        <Link href="/oil" className={`group relative overflow-hidden rounded-3xl p-6 shadow-xl hover:${currentOil.shadow} transition-all duration-700 hover:scale-[1.02] flex flex-col justify-between min-h-[200px] border border-white/20 dark:border-white/10 backdrop-blur-xl bg-gradient-to-br ${currentOil.color}`}>
-          
-          {/* Classy Shimmer Loading Effect */}
-          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmerSweep_5s_ease-in-out_infinite]"></div>
-
-          <div className="relative z-10 flex justify-between items-start mb-4">
-            <div className="bg-white/20 backdrop-blur-md p-3 rounded-2xl text-white group-hover:scale-110 transition-transform duration-300">
-              <Droplet className="w-6 h-6" />
-            </div>
-            <ArrowUpRight className="text-white/50 group-hover:text-white transition-colors" />
-          </div>
-          
-          <div className="relative z-10 mt-auto">
-            <h3 className="text-white font-bold text-lg mb-4">النفط العالمي</h3>
-            <div className={`transition-all duration-500 transform ${isOilTransitioning ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
-              <p className="text-white/80 font-medium text-lg mb-1 flex items-center gap-2">
-                {currentOil.name}
-                <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-              </p>
-              <div className="flex items-end gap-3">
-                <h2 className="text-5xl md:text-6xl font-black text-white font-mono tracking-tighter drop-shadow-lg">
-                  {currentOil.price}
-                </h2>
-              </div>
-            </div>
-          </div>
-        </Link>
-
+            ))
+          )}
+        </div>
       </div>
+
+      <style jsx global>{`
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   )
 }
