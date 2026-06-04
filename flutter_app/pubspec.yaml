@@ -1,0 +1,28 @@
+name: iraq_services_mobile
+description: بوابة العراق المالية - تطبيق الهاتف الأصلي
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+  lucide_icons: ^1.0.0
+  google_fonts: ^6.1.0
+  http: ^1.1.0
+  provider: ^6.1.1
+  fl_chart: ^0.65.0
+  shared_preferences: ^2.2.2
+  intl: ^0.18.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true

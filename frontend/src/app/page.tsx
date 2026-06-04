@@ -21,6 +21,7 @@ export default function Home() {
   const [bourses, setBourses] = useState<BourseData | null>(null)
   const [updates, setUpdates] = useState<any[]>([])
   const [oil, setOil] = useState<OilData | null>(null)
+  const [metals, setMetals] = useState<any>(null)
 
   // Bourse Cycler State
   const [currentBourseIndex, setCurrentBourseIndex] = useState(0)
@@ -34,10 +35,11 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [boursesRes, updatesRes, oilRes] = await Promise.all([
+        const [boursesRes, updatesRes, oilRes, metalsRes] = await Promise.all([
           fetch("/api/bourses").catch(() => null),
           fetch("/api/updates").catch(() => null),
-          fetch("/api/oil").catch(() => null)
+          fetch("/api/oil").catch(() => null),
+          fetch("/api/metals").catch(() => null)
         ])
         
         if (boursesRes) {
@@ -55,6 +57,11 @@ export default function Home() {
         if (oilRes) {
           const oilData = await oilRes.json()
           if (oilData.success) setOil({ brent: oilData.brent, wti: oilData.wti })
+        }
+
+        if (metalsRes) {
+          const metalsData = await metalsRes.json()
+          if (metalsData.success) setMetals({ gold: metalsData.gold, silver: metalsData.silver })
         }
       } catch (error) {
         console.error("Error fetching data:", error)
@@ -165,7 +172,7 @@ export default function Home() {
         </Link>
 
         {/* 2. Gold & Metals Card (Same size as Bourses) */}
-        <div className="group relative overflow-hidden rounded-3xl p-6 shadow-xl hover:shadow-amber-500/20 transition-all duration-500 hover:scale-[1.02] flex flex-col justify-between min-h-[200px] border border-white/20 dark:border-white/10 backdrop-blur-xl bg-gradient-to-br from-slate-100/80 to-slate-200/80 dark:from-slate-800/80 dark:to-slate-900/80 cursor-pointer">
+        <Link href="/metals" className="group relative overflow-hidden rounded-3xl p-6 shadow-xl hover:shadow-amber-500/20 transition-all duration-500 hover:scale-[1.02] flex flex-col justify-between min-h-[200px] border border-white/20 dark:border-white/10 backdrop-blur-xl bg-gradient-to-br from-slate-100/80 to-slate-200/80 dark:from-slate-800/80 dark:to-slate-900/80 cursor-pointer">
           
           {/* Classy Shimmer Loading Effect */}
           <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-amber-500/10 to-transparent animate-[shimmerSweep_5s_ease-in-out_infinite]"></div>
@@ -174,16 +181,19 @@ export default function Home() {
             <div className="bg-amber-500/20 backdrop-blur-md p-3 rounded-2xl text-amber-600 dark:text-amber-400 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-300">
               <Coins className="w-6 h-6" />
             </div>
-            <span className="text-xs font-bold bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 px-2 py-1 rounded-lg">قريباً</span>
+            <ArrowUpRight className="text-amber-600/50 group-hover:text-amber-600 dark:text-amber-400/50 dark:group-hover:text-amber-400 transition-colors" />
           </div>
           
           <div className="relative z-10 mt-auto">
-            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">المعادن والذهب</h3>
-            <p className="text-slate-500 dark:text-slate-400 font-medium">
-              سيتم التفعيل فور ربط السيرفر بالأسعار المباشرة.
-            </p>
+            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">الذهب العالمي</h3>
+            <div className="flex items-end gap-3">
+              <h2 className="text-5xl md:text-6xl font-black text-amber-600 dark:text-amber-500 font-mono tracking-tighter drop-shadow-lg">
+                {metals?.gold?.price ? `$${Math.round(metals.gold.price).toLocaleString()}` : "---"}
+              </h2>
+              <span className="text-xl text-slate-500 dark:text-slate-400 font-medium mb-2">للأونصة</span>
+            </div>
           </div>
-        </div>
+        </Link>
 
         {/* 3. Urgent Salaries Mini Card */}
         <Link href="/salaries" className="group relative overflow-hidden rounded-3xl p-6 shadow-xl hover:shadow-emerald-500/20 transition-all duration-500 hover:scale-[1.02] flex flex-col min-h-[200px] border border-white/20 dark:border-white/10 backdrop-blur-xl bg-gradient-to-br from-emerald-50/90 to-teal-50/90 dark:from-slate-800/80 dark:to-slate-900/80">
