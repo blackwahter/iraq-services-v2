@@ -256,7 +256,7 @@ export default function CurrenciesPage() {
             </div>
           </div>
           
-          <div className="flex-1 w-full min-h-[350px]">
+          <div className="flex-1 w-full min-h-[450px] lg:min-h-[500px]">
             {isLoading ? (
               <div className="w-full h-full flex items-center justify-center">
                 <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
@@ -279,7 +279,7 @@ export default function CurrenciesPage() {
                     dy={15}
                   />
                   <YAxis 
-                    domain={[minPrice, maxPrice]}
+                    domain={['dataMin - 250', 'dataMax + 250']}
                     axisLine={false}
                     tickLine={false}
                     tick={{ fill: '#94a3b8', fontSize: 12, fontFamily: 'monospace' }}

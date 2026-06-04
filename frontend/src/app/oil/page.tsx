@@ -75,15 +75,6 @@ export default function OilPage() {
         <OilCard title="الخام الأمريكي" type="WTI Crude Oil" price={oilData?.wti} />
       </div>
 
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6">
-        <h4 className="text-blue-900 dark:text-blue-300 font-bold text-lg mb-2 flex items-center gap-2">
-          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-          الأثر المالي لصادرات الطاقة
-        </h4>
-        <p className="text-blue-800 dark:text-blue-400 leading-relaxed font-medium">
-          صعود أسعار برميل النفط يعزز متانة الاحتياطي النقدي للبنك المركزي العراقي ويدعم استقرار سعر الصرف.
-        </p>
-      </div>
     </div>
   )
 }

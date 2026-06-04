@@ -85,11 +85,21 @@ export default function Home() {
     return <div className="flex justify-center items-center h-64"><div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div></div>
   }
 
+  const getBourseColor = (id: string) => {
+    switch(id) {
+      case 'kifah': return 'from-blue-600 to-indigo-800 shadow-blue-500/30';
+      case 'harthiya': return 'from-indigo-600 to-purple-800 shadow-indigo-500/30';
+      case 'erbil': return 'from-emerald-600 to-teal-800 shadow-emerald-500/30';
+      case 'basra': return 'from-cyan-600 to-blue-800 shadow-cyan-500/30';
+      default: return 'from-blue-600 to-indigo-800 shadow-blue-500/30';
+    }
+  }
+
   return (
     <div className="space-y-5 max-w-md mx-auto w-full px-1">
       {/* Primary Animated Card: Bourses Cycler */}
-      <a href="/markets" className="block relative overflow-hidden rounded-[32px] p-6 shadow-xl shadow-blue-500/20 border border-white/20 bg-gradient-to-br from-blue-600 to-indigo-800 transition-all duration-500">
-        <div className="absolute -top-6 -right-6 p-4 opacity-10"><Building2 className="w-32 h-32" /></div>
+      <a href="/markets" className={`block relative overflow-hidden rounded-[32px] p-6 shadow-xl border border-white/20 bg-gradient-to-br ${getBourseColor(currentBourse.id)} transition-colors duration-700`}>
+        <div className="absolute -top-6 -right-6 p-4 opacity-10"><Building2 className="w-32 h-32 text-white" /></div>
         
         {/* Shimmer Sweep Effect for Motion */}
         <div key={`shimmer-${currentBourseIndex}`} className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmerSweep_5s_ease-in-out]"></div>
@@ -99,7 +109,7 @@ export default function Home() {
             <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse"></span>
             LIVE
           </div>
-          <div className="text-white/80 text-sm font-bold bg-black/20 px-3 py-1 rounded-xl transition-all duration-500" key={`city-${currentBourse.id}`}>
+          <div className="text-white/90 text-sm font-bold bg-black/20 px-3 py-1 rounded-xl transition-all duration-500 shadow-inner" key={`city-${currentBourse.id}`}>
             {currentBourse.name}
           </div>
         </div>
@@ -107,7 +117,7 @@ export default function Home() {
           <div className="text-white/80 font-medium mb-1">سعر الدولار</div>
           <div className="flex items-end justify-end gap-2" key={`price-${currentBourse.id}`}>
             <span className="text-white/80 font-bold mb-2 transition-all duration-500">دينار</span>
-            <span className="text-5xl font-black text-white font-mono tracking-tighter transition-all duration-500 animate-[fadeIn_0.5s_ease-out]">
+            <span className="text-5xl font-black text-white font-mono tracking-tighter transition-all duration-500 animate-[fadeIn_0.5s_ease-out] drop-shadow-md">
               {currentBourse.price.toLocaleString()}
             </span>
           </div>
@@ -117,32 +127,32 @@ export default function Home() {
       {/* 2-Column Mobile Grid for Secondary Metrics */}
       <div className="grid grid-cols-2 gap-4">
         {/* Gold Card */}
-        <a href="/metals" className="block rounded-[28px] p-5 bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden flex flex-col justify-between h-36">
-          <div className="absolute -right-2 -bottom-2 opacity-[0.03] dark:opacity-10"><Coins className="w-24 h-24" /></div>
+        <a href="/metals" className="block rounded-[28px] p-5 bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/10 shadow-sm border border-amber-200/50 dark:border-amber-800/30 relative overflow-hidden flex flex-col justify-between h-36 transition-all duration-500 hover:shadow-md">
+          <div className="absolute -right-2 -bottom-2 opacity-[0.04] dark:opacity-10"><Coins className="w-24 h-24 text-amber-600" /></div>
           <div className="flex items-center gap-2 relative z-10">
-            <div className="w-8 h-8 rounded-full bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center">
-              <Coins className="w-4 h-4 text-amber-500" />
+            <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shadow-inner">
+              <Coins className="w-4 h-4 text-amber-600 dark:text-amber-400" />
             </div>
-            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">الذهب العالمي</span>
+            <span className="text-xs font-bold text-amber-900 dark:text-amber-500">الذهب العالمي</span>
           </div>
           <div className="relative z-10 mt-auto text-right">
-            <div className="text-2xl font-black text-slate-900 dark:text-white font-mono">${gold.toFixed(1)}</div>
-            <div className="text-[10px] text-slate-400 font-bold">أونصة</div>
+            <div className="text-2xl font-black text-amber-950 dark:text-amber-400 font-mono drop-shadow-sm">${gold.toFixed(1)}</div>
+            <div className="text-[10px] text-amber-700/70 dark:text-amber-500/70 font-bold">أونصة</div>
           </div>
         </a>
 
         {/* Oil Animated Card */}
-        <a href="/oil" className="block rounded-[28px] p-5 bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden flex flex-col justify-between h-36 transition-all duration-500">
-          <div className="absolute -right-2 -bottom-2 opacity-[0.03] dark:opacity-10"><Droplet className="w-24 h-24" /></div>
+        <a href="/oil" className={`block rounded-[28px] p-5 bg-gradient-to-br ${currentOil.id === 'brent' ? 'from-slate-800 to-slate-900 dark:from-slate-900 dark:to-black text-white border-slate-700' : 'from-rose-50 to-orange-50 dark:from-rose-900/20 dark:to-orange-900/10 text-slate-900 dark:text-white border-rose-200/50 dark:border-rose-900/30'} shadow-sm border relative overflow-hidden flex flex-col justify-between h-36 transition-colors duration-700`}>
+          <div className="absolute -right-2 -bottom-2 opacity-[0.04] dark:opacity-10"><Droplet className="w-24 h-24" /></div>
           <div className="flex items-center gap-2 relative z-10" key={`oilname-${currentOil.id}`}>
-            <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-              <Droplet className="w-4 h-4 text-slate-700 dark:text-slate-300" />
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-inner ${currentOil.id === 'brent' ? 'bg-slate-700' : 'bg-rose-100 dark:bg-rose-900/40'}`}>
+              <Droplet className={`w-4 h-4 ${currentOil.id === 'brent' ? 'text-slate-300' : 'text-rose-600 dark:text-rose-400'}`} />
             </div>
-            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 animate-[fadeIn_0.5s_ease-out]">{currentOil.name}</span>
+            <span className={`text-xs font-bold animate-[fadeIn_0.5s_ease-out] ${currentOil.id === 'brent' ? 'text-slate-300' : 'text-rose-900 dark:text-rose-500'}`}>{currentOil.name}</span>
           </div>
           <div className="relative z-10 mt-auto text-right" key={`oilprice-${currentOil.id}`}>
-            <div className="text-2xl font-black text-slate-900 dark:text-white font-mono animate-[fadeIn_0.5s_ease-out]">${currentOil.price.toFixed(2)}</div>
-            <div className="text-[10px] text-slate-400 font-bold">برميل</div>
+            <div className="text-2xl font-black font-mono animate-[fadeIn_0.5s_ease-out] drop-shadow-sm">${currentOil.price.toFixed(2)}</div>
+            <div className={`text-[10px] font-bold ${currentOil.id === 'brent' ? 'text-slate-400' : 'text-rose-700/70 dark:text-rose-500/70'}`}>برميل</div>
           </div>
         </a>
       </div>
